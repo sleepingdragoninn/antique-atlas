@@ -207,6 +207,7 @@ public class WorldAtlasData {
 			SurveyorClient.getClientUuid(),
 			color,
 			label,
+			null,
 			selectedTexture.keyId()
 		));
 	}

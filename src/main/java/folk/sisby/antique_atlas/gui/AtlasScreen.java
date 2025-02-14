@@ -605,7 +605,7 @@ public class AtlasScreen extends Component {
 
 		context.getMatrices().push();
 		context.getMatrices().translate(getGuiX(), getGuiY(), 0);
-		float markerScale = (float) ((double) tilePixels * (getEffectiveScale() * 16.0));
+		float markerScale = (float) (((double) tilePixels * mapScale / (guiScale * 16.0)));
 
 		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
 

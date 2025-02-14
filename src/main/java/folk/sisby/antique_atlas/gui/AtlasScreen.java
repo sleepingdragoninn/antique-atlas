@@ -249,6 +249,10 @@ public class AtlasScreen extends Component {
 		};
 	}
 
+	private float getEffectiveScale(){
+		return (float)(mapScale/MinecraftClient.getInstance().getWindow().getScaleFactor());
+	}
+
 	public AtlasScreen prepareToOpen() {
 		MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F));
 
@@ -389,7 +393,7 @@ public class AtlasScreen extends Component {
 	}
 
 	private double getPixelsPerBlock() {
-		return ((double) mapScale / MinecraftClient.getInstance().getWindow().getScaleFactor()) * ((double) tilePixels) / ((double) tileChunks * 16.0);
+		return (double) getEffectiveScale() * ((double) tilePixels) / ((double) tileChunks * 16.0);
 	}
 
 	@Override
@@ -501,7 +505,7 @@ public class AtlasScreen extends Component {
 	private void updateScaleBookmark() {
 		int tileSizeBlocks = (tileChunks * 16 * 16) / tilePixels;
 		int defaultTileSizeBlocks = 16;
-		int rulerSizeBlocks = (tileSizeBlocks * (int) MinecraftClient.getInstance().getWindow().getScaleFactor()) / mapScale;
+		int rulerSizeBlocks = (int)(tileSizeBlocks * getEffectiveScale());
 		resetScaleBookmark.setLabel(Text.literal(
 			rulerSizeBlocks == 16 | rulerSizeBlocks >= 32 ? "%dc".formatted(rulerSizeBlocks / 16) : "%db".formatted(rulerSizeBlocks)).formatted(
 			tileSizeBlocks < defaultTileSizeBlocks ? Formatting.DARK_RED : tileSizeBlocks == defaultTileSizeBlocks ? Formatting.BLACK : Formatting.DARK_BLUE
@@ -601,7 +605,7 @@ public class AtlasScreen extends Component {
 
 		context.getMatrices().push();
 		context.getMatrices().translate(getGuiX(), getGuiY(), 0);
-		float markerScale = (float) (((double) tilePixels * mapScale / (guiScale * 16.0)));
+		float markerScale = (float) ((double) tilePixels * (getEffectiveScale() * 16.0));
 
 		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
 
@@ -660,7 +664,7 @@ public class AtlasScreen extends Component {
 		if (playerSummary != null) orderedFriends.put(SurveyorClient.getClientUuid(), playerSummary);
 		orderedFriends.forEach((uuid, friend) -> {
 			if (state.is(HIDING_MARKERS) && (!playerBookmark.isSelected() || friend != playerSummary)) return;
-			renderPlayer(context, friend, 1, hoveredFriend == friend && markerModal.getParent() == null, friend == playerSummary);
+			renderPlayer(context, friend, (float)(mapScale/guiScale), hoveredFriend == friend && markerModal.getParent() == null, friend == playerSummary);
 		});
 		context.getMatrices().pop();
 
@@ -701,9 +705,10 @@ public class AtlasScreen extends Component {
 	}
 
 	public static void renderTiles(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int mapX, int mapY, int mapWidth, int mapHeight, double mapStartScreenX, double mapStartScreenY, double mapScale, int pixelsPerTile, double guiScale, int light, TileRenderIterator tiles) {
+		float effectiveScale = (float)(mapScale/guiScale);
 		matrices.push();
 		matrices.translate(mapStartScreenX, mapStartScreenY, 0);
-		matrices.scale((float) (mapScale / guiScale), (float) (mapScale / guiScale), 1.0F);
+		matrices.scale(effectiveScale, effectiveScale, 1.0F);
 
 		Map<TileTexture, Collection<SubTile>> tileTextures = new Reference2ObjectArrayMap<>();
 		for (SubTileQuartet subTiles : tiles) {
@@ -719,7 +724,7 @@ public class AtlasScreen extends Component {
 					int drawX = subtile.x * subTilePixels;
 					int drawY = subtile.y * subTilePixels;
 					// a non-scope bounds check allows subtile-level accuracy, and keeps border tiling accurate.
-					if (drawX * (guiScale / mapScale) > mapX + mapWidth - mapStartScreenX || drawY * (guiScale / mapScale) > mapY + mapHeight - mapStartScreenY || (drawX + subTilePixels) * (guiScale / mapScale) < mapX - mapStartScreenX || (drawY + subTilePixels) * (guiScale / mapScale) < mapY - mapStartScreenY) continue;
+					if (drawX * effectiveScale > mapX + mapWidth - mapStartScreenX || drawY * effectiveScale > mapY + mapHeight - mapStartScreenY || (drawX + subTilePixels) * effectiveScale < mapX - mapStartScreenX || (drawY + subTilePixels) * effectiveScale < mapY - mapStartScreenY) continue;
 					batcher.add(drawX, drawY, subTilePixels, subTilePixels, subtile.getTextureU() * 8, subtile.getTextureV() * 8, 8, 8, 0xFFFFFFFF);
 				}
 			}

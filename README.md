@@ -29,7 +29,11 @@ Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and 
 
 > ![marker styles](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/b7064c3287c5535cd9ac6d454c10ead984c7a7b3.png)
 
-If you need an equally distraction-free compass to substitute a minimap, try [PicoHUD](https://modrinth.com/mod/picohud)!
+- Books renamed "Antique Atlas" will display your immediate surroundings, like a minimap:
+
+> ![handheld atlas](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/b3002225851522c2d4eabc7462a374fbcdd2db6b.png)
+
+If you'd instead prefer a low-tech compass, try [PicoHUD](https://modrinth.com/mod/picohud)!
 
 ## Mixed-Side Features
 

@@ -12,16 +12,26 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 public class AntiqueAtlas implements ClientModInitializer {
 	public static final String ID = "antique_atlas";
@@ -34,8 +44,26 @@ public class AntiqueAtlas implements ClientModInitializer {
 
 	public static final ModelIdentifier ATLAS_MODEL = new ModelIdentifier(AntiqueAtlas.id("atlas"), "inventory");
 
+	public static final List<String> ATLAS_NAMES = List.of(
+		"Antique Atlas"
+	);
+
 	public static Identifier id(String path) {
 		return path.contains(":") ? new Identifier(path) : new Identifier(ID, path);
+	}
+
+	public static ItemStack getHandheldAtlas() {
+		ItemStack stack = Items.BOOK.getDefaultStack().copy();
+		stack.setCustomName(Text.translatable("item.antique_atlas.atlas").setStyle(Style.EMPTY.withItalic(false)));
+		NbtList lore = new NbtList();
+		lore.add(NbtString.of(Text.Serializer.toJson(Text.translatable("item.antique_atlas.atlas.lore").setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)))));
+		lore.add(NbtString.of(Text.Serializer.toJson(Text.translatable("item.antique_atlas.atlas.hint", Text.translatable("item.antique_atlas.atlas")).setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)))));
+		stack.getSubNbt(ItemStack.DISPLAY_KEY).put(ItemStack.LORE_KEY, lore);
+		return stack;
+	}
+
+	public static boolean isHandheldAtlas(ItemStack stack) {
+		return stack.isOf(Items.BOOK) && ATLAS_NAMES.stream().anyMatch(n -> stack.getName().getString().contains(n));
 	}
 
 	@Override
@@ -56,7 +84,8 @@ public class AntiqueAtlas implements ClientModInitializer {
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> BiomeTileProviders.getInstance().clearFallbacks()));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> WorldAtlasData.WORLDS.clear()));
 
-		ModelPredicateProviderRegistry.register(Items.BOOK, AntiqueAtlas.id("atlas"), ((stack, world, entity, seed) -> stack.getName().getString().contains("Antique Atlas") ? 1.0F : 0.0F));
+		ModelPredicateProviderRegistry.register(Items.BOOK, AntiqueAtlas.id("atlas"), ((stack, world, entity, seed) -> isHandheldAtlas(stack) ? 1.0F : 0.0F));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(e -> e.addAfter(Items.MAP, getHandheldAtlas()));
 
 		WorldSummary.enableTerrain();
 		WorldSummary.enableStructures();

@@ -1,7 +1,7 @@
 package folk.sisby.antique_atlas.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.mojang.blaze3d.systems.RenderSystem;
+import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.WorldAtlasData;
 import folk.sisby.antique_atlas.gui.AtlasScreen;
 import folk.sisby.antique_atlas.gui.tiles.TileRenderIterator;
@@ -18,14 +18,12 @@ import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Rect2i;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Vector2d;
-import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -42,12 +40,10 @@ public class MixinHeldItemRenderer {
 	@Inject(method = "renderFirstPersonMap", at = @At("HEAD"), cancellable = true)
 	void renderFirstPersonAtlas(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, ItemStack stack, CallbackInfo ci) {
 		if (MinecraftClient.getInstance().player == null || MinecraftClient.getInstance().world == null) return;
-		if (!stack.isOf(Items.BOOK) || !stack.getName().getString().contains("Antique Atlas")) return;
+		if (!(AntiqueAtlas.isHandheldAtlas(stack))) return;
 		// Refactor to actually abstract AtlasScreen code eventually pls
 
 		matrices.push();
-		RenderSystem.enableBlend();
-		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
 		matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180.0F));
 
@@ -121,7 +117,6 @@ public class MixinHeldItemRenderer {
 			double playerOffsetY = worldZToScreenY(MinecraftClient.getInstance().player.getPos().getZ(), bookY, mapOffsetY, mapHeight, 1) - bookY;
 			float playerRotation = ((float) Math.round(MinecraftClient.getInstance().player.getHeadYaw() / 360f * PLAYER_ROTATION_STEPS) / PLAYER_ROTATION_STEPS) * 360f;
 			DrawUtil.drawCenteredWithRotation(matrices, vertexConsumers, PLAYER, playerOffsetX, playerOffsetY, 1, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, light, argb);
-			RenderSystem.setShaderColor(1, 1, 1, 1);
 		});
 
 		matrices.pop();
@@ -133,14 +128,12 @@ public class MixinHeldItemRenderer {
 		}
 		matrices.pop();
 
-		RenderSystem.disableBlend();
-
 		matrices.pop();
 		ci.cancel();
 	}
 
 	@ModifyExpressionValue(method = "renderFirstPersonItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z", ordinal = 0))
 	private boolean enableFirstPersonAtlasRendering(boolean original, AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand, float swingProgress, ItemStack stack, float equipProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-		return original || (stack.isOf(Items.BOOK) && stack.getName().getString().contains("Antique Atlas"));
+		return original || AntiqueAtlas.isHandheldAtlas(stack);
 	}
 }

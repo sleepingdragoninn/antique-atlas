@@ -22,18 +22,22 @@ public class DrawBatcher implements AutoCloseable {
 	private final float textureHeight;
 	private final int light;
 
-	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light) {
+	public DrawBatcher(MatrixStack matrices, Identifier texture, int textureWidth, int textureHeight, int light) {
 		RenderSystem.setShaderTexture(0, texture);
 		RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
 		this.matrix4f = matrices.peek().getPositionMatrix();
-		if (vertexConsumers == null) {
-			this.bufferBuilder = Tessellator.getInstance().getBuffer();
-			bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
-			this.vertexConsumer = bufferBuilder;
-		} else {
-			this.bufferBuilder = null;
-			this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getText(texture));
-		}
+		this.bufferBuilder = Tessellator.getInstance().getBuffer();
+		this.bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
+		this.vertexConsumer = bufferBuilder;
+		this.textureWidth = textureWidth;
+		this.textureHeight = textureHeight;
+		this.light = light;
+	}
+
+	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light) {
+		this.matrix4f = matrices.peek().getPositionMatrix();
+		this.bufferBuilder = null;
+		this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getText(texture));
 		this.textureWidth = textureWidth;
 		this.textureHeight = textureHeight;
 		this.light = light;
@@ -58,6 +62,6 @@ public class DrawBatcher implements AutoCloseable {
 
 	@Override
 	public void close() {
-		if (bufferBuilder != null) BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+		if (bufferBuilder != null) BufferRenderer.draw(bufferBuilder.end());
 	}
 }

@@ -60,12 +60,9 @@ public class MixinHeldItemRenderer {
 		int mapHeight = bookHeight - MAP_BORDER_HEIGHT * 2;
 		int tileChunks = 1;
 
-		matrices.push();
-		matrices.translate(0, 0, 0.01);
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, AtlasScreen.BOOK, bookWidth, bookHeight, light)) {
-			batcher.add(bookX, bookY, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
+			batcher.add(bookX, bookY, 0.01F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
 		}
-		matrices.pop();
 
 		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen) {
 			matrices.pop();
@@ -86,12 +83,8 @@ public class MixinHeldItemRenderer {
 		tiles.setScope(new Rect(mapStartChunkX, mapStartChunkZ, mapEndChunkX, mapEndChunkZ));
 		tiles.setStep(tileChunks);
 
-		matrices.push();
-		AtlasScreen.renderTiles(matrices, vertexConsumers, bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, mapWidth, mapHeight, mapStartScreenX, mapStartScreenY, 1, 16, 1, light, tiles);
-		matrices.pop();
+		AtlasScreen.renderTiles(matrices, vertexConsumers, bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, 0, mapWidth, mapHeight, mapStartScreenX, mapStartScreenY, 1, 16, 1, light, tiles);
 
-		matrices.push();
-		matrices.translate(0, 0, -0.02);
 		Rect2i mapArea = new Rect2i(bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, mapWidth, mapHeight);
 		worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
 			double markerX = worldXToScreenX(landmark.pos().getX(), bookX, mapOffsetX, mapWidth, 1) - bookX;
@@ -99,12 +92,9 @@ public class MixinHeldItemRenderer {
 			DyeColor color = landmark.color();
 			Vector2d markerPoint = new Vector2d(markerX, markerY);
 			float alpha = (float) MathHelper.clamp(MathUtil.innerDistanceToEdge(mapArea, markerPoint) / 32.0, 0, 1);
-			texture.draw(matrices, vertexConsumers, markerX, markerY, 1, tileChunks, color == null ? null : color.getColorComponents(), 1F, alpha, light);
+			texture.draw(matrices, vertexConsumers, markerX, markerY, -0.02F, 1, tileChunks, color == null ? null : color.getColorComponents(), 1F, alpha, light);
 		});
-		matrices.pop();
 
-		matrices.push();
-		matrices.translate(0, 0, -0.04);
 		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
 		PlayerSummary playerSummary = friends.remove(SurveyorClient.getClientUuid());
 		Map<UUID, PlayerSummary> orderedFriends = new LinkedHashMap<>(friends);
@@ -116,17 +106,13 @@ public class MixinHeldItemRenderer {
 			double playerOffsetX = worldXToScreenX(MinecraftClient.getInstance().player.getPos().getX(), bookX, mapOffsetX, mapWidth, 1) - bookX;
 			double playerOffsetY = worldZToScreenY(MinecraftClient.getInstance().player.getPos().getZ(), bookY, mapOffsetY, mapHeight, 1) - bookY;
 			float playerRotation = ((float) Math.round(MinecraftClient.getInstance().player.getHeadYaw() / 360f * PLAYER_ROTATION_STEPS) / PLAYER_ROTATION_STEPS) * 360f;
-			DrawUtil.drawCenteredWithRotation(matrices, vertexConsumers, PLAYER, playerOffsetX, playerOffsetY, 1, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, light, argb);
+			DrawUtil.drawCenteredWithRotation(matrices, vertexConsumers, PLAYER, playerOffsetX, playerOffsetY, -0.04F, 1, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, light, argb);
 		});
 
-		matrices.pop();
-		matrices.push();
 		// Overlay the frame so that edges of the map are smooth:
-		matrices.translate(0, 0, -0.03);
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, BOOK_FRAME, bookWidth, bookHeight, light)) {
-			batcher.add(bookX, bookY, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
+			batcher.add(bookX, bookY, -0.03F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
 		}
-		matrices.pop();
 
 		matrices.pop();
 		ci.cancel();

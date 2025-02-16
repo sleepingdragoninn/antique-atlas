@@ -17,11 +17,11 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.text.Style;
@@ -54,11 +54,11 @@ public class AntiqueAtlas implements ClientModInitializer {
 
 	public static ItemStack getHandheldAtlas() {
 		ItemStack stack = Items.BOOK.getDefaultStack().copy();
-		stack.setCustomName(Text.translatable("item.antique_atlas.atlas").setStyle(Style.EMPTY.withItalic(false)));
-		NbtList lore = new NbtList();
-		lore.add(NbtString.of(Text.Serializer.toJson(Text.translatable("item.antique_atlas.atlas.lore").setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)))));
-		lore.add(NbtString.of(Text.Serializer.toJson(Text.translatable("item.antique_atlas.atlas.hint", Text.translatable("item.antique_atlas.atlas")).setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)))));
-		stack.getSubNbt(ItemStack.DISPLAY_KEY).put(ItemStack.LORE_KEY, lore);
+		stack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item.antique_atlas.atlas"));
+		stack.set(DataComponentTypes.LORE, new LoreComponent(List.of(
+			Text.translatable("item.antique_atlas.atlas.lore").setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)),
+			Text.translatable("item.antique_atlas.atlas.hint", Text.translatable("item.antique_atlas.atlas")).setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false))
+		)));
 		return stack;
 	}
 

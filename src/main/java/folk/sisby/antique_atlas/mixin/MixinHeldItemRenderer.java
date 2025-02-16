@@ -1,7 +1,7 @@
 package folk.sisby.antique_atlas.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.mojang.blaze3d.systems.RenderSystem;
+import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.WorldAtlasData;
 import folk.sisby.antique_atlas.gui.AtlasScreen;
 import folk.sisby.antique_atlas.gui.tiles.TileRenderIterator;
@@ -19,14 +19,12 @@ import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Rect2i;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Vector2d;
-import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -43,12 +41,10 @@ public class MixinHeldItemRenderer {
 	@Inject(method = "renderFirstPersonMap", at = @At("HEAD"), cancellable = true)
 	void renderFirstPersonAtlas(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, ItemStack stack, CallbackInfo ci) {
 		if (MinecraftClient.getInstance().player == null || MinecraftClient.getInstance().world == null) return;
-		if (!stack.isOf(Items.BOOK) || !stack.getName().getString().contains("Antique Atlas")) return;
+		if (!(AntiqueAtlas.isHandheldAtlas(stack))) return;
 		// Refactor to actually abstract AtlasScreen code eventually pls
 
 		matrices.push();
-		RenderSystem.enableBlend();
-		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
 		matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180.0F));
 
@@ -65,12 +61,9 @@ public class MixinHeldItemRenderer {
 		int mapHeight = bookHeight - MAP_BORDER_HEIGHT * 2;
 		int tileChunks = 1;
 
-		matrices.push();
-		matrices.translate(0, 0, 0.01);
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, AtlasScreen.BOOK, bookWidth, bookHeight, light)) {
-			batcher.add(bookX, bookY, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
+			batcher.add(bookX, bookY, 0.01F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
 		}
-		matrices.pop();
 
 		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen) {
 			matrices.pop();
@@ -91,12 +84,8 @@ public class MixinHeldItemRenderer {
 		tiles.setScope(new Rect(mapStartChunkX, mapStartChunkZ, mapEndChunkX, mapEndChunkZ));
 		tiles.setStep(tileChunks);
 
-		matrices.push();
-		AtlasScreen.renderTiles(matrices, vertexConsumers, bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, mapWidth, mapHeight, mapStartScreenX, mapStartScreenY, 1, 16, 1, light, tiles);
-		matrices.pop();
+		AtlasScreen.renderTiles(matrices, vertexConsumers, bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, 0, mapWidth, mapHeight, mapStartScreenX, mapStartScreenY, 1, 16, 1, light, tiles);
 
-		matrices.push();
-		matrices.translate(0, 0, -0.02);
 		Rect2i mapArea = new Rect2i(bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, mapWidth, mapHeight);
 		worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
 			double markerX = worldXToScreenX(landmark.pos().getX(), bookX, mapOffsetX, mapWidth, 1) - bookX;
@@ -104,12 +93,9 @@ public class MixinHeldItemRenderer {
 			DyeColor color = landmark.color();
 			Vector2d markerPoint = new Vector2d(markerX, markerY);
 			float alpha = (float) MathHelper.clamp(MathUtil.innerDistanceToEdge(mapArea, markerPoint) / 32.0, 0, 1);
-			texture.draw(matrices, vertexConsumers, markerX, markerY, 1, tileChunks, color == null ? null : ColorUtil.getColorFromArgb(color.getEntityColor()), 1F, alpha, light);
+			texture.draw(matrices, vertexConsumers, markerX, markerY, -0.02F, 1, tileChunks, color == null ? null : ColorUtil.getColorFromArgb(color.getEntityColor()), 1F, alpha, light);
 		});
-		matrices.pop();
 
-		matrices.push();
-		matrices.translate(0, 0, -0.04);
 		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
 		PlayerSummary playerSummary = friends.remove(SurveyorClient.getClientUuid());
 		Map<UUID, PlayerSummary> orderedFriends = new LinkedHashMap<>(friends);
@@ -121,20 +107,13 @@ public class MixinHeldItemRenderer {
 			double playerOffsetX = worldXToScreenX(MinecraftClient.getInstance().player.getPos().getX(), bookX, mapOffsetX, mapWidth, 1) - bookX;
 			double playerOffsetY = worldZToScreenY(MinecraftClient.getInstance().player.getPos().getZ(), bookY, mapOffsetY, mapHeight, 1) - bookY;
 			float playerRotation = ((float) Math.round(MinecraftClient.getInstance().player.getHeadYaw() / 360f * PLAYER_ROTATION_STEPS) / PLAYER_ROTATION_STEPS) * 360f;
-			DrawUtil.drawCenteredWithRotation(matrices, vertexConsumers, PLAYER, playerOffsetX, playerOffsetY, 1, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, light, argb);
-			RenderSystem.setShaderColor(1, 1, 1, 1);
+			DrawUtil.drawCenteredWithRotation(matrices, vertexConsumers, PLAYER, playerOffsetX, playerOffsetY, -0.04F, 1, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, light, argb);
 		});
 
-		matrices.pop();
-		matrices.push();
 		// Overlay the frame so that edges of the map are smooth:
-		matrices.translate(0, 0, -0.03);
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, BOOK_FRAME, bookWidth, bookHeight, light)) {
-			batcher.add(bookX, bookY, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
+			batcher.add(bookX, bookY, -0.03F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
 		}
-		matrices.pop();
-
-		RenderSystem.disableBlend();
 
 		matrices.pop();
 		ci.cancel();
@@ -142,6 +121,6 @@ public class MixinHeldItemRenderer {
 
 	@ModifyExpressionValue(method = "renderFirstPersonItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z", ordinal = 0))
 	private boolean enableFirstPersonAtlasRendering(boolean original, AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand, float swingProgress, ItemStack stack, float equipProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-		return original || (stack.isOf(Items.BOOK) && stack.getName().getString().contains("Antique Atlas"));
+		return original || AntiqueAtlas.isHandheldAtlas(stack);
 	}
 }

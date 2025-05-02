@@ -26,6 +26,9 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	@Comment("The background is slightly less stylish, but more tiles are shown at once")
 	public boolean fullscreen = true;
 
+	@Comment("Whether to require an item to display the map")
+	public boolean requireItem = false;
+
 	@Comment("Whether to keep scale after closing the map")
 	public boolean keepZoom = false;
 

@@ -1,0 +1,10 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:ice"
+		],
+		"tilesTo": [
+			"#antique_atlas:ice"
+		]
+	}
+}

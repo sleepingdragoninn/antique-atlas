@@ -1,0 +1,10 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:oak_dense"
+		],
+		"tilesTo": [
+			"#antique_atlas:oak_dense"
+		]
+	}
+}

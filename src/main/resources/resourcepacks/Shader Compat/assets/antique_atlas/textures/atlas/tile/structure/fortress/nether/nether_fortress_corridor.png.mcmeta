@@ -1,0 +1,13 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:lava",
+			"antique_atlas:large_structures",
+			"antique_atlas:nether_fortress",
+			"antique_atlas:nether_fortress_corridor"
+		],
+		"tilesTo": [
+			"#antique_atlas:nether_fortress_corridor"
+		]
+	}
+}

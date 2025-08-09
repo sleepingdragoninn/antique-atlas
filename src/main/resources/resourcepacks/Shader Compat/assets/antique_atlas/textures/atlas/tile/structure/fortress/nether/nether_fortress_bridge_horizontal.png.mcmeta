@@ -1,0 +1,15 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:lava",
+			"antique_atlas:large_structures",
+			"antique_atlas:nether_fortress",
+			"antique_atlas:nether_fortress_bridge_horizontal"
+		],
+		"tilesToHorizontal": [
+			"#antique_atlas:nether_fortress_bridge_crossings",
+			"#antique_atlas:nether_fortress_bridge_accessible",
+			"#antique_atlas:nether_fortress_bridge_horizontal"
+		]
+	}
+}

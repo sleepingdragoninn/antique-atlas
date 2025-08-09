@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "Antique Atlas Shader Support. by NoPyro and Orgamorsh",
+    "pack_format": 61,
+    "supported_formats": [
+      4,
+      61
+    ]
+  }
+}

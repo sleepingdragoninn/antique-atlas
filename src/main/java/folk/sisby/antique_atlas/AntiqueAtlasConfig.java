@@ -60,6 +60,10 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	@Comment("How to handle biomes that aren't in any minecraft, conventional, or forge biome tags")
 	public FallbackHandling fallbackFailHandling = FallbackHandling.MISSING;
 
+	@Comment("Disables fading when Marker Icons approach the edge of the Atlas.")
+	@Comment("Needed for shader support, pair with included resource pack.")
+	public boolean shaderCompat = true;
+
 	@Comment("Whether to show debug information about hovered tiles and markers")
 	public boolean debugRender = false;
 

@@ -1,0 +1,15 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:plateaus"
+		],
+		"tilesTo": [
+			"#antique_atlas:caves",
+			"#antique_atlas:low_plateaus",
+			"#antique_atlas:cliffs",
+			"#antique_atlas:plateaus",
+			"#antique_atlas:mountains",
+			"#antique_atlas:small_land_structures"
+		]
+	}
+}

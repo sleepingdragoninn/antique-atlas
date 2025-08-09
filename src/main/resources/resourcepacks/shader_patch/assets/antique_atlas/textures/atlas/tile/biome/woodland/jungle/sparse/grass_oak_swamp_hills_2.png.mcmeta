@@ -1,0 +1,8 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:base/hills",
+		"tags": [
+			"antique_atlas:grass_hills"
+		]
+	}
+}

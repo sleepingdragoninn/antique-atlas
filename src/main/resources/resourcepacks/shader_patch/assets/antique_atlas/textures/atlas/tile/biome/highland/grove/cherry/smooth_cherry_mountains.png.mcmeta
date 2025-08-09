@@ -1,0 +1,5 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:base/smooth_mountains_edge"
+	}
+}

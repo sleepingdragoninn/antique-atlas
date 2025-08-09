@@ -61,8 +61,8 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	public FallbackHandling fallbackFailHandling = FallbackHandling.MISSING;
 
 	@Comment("Disables fading when Marker Icons approach the edge of the Atlas.")
-	@Comment("Needed for shader support, pair with included resource pack.")
-	public boolean shaderCompat = true;
+	@Comment("Needed for shader support, pair with Shader Patch resource pack.")
+	public boolean shaderCompat = false;
 
 	@Comment("Whether to show debug information about hovered tiles and markers")
 	public boolean debugRender = false;

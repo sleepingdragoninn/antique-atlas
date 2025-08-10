@@ -97,7 +97,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 		});
 	}
 
-		public static Identifier asId(String path) {
+	public static Identifier asId(String path) {
 		return Identifier.of(ID, path);
 	}
 }

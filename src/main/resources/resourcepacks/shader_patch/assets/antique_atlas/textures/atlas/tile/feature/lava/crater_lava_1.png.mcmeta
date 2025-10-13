@@ -1,0 +1,11 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:lava"
+		],
+		"tilesTo": [
+			"#antique_atlas:lava",
+			"#antique_atlas:shore_lava"
+		]
+	}
+}

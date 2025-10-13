@@ -26,6 +26,9 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	@Comment("The background is slightly less stylish, but more tiles are shown at once")
 	public boolean fullscreen = true;
 
+	@Comment("Whether to require an item to display the map")
+	public boolean requireItem = false;
+
 	@Comment("Whether to keep scale after closing the map")
 	public boolean keepZoom = false;
 
@@ -59,6 +62,10 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 
 	@Comment("How to handle biomes that aren't in any minecraft, conventional, or forge biome tags")
 	public FallbackHandling fallbackFailHandling = FallbackHandling.MISSING;
+
+	@Comment("Disables fading when Marker Icons approach the edge of the Atlas.")
+	@Comment("Needed for shader support, pair with Shader Patch resource pack.")
+	public boolean shaderCompat = false;
 
 	@Comment("Whether to show debug information about hovered tiles and markers")
 	public boolean debugRender = false;

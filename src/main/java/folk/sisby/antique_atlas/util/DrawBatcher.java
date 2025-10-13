@@ -23,24 +23,24 @@ public class DrawBatcher implements AutoCloseable {
 	private final int light;
 
 	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light) {
-		RenderSystem.setShaderTexture(0, texture);
-		RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
-		this.matrix4f = matrices.peek().getPositionMatrix();
 		if (vertexConsumers == null) {
+			RenderSystem.setShaderTexture(0, texture);
+			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
 			this.bufferBuilder = Tessellator.getInstance().getBuffer();
-			bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
+			this.bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
 			this.vertexConsumer = bufferBuilder;
 		} else {
 			this.bufferBuilder = null;
 			this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getText(texture));
 		}
+		this.matrix4f = matrices.peek().getPositionMatrix();
 		this.textureWidth = textureWidth;
 		this.textureHeight = textureHeight;
 		this.light = light;
 	}
 
-	public void add(int x, int y, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
-		this.innerAdd(x, x + width, y, y + height, 0,
+	public void add(int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
+		this.innerAdd(x, x + width, y, y + height, z,
 			(u + 0.0F) / textureWidth,
 			(u + (float) regionWidth) / textureWidth,
 			(v + 0.0F) / textureHeight,
@@ -49,7 +49,7 @@ public class DrawBatcher implements AutoCloseable {
 		);
 	}
 
-	private void innerAdd(int x1, int x2, int y1, int y2, int z, float u1, float u2, float v1, float v2, int argb) {
+	private void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
 		vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).light(light).next();
 		vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).light(light).next();
 		vertexConsumer.vertex(matrix4f, x2, y2, z).color(argb).texture(u2, v2).light(light).next();

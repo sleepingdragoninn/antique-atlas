@@ -1,0 +1,5 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:biome/nether/wastes/nether_shore_lava_1"
+	}
+}

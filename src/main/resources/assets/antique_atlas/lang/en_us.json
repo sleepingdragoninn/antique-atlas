@@ -40,5 +40,8 @@
 	"gui.antique_atlas.marker.death.euphemisms.verb.7": "Flattened",
 	"gui.antique_atlas.marker.death.euphemisms.verb.8": "Wrecked",
 	"gui.antique_atlas.marker.death.euphemisms.verb.9": "Whipped",
-	"gui.antique_atlas.marker.death.euphemisms.verb.10": "Done In"
+	"gui.antique_atlas.marker.death.euphemisms.verb.10": "Done In",
+	"item.antique_atlas.atlas": "Antique Atlas",
+	"item.antique_atlas.atlas.lore": "Displays your surroundings when held.",
+	"item.antique_atlas.atlas.hint": "Obtainable in survival by renaming a book \"%s\"."
 }

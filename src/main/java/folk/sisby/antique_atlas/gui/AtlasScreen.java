@@ -590,7 +590,7 @@ public class AtlasScreen extends Component {
 		tiles.setStep(tileChunks);
 		
 		RenderSystem.setShaderColor(1, 1, 1, state.is(DELETING_MARKER) ? 0.5f : 1.0f);
-		renderTiles(context.getMatrices(), null, getGuiX() + MAP_BORDER_WIDTH, getGuiY() + MAP_BORDER_HEIGHT, mapWidth, mapHeight, mapStartScreenX, mapStartScreenY, mapScale, tilePixels, guiScale, 15728640, tiles);
+		renderTiles(context.getMatrices(), null, getGuiX() + MAP_BORDER_WIDTH, getGuiY() + MAP_BORDER_HEIGHT, 0, mapWidth, mapHeight, mapStartScreenX, mapStartScreenY, mapScale, tilePixels, guiScale, 15728640, tiles);
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 
 		// Overlay the frame so that edges of the map are smooth:
@@ -704,7 +704,7 @@ public class AtlasScreen extends Component {
 		}
 	}
 
-	public static void renderTiles(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int mapX, int mapY, int mapWidth, int mapHeight, double mapStartScreenX, double mapStartScreenY, double mapScale, int pixelsPerTile, double guiScale, int light, TileRenderIterator tiles) {
+	public static void renderTiles(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int mapX, int mapY, int z, int mapWidth, int mapHeight, double mapStartScreenX, double mapStartScreenY, double mapScale, int pixelsPerTile, double guiScale, int light, TileRenderIterator tiles) {
 		float effectiveScale = (float)(mapScale/guiScale);
 		matrices.push();
 		matrices.translate(mapStartScreenX, mapStartScreenY, 0);
@@ -725,7 +725,7 @@ public class AtlasScreen extends Component {
 					int drawY = subtile.y * subTilePixels;
 					// a non-scope bounds check allows subtile-level accuracy, and keeps border tiling accurate.
 					if (drawX * effectiveScale > mapX + mapWidth - mapStartScreenX || drawY * effectiveScale > mapY + mapHeight - mapStartScreenY || (drawX + subTilePixels) * effectiveScale < mapX - mapStartScreenX || (drawY + subTilePixels) * effectiveScale < mapY - mapStartScreenY) continue;
-					batcher.add(drawX, drawY, subTilePixels, subTilePixels, subtile.getTextureU() * 8, subtile.getTextureV() * 8, 8, 8, 0xFFFFFFFF);
+					batcher.add(drawX, drawY, z, subTilePixels, subTilePixels, subtile.getTextureU() * 8, subtile.getTextureV() * 8, 8, 8, 0xFFFFFFFF);
 				}
 			}
 		});
@@ -746,7 +746,7 @@ public class AtlasScreen extends Component {
 		int argb = ColorHelper.Argb.getArgb(state.is(PLACING_MARKER) ? 127 : 255, (int) (tint * 255), (int) (tint * greenTint * 255), (int) (tint * 255));
 		float playerRotation = ((float) Math.round(player.yaw() / 360f * PLAYER_ROTATION_STEPS) / PLAYER_ROTATION_STEPS) * 360f;
 
-		DrawUtil.drawCenteredWithRotation(context.getMatrices(), null, PLAYER, playerOffsetX, playerOffsetY, iconScale, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, 15728640, argb);
+		DrawUtil.drawCenteredWithRotation(context.getMatrices(), null, PLAYER, playerOffsetX, playerOffsetY, 0, iconScale, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, 15728640, argb);
 
 		if (hovering && !self) {
 			context.drawTooltip(textRenderer, Text.literal(player.username()).formatted(player.online() ? Formatting.LIGHT_PURPLE : Formatting.GRAY), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());

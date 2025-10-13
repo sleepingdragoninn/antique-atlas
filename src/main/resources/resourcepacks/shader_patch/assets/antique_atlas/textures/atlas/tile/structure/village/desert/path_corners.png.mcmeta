@@ -1,0 +1,12 @@
+{
+	"antique_atlas:tiling": {
+		"borderType": "inner",
+		"tags": [
+			"antique_atlas:village_path_accessible",
+			"antique_atlas:village_path"
+		],
+		"tilesTo": [
+			"#antique_atlas:village_path"
+		]
+	}
+}

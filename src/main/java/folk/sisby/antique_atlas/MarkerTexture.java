@@ -94,8 +94,9 @@ public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int
 		context.getMatrices().pop();
 	}
 
-	public void draw(MatrixStack matrices, VertexConsumerProvider vertexConsumers, double markerX, double markerY, float markerScale, int tileChunks, float[] accent, float tint, float alpha, int light) {
+	public void draw(MatrixStack matrices, VertexConsumerProvider vertexConsumers, double markerX, double markerY, float z, float markerScale, int tileChunks, float[] accent, float tint, float alpha, int light) {
 		if (alpha == 0) return;
+		if (AntiqueAtlas.CONFIG.shaderCompat) alpha = 1.0F;
 		matrices.push();
 		matrices.translate(markerX, markerY, 0.0);
 		matrices.scale(markerScale, markerScale, 1.0F);
@@ -104,20 +105,20 @@ public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int
 		if (tileChunks > 1 && mipLevels > 0) {
 			int mipLevel = MathHelper.clamp(MathHelper.ceilLog2(tileChunks), 0, mipLevels);
 			try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, id, fullTextureWidth(), textureHeight, light)) {
-				batcher.add(offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), mainArgb);
+				batcher.add(offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), z, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), mainArgb);
 			}
 			if (accentId != null && accent != null) {
 				try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, accentId, fullTextureWidth(), textureHeight, light)) {
-					batcher.add(offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), accentArgb);
+					batcher.add(offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), z, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), accentArgb);
 				}
 			}
 		} else {
 			try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, id, fullTextureWidth(), textureHeight, light)) {
-				batcher.add(offsetX, offsetY, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, mainArgb);
+				batcher.add(offsetX, offsetY, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, mainArgb);
 			}
 			if (accentId != null && accent != null) {
 				try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, accentId, fullTextureWidth(), textureHeight, light)) {
-					batcher.add(offsetX, offsetY, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, accentArgb);
+					batcher.add(offsetX, offsetY, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, accentArgb);
 				}
 			}
 		}

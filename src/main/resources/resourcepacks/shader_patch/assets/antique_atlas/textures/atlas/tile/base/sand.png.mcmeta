@@ -1,0 +1,12 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:base/flat",
+		"tags": [
+			"antique_atlas:sand"
+		],
+		"tilesTo": [
+			"#antique_atlas:sand",
+			"#antique_atlas:sand_hills_low"
+		]
+	}
+}

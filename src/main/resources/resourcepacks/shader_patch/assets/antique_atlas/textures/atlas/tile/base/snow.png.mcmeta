@@ -1,0 +1,20 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:snow"
+		],
+		"tilesTo": [
+			"#antique_atlas:snow",
+			"#antique_atlas:snow_ice_spikes",
+			"#antique_atlas:snow_hills_low",
+			"#antique_atlas:snow_hills",
+			"#antique_atlas:snow_cliffs",
+			"#antique_atlas:ice",
+			"#antique_atlas:tiered",
+			"#antique_atlas:caves",
+			"#antique_atlas:low_plateaus",
+			"#antique_atlas:plateaus",
+			"#antique_atlas:small_land_structures"
+		]
+	}
+}

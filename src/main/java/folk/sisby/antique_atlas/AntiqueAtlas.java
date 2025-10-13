@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
@@ -90,5 +91,13 @@ public class AntiqueAtlas implements ClientModInitializer {
 		WorldSummary.enableTerrain();
 		WorldSummary.enableStructures();
 		WorldSummary.enableLandmarks();
+
+		FabricLoader.getInstance().getModContainer(ID).ifPresent(container -> {
+			ResourceManagerHelper.registerBuiltinResourcePack(asId("shader_patch"), container, "Shader Patch", ResourcePackActivationType.NORMAL);
+		});
+	}
+
+	public static Identifier asId(String path) {
+		return Identifier.of(ID, path);
 	}
 }

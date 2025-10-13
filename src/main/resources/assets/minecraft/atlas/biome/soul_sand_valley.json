@@ -1,7 +1,8 @@
 {
 	"textures": {
-		"antique_atlas:base/sand": 1,
-		"antique_atlas:biome/arid/desert/sand_1": 1,
-		"antique_atlas:biome/arid/desert/sand_shrubs": 1
+		"valley": "antique_atlas:biome/nether/valley/soul_sand",
+		"low": "antique_atlas:biome/nether/valley/soul_sand_plateau_low",
+		"high": "antique_atlas:biome/nether/valley/soul_sand_plateau",
+		"peak": "antique_atlas:biome/nether/valley/soul_sand_island"
 	}
 }

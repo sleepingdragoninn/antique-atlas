@@ -1,0 +1,10 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:nether_wastes"
+		],
+		"tilesTo": [
+			"#antique_atlas:nether_wastes"
+		]
+	}
+}

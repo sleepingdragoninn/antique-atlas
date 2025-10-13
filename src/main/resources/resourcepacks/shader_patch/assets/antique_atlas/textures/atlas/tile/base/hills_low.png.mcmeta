@@ -1,0 +1,13 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:hills_low"
+		],
+		"tilesTo": [
+			"#antique_atlas:hills_low",
+			"#antique_atlas:low_plateaus",
+			"#antique_atlas:plateaus",
+			"#antique_atlas:small_land_structures"
+		]
+	}
+}

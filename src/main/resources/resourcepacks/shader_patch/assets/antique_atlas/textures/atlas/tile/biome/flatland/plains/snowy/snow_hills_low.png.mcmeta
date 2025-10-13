@@ -1,0 +1,8 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:base/hills_low",
+		"tags": [
+			"antique_atlas:snow_hills_low"
+		]
+	}
+}

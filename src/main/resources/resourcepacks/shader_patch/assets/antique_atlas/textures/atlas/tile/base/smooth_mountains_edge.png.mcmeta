@@ -1,0 +1,11 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:mountains",
+			"antique_atlas:smooth_mountain_tiling"
+		],
+		"tilesTo": [
+			"#antique_atlas:smooth_mountain_tiling"
+		]
+	}
+}

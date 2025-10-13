@@ -18,12 +18,14 @@ public class AntiqueAtlasKeybindings {
 
 	public static void onClientTick(MinecraftClient client) {
 		while (ATLAS_KEYMAPPING.wasPressed()) {
-			if (client.currentScreen == null) {
-				AtlasScreen screen = new AtlasScreen();
-				screen.init();
-				screen.prepareToOpen();
-				screen.tick();
-				client.setScreen(screen);
+			if (!AntiqueAtlas.CONFIG.requireItem || AntiqueAtlas.hasHandheldAtlas(client.player)) {
+				if (client.currentScreen == null) {
+					AtlasScreen screen = new AtlasScreen();
+					screen.init();
+					screen.prepareToOpen();
+					screen.tick();
+					client.setScreen(screen);
+				}
 			}
 		}
 	}

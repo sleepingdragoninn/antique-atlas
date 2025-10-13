@@ -1,0 +1,8 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:biome/woodland/forest/birch/old_growth/birch_tall",
+		"tags": [
+			"antique_atlas:hills_low"
+		]
+	}
+}

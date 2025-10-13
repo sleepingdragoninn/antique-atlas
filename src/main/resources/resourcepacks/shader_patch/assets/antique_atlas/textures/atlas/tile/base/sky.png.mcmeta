@@ -1,0 +1,11 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:sky"
+		],
+		"tilesTo": [
+			"#antique_atlas:sky",
+			"#antique_atlas:floating_islands"
+		]
+	}
+}

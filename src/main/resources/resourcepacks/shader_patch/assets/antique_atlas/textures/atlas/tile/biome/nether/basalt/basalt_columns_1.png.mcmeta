@@ -1,0 +1,10 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:basalt_columns"
+		],
+		"tilesTo": [
+			"#antique_atlas:basalt_columns"
+		]
+	}
+}

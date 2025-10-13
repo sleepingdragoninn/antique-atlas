@@ -1,0 +1,13 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:grass"
+		],
+		"tilesTo": [
+			"#antique_atlas:grass",
+			"#antique_atlas:grass_hills_low",
+			"#antique_atlas:grass_hills",
+			"#antique_atlas:grass_cliffs"
+		]
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"antique_atlas:tiling": {
+		"tags": [
+			"antique_atlas:small_land_structures",
+			"antique_atlas:village_path",
+			"antique_atlas:village_path_horizontal"
+		],
+		"tilesTo": [
+			"#antique_atlas:village_path_horizontal",
+			"#antique_atlas:village_path_crossroads",
+			"#antique_atlas:village_path_accessible"
+		]
+	}
+}

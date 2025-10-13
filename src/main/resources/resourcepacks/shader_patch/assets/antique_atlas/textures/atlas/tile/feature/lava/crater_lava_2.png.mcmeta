@@ -1,0 +1,5 @@
+{
+	"antique_atlas:tiling": {
+		"parent": "antique_atlas:feature/lava/crater_lava_1"
+	}
+}

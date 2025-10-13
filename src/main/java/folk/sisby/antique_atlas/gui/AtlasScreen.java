@@ -505,7 +505,7 @@ public class AtlasScreen extends Component {
 	private void updateScaleBookmark() {
 		int tileSizeBlocks = (tileChunks * 16 * 16) / tilePixels;
 		int defaultTileSizeBlocks = 16;
-		int rulerSizeBlocks = (int)(tileSizeBlocks * getEffectiveScale());
+		int rulerSizeBlocks = (int)(tileSizeBlocks / getEffectiveScale());
 		resetScaleBookmark.setLabel(Text.literal(
 			rulerSizeBlocks == 16 | rulerSizeBlocks >= 32 ? "%dc".formatted(rulerSizeBlocks / 16) : "%db".formatted(rulerSizeBlocks)).formatted(
 			tileSizeBlocks < defaultTileSizeBlocks ? Formatting.DARK_RED : tileSizeBlocks == defaultTileSizeBlocks ? Formatting.BLACK : Formatting.DARK_BLUE

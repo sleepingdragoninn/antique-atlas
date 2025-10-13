@@ -18,6 +18,9 @@ import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -65,6 +68,16 @@ public class AntiqueAtlas implements ClientModInitializer {
 
 	public static boolean isHandheldAtlas(ItemStack stack) {
 		return stack.isOf(Items.BOOK) && ATLAS_NAMES.stream().anyMatch(n -> stack.getName().getString().contains(n));
+	}
+
+	public static boolean hasHandheldAtlas(PlayerEntity player) {
+		if (isHandheldAtlas(player.getOffHandStack())) return true;
+		for (ItemStack itemStack : player.getInventory().main) {
+			if (isHandheldAtlas(itemStack)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

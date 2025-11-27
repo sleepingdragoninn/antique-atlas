@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class AtlasScreen extends Component {
 	public static final Identifier BOOK = AntiqueAtlas.id("textures/gui/book.png");
@@ -74,20 +75,20 @@ public class AtlasScreen extends Component {
 	public static final Identifier ICON_DELETE_MARKER = AntiqueAtlas.id("textures/gui/icons/del_marker.png");
 	public static final Identifier ICON_SHOW_MARKERS = AntiqueAtlas.id("textures/gui/icons/show_markers.png");
 	public static final Identifier ICON_HIDE_MARKERS = AntiqueAtlas.id("textures/gui/icons/hide_markers.png");
-	private static final Text TEXT_ADD_MARKER = Text.translatable("gui.antique_atlas.addMarker");
-	private static final Text TEXT_ADD_MARKER_HERE = Text.translatable("gui.antique_atlas.addMarkerHere");
+	public static final Text TEXT_ADD_MARKER = Text.translatable("gui.antique_atlas.addMarker");
+	public static final Text TEXT_ADD_MARKER_HERE = Text.translatable("gui.antique_atlas.addMarkerHere");
 
 	public static final int MAP_BORDER_WIDTH = 17;
 	public static final int MAP_BORDER_HEIGHT = 11;
 	public static final float PLAYER_ROTATION_STEPS = 16;
 	public static final int PLAYER_ICON_WIDTH = 7;
 	public static final int PLAYER_ICON_HEIGHT = 8;
-	private static final int BOOKMARK_SPACING = 2;
+	public static final int BOOKMARK_SPACING = 2;
 	public static final int MARKER_SIZE = 32;
 	/**
 	 * How much the map view is offset, in blocks, per click (or per tick).
 	 */
-	private static final int NAVIGATE_STEP = 24;
+	public static final int NAVIGATE_STEP = 24;
 
 	public static final State<AtlasScreen> NORMAL = new ToggleState<>();
 	public static final State<AtlasScreen> PLACING_MARKER = new ToggleState<>(s -> s.addMarkerBookmark);
@@ -101,60 +102,65 @@ public class AtlasScreen extends Component {
 		s.markerVisibilityBookmark.setIconTexture(ICON_HIDE_MARKERS);
 	});
 
-	private final int bookWidth;
-	private final int bookHeight;
-	private final int mapWidth;
-	private final int mapHeight;
-	private final boolean fullscreen;
+	public final int bookWidth;
+	public final int bookHeight;
+	public final int mapWidth;
+	public final int mapHeight;
+	public final boolean fullscreen;
 
 	/**
 	 * Button for placing a marker at current position, local to this Atlas instance.
 	 */
-	private final BookmarkButton addMarkerBookmark;
+	public final BookmarkButton addMarkerBookmark;
 	/**
 	 * Button for deleting local markers.
 	 */
-	private final BookmarkButton deleteMarkerBookmark;
+	public final BookmarkButton deleteMarkerBookmark;
 	/**
 	 * Button for showing/hiding all markers.
 	 */
-	private final BookmarkButton markerVisibilityBookmark;
+	public final BookmarkButton markerVisibilityBookmark;
 	/**
 	 * Button for displaying the scale, and setting the scale to 1 chunk / 1 tile / 16px.
 	 */
-	private final TextBookmarkButton resetScaleBookmark;
+	public final TextBookmarkButton resetScaleBookmark;
 	/**
 	 * Button for restoring player's position at the center of the Atlas.
 	 */
-	private final BookmarkButton playerBookmark;
-	private final ScrollBoxComponent markerScrollBox = new ScrollBoxComponent(true, BookmarkButton.HEIGHT + BOOKMARK_SPACING);
-	private final MarkerModal markerModal = new MarkerModal();
-	private final BlinkingMarkerComponent markerCursor = new BlinkingMarkerComponent();
-	private final CursorComponent eraser = new CursorComponent();
+	public final BookmarkButton playerBookmark;
+	public final ScrollBoxComponent markerScrollBox = new ScrollBoxComponent(true, BookmarkButton.HEIGHT + BOOKMARK_SPACING);
+	public final MarkerModal markerModal = new MarkerModal();
+	public final BlinkingMarkerComponent markerCursor = new BlinkingMarkerComponent();
+	public final CursorComponent eraser = new CursorComponent();
 
-	private final List<BookmarkButton> markerBookmarks = new ArrayList<>();
-	private final ScreenState<AtlasScreen> state = new ScreenState<>((oldState, newState) -> AntiqueAtlas.lastState.switchTo(newState, this));
-	private Landmark hoveredLandmark = null;
-	private PlayerSummary hoveredFriend = null;
+	public final List<BookmarkButton> markerBookmarks = new ArrayList<>();
+	public final ScreenState<AtlasScreen> state = new ScreenState<>((oldState, newState) -> AntiqueAtlas.lastState.switchTo(newState, this));
+	public Landmark hoveredLandmark = null;
+	public PlayerSummary hoveredFriend = null;
 	/**
 	 * The button which is currently being pressed. Used for continuous
 	 * navigation using the arrow buttons. Also used to prevent immediate
 	 * canceling of placing marker.
 	 */
-	private ButtonComponent selectedButton = null;
-	private PlayerEntity player;
-	private WorldAtlasData worldAtlasData;
-	private Integer targetOffsetX, targetOffsetY;
-	private boolean isMouseOverMap = false;
+	public ButtonComponent selectedButton = null;
+	public PlayerEntity player;
+	public WorldAtlasData worldAtlasData;
+	public Integer targetOffsetX, targetOffsetY;
+	public boolean isMouseOverMap = false;
 
-	private boolean isDragging = false;
+	public boolean isDragging = false;
 
-	private static double mapOffsetX;
-	private static double mapOffsetY;
+	public static double mapOffsetX;
+	public static double mapOffsetY;
 
-	private static int tilePixels = 16;
-	private static int tileChunks = 1;
-	private int mapScale;
+	public static int tilePixels = 16;
+	public static int tileChunks = 1;
+	public int mapScale;
+	private static Map<Identifier, AtlasOverlayRenderer> overlays;
+
+	public static void registerOverlay(Identifier id, AtlasOverlayRenderer overlay) {
+		overlays.put(id, overlay);
+	}
 
 	public AtlasScreen() {
 		fullscreen = AntiqueAtlas.CONFIG.fullscreen;
@@ -244,7 +250,7 @@ public class AtlasScreen extends Component {
 		state.switchTo(AntiqueAtlas.lastState.is(HIDING_MARKERS) ? HIDING_MARKERS : NORMAL, this);
 	}
 
-	private int getMapScale() {
+	public int getMapScale() {
 		return switch (AntiqueAtlas.CONFIG.mapScale) {
 			case -2 -> Math.max(1, (int) Math.floor(MinecraftClient.getInstance().getWindow().getScaleFactor() / 2.0));
 			case -1 -> Math.max(1, (int) Math.ceil(MinecraftClient.getInstance().getWindow().getScaleFactor() / 2.0));
@@ -253,7 +259,7 @@ public class AtlasScreen extends Component {
 		};
 	}
 
-	private float getEffectiveScale(){
+	public float getEffectiveScale(){
 		return (float)(mapScale/MinecraftClient.getInstance().getWindow().getScaleFactor());
 	}
 
@@ -396,7 +402,7 @@ public class AtlasScreen extends Component {
 		return true;
 	}
 
-	private double getPixelsPerBlock() {
+	public double getPixelsPerBlock() {
 		return (double) getEffectiveScale() * ((double) tilePixels) / ((double) tileChunks * 16.0);
 	}
 
@@ -471,42 +477,42 @@ public class AtlasScreen extends Component {
 		}
 	}
 
-	private void updateAtlasData() {
+	public void updateAtlasData() {
 		if (MinecraftClient.getInstance().world != null) {
 			worldAtlasData = WorldAtlasData.getOrCreate(MinecraftClient.getInstance().world);
 		}
 	}
 
-	private void navigateMap(int dx, int dy) {
+	public void navigateMap(int dx, int dy) {
 		mapOffsetX += dx;
 		mapOffsetY += dy;
 		clearTargetBookmarks(null);
 	}
 
-	private void softNavigateMap(int dx, int dy) {
+	public void softNavigateMap(int dx, int dy) {
 		mapOffsetX += dx;
 		mapOffsetY += dy;
 	}
 
-	private void setMapPosition(int x, int z) {
+	public void setMapPosition(int x, int z) {
 		mapOffsetX = (int) (-x * getPixelsPerBlock());
 		mapOffsetY = (int) (-z * getPixelsPerBlock());
 	}
 
-	private void setTargetPosition(ColumnPos pos) {
+	public void setTargetPosition(ColumnPos pos) {
 		targetOffsetX = pos.x();
 		targetOffsetY = pos.z();
 	}
 
-	private double getTargetPositionX() {
+	public double getTargetPositionX() {
 		return -targetOffsetX * getPixelsPerBlock();
 	}
 
-	private double getTargetPositionY() {
+	public double getTargetPositionY() {
 		return -targetOffsetY * getPixelsPerBlock();
 	}
 
-	private void updateScaleBookmark() {
+	public void updateScaleBookmark() {
 		int tileSizeBlocks = (tileChunks * 16 * 16) / tilePixels;
 		int defaultTileSizeBlocks = 16;
 		int rulerSizeBlocks = (int)(tileSizeBlocks / getEffectiveScale());
@@ -516,7 +522,7 @@ public class AtlasScreen extends Component {
 		));
 	}
 
-	private boolean zoomIn(boolean playSound, int maxTilePixels) {
+	public boolean zoomIn(boolean playSound, int maxTilePixels) {
 		if (tileChunks == 1) {
 			if (tilePixels >= maxTilePixels) return false;
 			tilePixels <<= 1;
@@ -531,7 +537,7 @@ public class AtlasScreen extends Component {
 		return true;
 	}
 
-	private boolean zoomOut(boolean playSound, int maxTileChunks) {
+	public boolean zoomOut(boolean playSound, int maxTileChunks) {
 		if (tilePixels == 16) {
 			if (tileChunks >= maxTileChunks) return false;
 			tileChunks <<= 1;
@@ -546,7 +552,7 @@ public class AtlasScreen extends Component {
 		return true;
 	}
 
-	private void resetZoom() {
+	public void resetZoom() {
 		if (zoomIn(true, 8)) {
 			while (zoomIn(false, 8)) ;
 		} else if (zoomOut(true, 1)) {
@@ -611,6 +617,10 @@ public class AtlasScreen extends Component {
 		float markerScale = (float) (((double) tilePixels * mapScale / (guiScale * 16.0)));
 
 		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
+
+		for (Identifier id : overlays.keySet()) {
+			overlays.get(id).render(new AtlasOverlayRenderer.AtlasRenderContext(this, context, mouseX, mouseY, markerScale, friends));
+		}
 
 		hoveredLandmark = null;
 		hoveredFriend = null;
@@ -735,7 +745,7 @@ public class AtlasScreen extends Component {
 		matrices.pop();
 	}
 
-	private void renderPlayer(DrawContext context, PlayerSummary player, float iconScale, boolean hovering, boolean self) {
+	public void renderPlayer(DrawContext context, PlayerSummary player, float iconScale, boolean hovering, boolean self) {
 		double playerOffsetX = worldXToScreenX(player.pos().getX()) - getGuiX();
 		double playerOffsetY = worldZToScreenY(player.pos().getZ()) - getGuiY();
 
@@ -755,7 +765,7 @@ public class AtlasScreen extends Component {
 		}
 	}
 
-	private void renderMarker(DrawContext context, Landmark landmark, MarkerTexture texture, boolean editable, boolean hovering, float markerScale) {
+	public void renderMarker(DrawContext context, Landmark landmark, MarkerTexture texture, boolean editable, boolean hovering, float markerScale) {
 		double markerX = worldXToScreenX(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX()) - getGuiX();
 		double markerY = worldZToScreenY(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ()) - getGuiY();
 
@@ -771,7 +781,7 @@ public class AtlasScreen extends Component {
 		texture.draw(context, markerX, markerY, markerScale, tileChunks, color == null ? null : ColorUtil.componentsFromRgb(color), tint, alpha);
 
 		if (hovering && landmark.get(LandmarkComponentTypes.NAME) != null && !landmark.get(LandmarkComponentTypes.NAME).getString().isEmpty()) {
-			context.drawTooltip(textRenderer, landmark.get(LandmarkComponentTypes.NAME), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
+			context.drawTooltip(textRenderer, Stream.concat(Stream.of(landmark.get(LandmarkComponentTypes.NAME)), landmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
 		}
 	}
 
@@ -787,19 +797,19 @@ public class AtlasScreen extends Component {
 		removeChild(markerCursor);
 	}
 
-	private int screenXToWorldX(double screenX) {
+	public int screenXToWorldX(double screenX) {
 		return screenXToWorldX(screenX, getGuiX(), mapOffsetX, mapWidth, getPixelsPerBlock());
 	}
 
-	private int screenYToWorldZ(double screenY) {
+	public int screenYToWorldZ(double screenY) {
 		return screenYToWorldZ(screenY, getGuiY(), mapOffsetY, mapHeight, getPixelsPerBlock());
 	}
 
-	private double worldXToScreenX(double x) {
+	public double worldXToScreenX(double x) {
 		return worldXToScreenX(x, getGuiX(), mapOffsetX, mapWidth, getPixelsPerBlock());
 	}
 
-	private double worldZToScreenY(double z) {
+	public double worldZToScreenY(double z) {
 		return worldZToScreenY(z, getGuiY(), mapOffsetY, mapHeight, getPixelsPerBlock());
 	}
 
@@ -824,7 +834,7 @@ public class AtlasScreen extends Component {
 	}
 
 	@Override
-	protected void onChildClosed(Component child) {
+	public void onChildClosed(Component child) {
 		if (child.equals(markerModal)) {
 			removeChild(markerCursor);
 		}

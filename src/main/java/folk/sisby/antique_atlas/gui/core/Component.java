@@ -17,8 +17,8 @@ import java.util.function.Predicate;
  * parent component.
  */
 public class Component extends Screen {
-	private Component parent = null;
-	private final List<Component> children = new CopyOnWriteArrayList<>();
+	public Component parent = null;
+	public final List<Component> children = new CopyOnWriteArrayList<>();
 
 	/**
 	 * The component's own size.
@@ -33,12 +33,12 @@ public class Component extends Screen {
 	/**
 	 * If true, this GUI will not be rendered.
 	 */
-	private boolean isClipped = false;
+	public boolean isClipped = false;
 
 	/**
 	 * guiX and guiY are absolute coordinates on the screen.
 	 */
-	private int guiX = 0, guiY = 0;
+	public int guiX = 0, guiY = 0;
 
 	public Component() {
 		super(Text.literal("component"));
@@ -149,7 +149,7 @@ public class Component extends Screen {
 	 *
 	 * @return the child added.
 	 */
-	protected Component addChild(Component child) {
+	public Component addChild(Component child) {
 		doAddChild(null, child, null);
 		return child;
 	}
@@ -162,12 +162,12 @@ public class Component extends Screen {
 	 *
 	 * @return the child added.
 	 */
-	protected Component addChildBehind(Component behind, Component child) {
+	public Component addChildBehind(Component behind, Component child) {
 		doAddChild(null, child, behind);
 		return child;
 	}
 
-	private void doAddChild(Component inFrontOf, Component child, Component behind) {
+	public void doAddChild(Component inFrontOf, Component child, Component behind) {
 		if (child == null || children.contains(child) || parent == child) {
 			return;
 		}
@@ -193,7 +193,7 @@ public class Component extends Screen {
 	/**
 	 * @return the child removed.
 	 */
-	protected Component removeChild(Component child) {
+	public Component removeChild(Component child) {
 		if (child != null && children.contains(child)) {
 			child.parent = null;
 			children.remove(child);
@@ -431,22 +431,22 @@ public class Component extends Screen {
 	/**
 	 * Called when a child removes itself from this component.
 	 */
-	protected void onChildClosed(Component child) {
+	public void onChildClosed(Component child) {
 	}
 
 	/**
 	 * Draw a text string centered horizontally, using this GUI's font.
 	 */
-	protected void drawCentered(DrawContext context, Text text, int y, int color, boolean dropShadow) {
+	public void drawCentered(DrawContext context, Text text, int y, int color, boolean dropShadow) {
 		int length = this.textRenderer.getWidth(text);
 		context.drawText(textRenderer, text, (this.width - length) / 2, y, color, dropShadow);
 	}
 
-	protected double getMouseX() {
+	public double getMouseX() {
 		return MinecraftClient.getInstance().mouse.getX() * width / MinecraftClient.getInstance().getWindow().getWidth();
 	}
 
-	protected double getMouseY() {
+	public double getMouseY() {
 		return MinecraftClient.getInstance().mouse.getY() * height / MinecraftClient.getInstance().getWindow().getHeight();
 	}
 }

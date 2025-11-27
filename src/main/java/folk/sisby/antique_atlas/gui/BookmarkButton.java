@@ -3,9 +3,9 @@ package folk.sisby.antique_atlas.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.gui.core.ToggleButtonComponent;
+import folk.sisby.antique_atlas.util.ColorUtil;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,21 +24,21 @@ public class BookmarkButton extends ToggleButtonComponent {
 	protected final boolean left;
 	protected final Identifier backgroundTexture;
 
-	protected BookmarkButton(Identifier backgroundTexture, Text title, Identifier iconTexture, DyeColor backgroundTint, @Nullable DyeColor iconTint, int iconWidth, int iconHeight, boolean left) {
+	protected BookmarkButton(Identifier backgroundTexture, Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
 		super(false);
 		this.backgroundTexture = backgroundTexture;
 		this.title = title;
 		this.iconTexture = iconTexture;
-		this.backgroundTint = backgroundTint == null ? null : backgroundTint.getColorComponents();
+		this.backgroundTint = backgroundTint == null ? null : ColorUtil.componentsFromRgb(backgroundTint);
 		this.iconWidth = iconWidth;
 		this.iconHeight = iconHeight;
-		this.iconTint = iconTint == null ? null : iconTint.getColorComponents();
+		this.iconTint = iconTint == null ? null : ColorUtil.componentsFromRgb(iconTint);
 		this.left = left;
 		setTitle(title);
 		setSize(WIDTH, HEIGHT);
 	}
 
-	BookmarkButton(Text title, Identifier iconTexture, DyeColor backgroundTint, @Nullable DyeColor iconTint, int iconWidth, int iconHeight, boolean left) {
+	BookmarkButton(Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
 		this(left ? TEXTURE_LEFT : TEXTURE_RIGHT, title, iconTexture, backgroundTint, iconTint, iconWidth, iconHeight, left);
 	}
 

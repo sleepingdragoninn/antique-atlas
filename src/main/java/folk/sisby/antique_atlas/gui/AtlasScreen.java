@@ -3,7 +3,6 @@ package folk.sisby.antique_atlas.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.AntiqueAtlasKeybindings;
-import folk.sisby.antique_atlas.AtlasStructureLandmark;
 import folk.sisby.antique_atlas.MarkerTexture;
 import folk.sisby.antique_atlas.TileTexture;
 import folk.sisby.antique_atlas.WorldAtlasData;
@@ -17,6 +16,7 @@ import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
 import folk.sisby.antique_atlas.gui.tiles.SubTile;
 import folk.sisby.antique_atlas.gui.tiles.SubTileQuartet;
 import folk.sisby.antique_atlas.gui.tiles.TileRenderIterator;
+import folk.sisby.antique_atlas.util.ColorUtil;
 import folk.sisby.antique_atlas.util.DrawBatcher;
 import folk.sisby.antique_atlas.util.DrawUtil;
 import folk.sisby.antique_atlas.util.MathUtil;
@@ -24,6 +24,7 @@ import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
+import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -130,7 +131,7 @@ public class AtlasScreen extends Component {
 
 	private final List<BookmarkButton> markerBookmarks = new ArrayList<>();
 	private final ScreenState<AtlasScreen> state = new ScreenState<>((oldState, newState) -> AntiqueAtlas.lastState.switchTo(newState, this));
-	private Landmark<?> hoveredLandmark = null;
+	private Landmark hoveredLandmark = null;
 	private PlayerSummary hoveredFriend = null;
 	/**
 	 * The button which is currently being pressed. Used for continuous
@@ -166,7 +167,7 @@ public class AtlasScreen extends Component {
 		mapHeight = bookHeight - MAP_BORDER_HEIGHT * 2;
 		mapScale = getMapScale();
 
-		playerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.followPlayer"), AntiqueAtlas.id("textures/gui/player.png"), DyeColor.GRAY, null, 7, 8, false);
+		playerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.followPlayer"), AntiqueAtlas.id("textures/gui/player.png"), DyeColor.GRAY.getFireworkColor(), null, 7, 8, false);
 		addChild(playerBookmark).offsetGuiCoords(bookWidth - 10, bookHeight - MAP_BORDER_HEIGHT - BookmarkButton.HEIGHT - 10);
 		playerBookmark.addListener(b -> {
 			selectedButton = playerBookmark;
@@ -174,7 +175,7 @@ public class AtlasScreen extends Component {
 			playerBookmark.setSelected(true);
 		});
 
-		addMarkerBookmark = new BookmarkButton(TEXT_ADD_MARKER, ICON_ADD_MARKER, DyeColor.RED, null, 16, 16, false);
+		addMarkerBookmark = new BookmarkButton(TEXT_ADD_MARKER, ICON_ADD_MARKER, DyeColor.RED.getFireworkColor(), null, 16, 16, false);
 		addChild(addMarkerBookmark).offsetGuiCoords(bookWidth - 10, 14);
 		addMarkerBookmark.addListener(button -> {
 			if (state.is(PLACING_MARKER)) {
@@ -200,7 +201,7 @@ public class AtlasScreen extends Component {
 				}
 			}
 		});
-		deleteMarkerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.delMarker"), ICON_DELETE_MARKER, DyeColor.YELLOW, null, 16, 16, false);
+		deleteMarkerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.delMarker"), ICON_DELETE_MARKER, DyeColor.YELLOW.getFireworkColor(), null, 16, 16, false);
 		addChild(deleteMarkerBookmark).offsetGuiCoords(bookWidth - 10, 33);
 		deleteMarkerBookmark.addListener(button -> {
 			if (state.is(DELETING_MARKER)) {
@@ -211,7 +212,7 @@ public class AtlasScreen extends Component {
 				state.switchTo(DELETING_MARKER, this);
 			}
 		});
-		markerVisibilityBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.hideMarkers"), ICON_HIDE_MARKERS, DyeColor.GREEN, null, 16, 16, false);
+		markerVisibilityBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.hideMarkers"), ICON_HIDE_MARKERS, DyeColor.GREEN.getFireworkColor(), null, 16, 16, false);
 		addChild(markerVisibilityBookmark).offsetGuiCoords(bookWidth - 10, 52);
 		markerVisibilityBookmark.addListener(button -> {
 			selectedButton = null;
@@ -287,12 +288,12 @@ public class AtlasScreen extends Component {
 		if (worldAtlasData == null) return;
 
 		worldAtlasData.getEditableLandmarks().forEach((landmark, texture) -> {
-			BookmarkButton bookmark = new MarkerBookmarkButton(landmark.name(), texture, landmark.color(), true);
+			BookmarkButton bookmark = new MarkerBookmarkButton(landmark.getOrDefault(LandmarkComponentTypes.NAME, Text.literal(landmark.id().getPath())), texture, landmark.getOrDefault(LandmarkComponentTypes.COLOR, 0xFFFFFF), true);
 
 			bookmark.addListener(button -> {
 				if (state.is(NORMAL)) {
 					clearTargetBookmarks(bookmark);
-					setTargetPosition(new ColumnPos(landmark.pos().getX(), landmark.pos().getZ()));
+					setTargetPosition(new ColumnPos(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX(), landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ()));
 				} else if (state.is(DELETING_MARKER)) {
 					if (!worldAtlasData.deleteLandmark(player.getEntityWorld(), landmark)) return;
 					updateBookmarkerList();
@@ -614,11 +615,11 @@ public class AtlasScreen extends Component {
 		if (!state.is(HIDING_MARKERS)) {
 			if (isMouseOverMap) {
 				double bestDistance = Double.MAX_VALUE;
-				for (Map.Entry<Landmark<?>, MarkerTexture> entry : worldAtlasData.getAllMarkers(tileChunks).entrySet()) {
-					Landmark<?> landmark = entry.getKey();
+				for (Map.Entry<Landmark, MarkerTexture> entry : worldAtlasData.getAllMarkers(tileChunks).entrySet()) {
+					Landmark landmark = entry.getKey();
 					MarkerTexture texture = entry.getValue();
-					double markerX = worldXToScreenX(landmark.pos().getX());
-					double markerY = worldZToScreenY(landmark.pos().getZ());
+					double markerX = worldXToScreenX(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX());
+					double markerY = worldZToScreenY(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ());
 					Vector2d markerCenter = texture.getCenter(tileChunks);
 					double squaredDistance = Vector2d.distanceSquared(markerX + markerScale * markerCenter.x, markerY + markerScale * markerCenter.y, mouseX, mouseY);
 					if (squaredDistance > 0 && squaredDistance < bestDistance && squaredDistance < (texture.getSquaredSize(tileChunks) * markerScale * markerScale) / 4.0) {
@@ -688,8 +689,7 @@ public class AtlasScreen extends Component {
 			context.drawText(textRenderer, Text.literal("%d,%d (%d,%d)".formatted(pos.x, pos.z, x, z)), getGuiX(), getGuiY() - 12, 0xFFFFFFFF, true);
 			if (hoveredLandmark != null) {
 				MarkerTexture texture = worldAtlasData.getMarkerTexture(hoveredLandmark);
-				context.drawText(textRenderer, Text.literal(hoveredLandmark.type().id().toString()), getGuiX() + bookWidth - textRenderer.getWidth(Text.literal(hoveredLandmark.type().id().toString())), getGuiY() - 12, 0xFFFFFFFF, true);
-				if (hoveredLandmark instanceof AtlasStructureLandmark sLandmark) context.drawText(textRenderer, Text.literal(sLandmark.displayId().toString()), getGuiX(), getGuiY() + bookHeight, 0xFFFFFFFF, true);
+				context.drawText(textRenderer, Text.literal(hoveredLandmark.id().toString()), getGuiX() + bookWidth - textRenderer.getWidth(Text.literal(hoveredLandmark.id().toString())), getGuiY() - 12, 0xFFFFFFFF, true);
 				if (texture != null) context.drawText(textRenderer, Text.literal(texture.displayId()), getGuiX() + bookWidth - textRenderer.getWidth(Text.literal(texture.displayId())), getGuiY() + bookHeight, 0xFFFFFFFF, true);
 			} else {
 				TileTexture texture = worldAtlasData.getTile(pos);
@@ -753,9 +753,9 @@ public class AtlasScreen extends Component {
 		}
 	}
 
-	private void renderMarker(DrawContext context, Landmark<?> landmark, MarkerTexture texture, boolean editable, boolean hovering, float markerScale) {
-		double markerX = worldXToScreenX(landmark.pos().getX()) - getGuiX();
-		double markerY = worldZToScreenY(landmark.pos().getZ()) - getGuiY();
+	private void renderMarker(DrawContext context, Landmark landmark, MarkerTexture texture, boolean editable, boolean hovering, float markerScale) {
+		double markerX = worldXToScreenX(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX()) - getGuiX();
+		double markerY = worldZToScreenY(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ()) - getGuiY();
 
 		float tint = hovering ? 0.8f : 1.0f;
 		float alpha = state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !editable) || (editable && markerX <= MAP_BORDER_WIDTH || markerX >= mapWidth + MAP_BORDER_WIDTH || markerY <= MAP_BORDER_HEIGHT || markerY >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
@@ -765,11 +765,11 @@ public class AtlasScreen extends Component {
 			markerY = MathHelper.clamp(markerY, MAP_BORDER_HEIGHT, mapHeight + MAP_BORDER_HEIGHT);
 		}
 
-		DyeColor color = landmark.color();
-		texture.draw(context, markerX, markerY, markerScale, tileChunks, color == null ? null : color.getColorComponents(), tint, alpha);
+		Integer color = landmark.get(LandmarkComponentTypes.COLOR);
+		texture.draw(context, markerX, markerY, markerScale, tileChunks, color == null ? null : ColorUtil.componentsFromRgb(color), tint, alpha);
 
-		if (hovering && landmark.name() != null && !landmark.name().getString().isEmpty()) {
-			context.drawTooltip(textRenderer, landmark.name(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
+		if (hovering && landmark.get(LandmarkComponentTypes.NAME) != null && !landmark.get(LandmarkComponentTypes.NAME).getString().isEmpty()) {
+			context.drawTooltip(textRenderer, landmark.get(LandmarkComponentTypes.NAME), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
 		}
 	}
 

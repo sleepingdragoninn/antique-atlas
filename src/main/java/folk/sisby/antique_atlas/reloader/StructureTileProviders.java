@@ -4,11 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import folk.sisby.antique_atlas.AntiqueAtlas;
-import folk.sisby.antique_atlas.AtlasStructureLandmark;
 import folk.sisby.antique_atlas.MarkerTexture;
 import folk.sisby.antique_atlas.StructureTileProvider;
 import folk.sisby.antique_atlas.TileTexture;
 import folk.sisby.surveyor.landmark.Landmark;
+import folk.sisby.surveyor.landmark.WorldLandmarks;
+import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.structure.JigsawPieceSummary;
 import folk.sisby.surveyor.structure.StructurePieceSummary;
 import folk.sisby.surveyor.structure.StructureStartSummary;
@@ -21,6 +22,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.resource.JsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.structure.pool.StructurePoolElementType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.profiler.Profiler;
@@ -120,17 +122,25 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		return outTiles;
 	}
 
-	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark<?>, MarkerTexture> outMarkers, World world, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary summary, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
+	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark, MarkerTexture> outMarkers, World world, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary summary, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
 		if (startMarkers.containsKey(key.getValue())) {
 			MarkerTexture texture = startMarkers.get(key.getValue());
-			outMarkers.put(new AtlasStructureLandmark(pos.getCenterAtY(0), ProviderType.START, key.getValue()), texture);
+			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
+				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.START.translation(key.getValue())))
+			), texture);
 		} else if (type != null && typeMarkers.containsKey(type.getValue())) {
 			MarkerTexture texture = typeMarkers.get(type.getValue());
-			outMarkers.put(new AtlasStructureLandmark(pos.getCenterAtY(0), ProviderType.TYPE, type.getValue()), texture);
+			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
+				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(key.getValue())))
+			), texture);
 		} else {
 			tagMarkers.entrySet().stream().filter(entry -> tags.contains(TagKey.of(RegistryKeys.STRUCTURE, entry.getKey()))).findFirst().ifPresent(entry ->
-				outMarkers.put(new AtlasStructureLandmark(pos.getCenterAtY(0), ProviderType.TAG, entry.getKey()), entry.getValue())
-			);
+				outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+					.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
+					.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TAG.translation(entry.getKey())))
+				), entry.getValue()));
 		}
 
 		if (startTiles.containsKey(key.getValue())) {

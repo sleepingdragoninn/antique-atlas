@@ -14,7 +14,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColumnPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class MarkerModal extends Component {
 		super.init();
 
 		addDrawableChild(btnDone = ButtonWidget.builder(Text.translatable("gui.done"), (button) -> {
-			((AtlasScreen) MinecraftClient.getInstance().currentScreen).getworldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new BlockPos(markerX, 0, markerZ));
+			((AtlasScreen) MinecraftClient.getInstance().currentScreen).getworldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
 			((AtlasScreen) MinecraftClient.getInstance().currentScreen).updateBookmarkerList();
 			ClientPlayerEntity player = MinecraftClient.getInstance().player;
 			world.playSound(player, player.getBlockPos(),

@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.MarkerTexture;
 import folk.sisby.antique_atlas.util.CodecUtil;
-import folk.sisby.surveyor.landmark.LandmarkType;
+import folk.sisby.surveyor.landmark.Landmark;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -42,12 +42,20 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 		return textures.getOrDefault(id, defaultTexture);
 	}
 
-	public MarkerTexture getLandmarkType(LandmarkType<?> type) {
-		return getOrDefault(new Identifier(type.id().getNamespace(), "landmark/type/" + type.id().getPath()));
+	public Identifier minimumId(Identifier id) {
+		while (get(id) == null && id.getPath().contains("/")) {
+			id = id.withPath(id.getPath().substring(0, id.getPath().lastIndexOf('/')));
+		}
+		return get(id) == null ? id.withPath("default") : id;
 	}
 
-	public MarkerTexture getLandmarkType(LandmarkType<?> type, String variant) {
-		return getOrDefault(new Identifier(type.id().getNamespace(), "landmark/type/" + type.id().getPath() + (variant == null ? "" : "/" + variant)));
+	public MarkerTexture fromLandmark(Landmark landmark) {
+		return getOrDefault(minimumId(landmark.id()));
+	}
+
+	public MarkerTexture fromLandmark(Landmark landmark, String variant) {
+		Identifier id = minimumId(landmark.id());
+		return getOrDefault(id.withPath(p -> p + "/" + variant), getOrDefault(id));
 	}
 
 	public Map<Identifier, MarkerTexture> asMap() {

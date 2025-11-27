@@ -171,12 +171,12 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 
 	public static @Nullable List<TileTexture> resolveTextureJson(Map<Identifier, TileTexture> textures, JsonElement textureJson) {
 		if (textureJson instanceof JsonPrimitive texturePrimitive && texturePrimitive.isString()) {
-			return List.of(getTexture(textures, new Identifier(texturePrimitive.getAsString())));
+			return List.of(getTexture(textures, Identifier.tryParse(texturePrimitive.getAsString())));
 		} else if (textureJson instanceof JsonArray textureArray) {
-			return textureArray.asList().stream().map(je -> getTexture(textures, new Identifier(je.getAsString()))).toList();
+			return textureArray.asList().stream().map(je -> getTexture(textures, Identifier.tryParse(je.getAsString()))).toList();
 		} else if (textureJson instanceof JsonObject textureObject && textureObject.keySet().stream().allMatch(k -> textureObject.get(k) instanceof JsonPrimitive jp && jp.isNumber())) {
 			Multiset<TileTexture> outList = HashMultiset.create();
-			textureObject.entrySet().forEach(e -> outList.add(getTexture(textures, new Identifier(e.getKey())), e.getValue().getAsInt()));
+			textureObject.entrySet().forEach(e -> outList.add(getTexture(textures, Identifier.tryParse(e.getKey())), e.getValue().getAsInt()));
 			return outList.stream().toList();
 		}
 		return null;
@@ -193,7 +193,7 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 			try {
 				JsonObject fileJson = fileEntry.getValue().getAsJsonObject();
 				if (fileJson.has("parent")) {
-					Identifier parentId = new Identifier(fileJson.getAsJsonPrimitive("parent").getAsString());
+					Identifier parentId = Identifier.tryParse(fileJson.getAsJsonPrimitive("parent").getAsString());
 					providerParents.put(fileId, parentId);
 					continue;
 				}

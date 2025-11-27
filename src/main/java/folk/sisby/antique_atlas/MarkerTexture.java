@@ -26,7 +26,7 @@ public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int
 	public static final MarkerTexture DEFAULT = centered(AntiqueAtlas.id("custom/point"), 32, 32, 0, 1, Integer.MAX_VALUE, true);
 
 	public Identifier keyId() {
-		return new Identifier(id.getNamespace(), id.getPath().substring("textures/atlas/marker/".length(), id.getPath().length() - 4));
+		return Identifier.of(id.getNamespace(), id.getPath().substring("textures/atlas/marker/".length(), id.getPath().length() - 4));
 	}
 
 	public String displayId() {

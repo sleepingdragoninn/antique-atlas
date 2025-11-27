@@ -42,7 +42,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 	protected Map<Identifier, TileTextures.TileTextureMeta> prepare(ResourceManager manager, Profiler profiler) {
 		Map<Identifier, TileTextureMeta> textureMeta = new HashMap<>();
 		for (Map.Entry<Identifier, Resource> e : manager.findResources("textures/atlas/tile", id -> id.getPath().endsWith(".png")).entrySet()) {
-			Identifier id = new Identifier(e.getKey().getNamespace(), e.getKey().getPath().substring("textures/atlas/tile/".length(), e.getKey().getPath().length() - ".png".length()));
+			Identifier id = Identifier.of(e.getKey().getNamespace(), e.getKey().getPath().substring("textures/atlas/tile/".length(), e.getKey().getPath().length() - ".png".length()));
 			try {
 				ResourceMetadata metadata = e.getValue().getMetadata();
 				metadata.decode(TileTextureMeta.METADATA).ifPresentOrElse(meta -> {

@@ -133,7 +133,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 			MarkerTexture texture = typeMarkers.get(type.getValue());
 			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
 				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
-				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(key.getValue())))
+				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(type.getValue())))
 			), texture);
 		} else {
 			tagMarkers.entrySet().stream().filter(entry -> tags.contains(TagKey.of(RegistryKeys.STRUCTURE, entry.getKey()))).findFirst().ifPresent(entry ->
@@ -185,7 +185,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 				Map<Identifier, StructureTileProvider> providerMap = pair.left();
 				Map<Identifier, MarkerTexture> markerMap = pair.right();
 				if (fileId.getPath().startsWith(providerType.prefix())) {
-					Identifier id = new Identifier(fileId.getNamespace(), fileId.getPath().substring(providerType.prefix().length()));
+					Identifier id = Identifier.of(fileId.getNamespace(), fileId.getPath().substring(providerType.prefix().length()));
 					try {
 						JsonObject fileJson = fileEntry.getValue().getAsJsonObject();
 						if (fileJson.has("textures")) {
@@ -200,7 +200,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 								JsonObject textureObject = textureJson.getAsJsonObject();
 								Map<StructureTileProvider.ChunkMatcher, List<TileTexture>> matchers = new HashMap<>();
 								for (String matcherKey : textureObject.keySet()) {
-									Identifier matcherId = matcherKey.contains(":") ? new Identifier(matcherKey) : AntiqueAtlas.id(matcherKey);
+									Identifier matcherId = AntiqueAtlas.id(matcherKey);
 									StructureTileProvider.ChunkMatcher matcher = StructureTileProvider.getChunkMatcher(matcherId);
 									if (matcher == null) throw new IllegalStateException("Matcher %s does not exist!".formatted(matcherId.toString()));
 									List<TileTexture> matcherTextures = resolveTextureJson(textures, textureObject.get(matcherKey));
@@ -218,7 +218,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 						}
 						if (fileJson.has("markers")) {
 							JsonElement markerJson = fileJson.get("markers");
-							Identifier markerTextureId = new Identifier(markerJson.getAsString());
+							Identifier markerTextureId = Identifier.tryParse(markerJson.getAsString());
 							MarkerTexture texture = MarkerTextures.getInstance().asMap().get(markerTextureId);
 							if (texture == null) throw new IllegalStateException("Marker texture %s does not exist!".formatted(markerTextureId));
 							AntiqueAtlas.CONFIG.structureMarkers.putIfAbsent(fileId.toString(), true);

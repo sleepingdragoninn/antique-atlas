@@ -19,8 +19,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -53,7 +51,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	);
 
 	public static Identifier id(String path) {
-		return path.contains(":") ? new Identifier(path) : new Identifier(ID, path);
+		return path.contains(":") ? Identifier.tryParse(path) : Identifier.of(ID, path);
 	}
 
 	public static ItemStack getHandheldAtlas() {

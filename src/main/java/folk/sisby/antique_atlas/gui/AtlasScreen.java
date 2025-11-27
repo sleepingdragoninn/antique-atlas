@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class AtlasScreen extends Component {
 	public static final Identifier BOOK = AntiqueAtlas.id("textures/gui/book.png");
@@ -769,7 +770,7 @@ public class AtlasScreen extends Component {
 		texture.draw(context, markerX, markerY, markerScale, tileChunks, color == null ? null : ColorUtil.componentsFromRgb(color), tint, alpha);
 
 		if (hovering && landmark.get(LandmarkComponentTypes.NAME) != null && !landmark.get(LandmarkComponentTypes.NAME).getString().isEmpty()) {
-			context.drawTooltip(textRenderer, landmark.get(LandmarkComponentTypes.NAME), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
+			context.drawTooltip(textRenderer, Stream.concat(Stream.of(landmark.get(LandmarkComponentTypes.NAME)), landmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
 		}
 	}
 

@@ -133,7 +133,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 			MarkerTexture texture = typeMarkers.get(type.getValue());
 			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
 				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
-				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(key.getValue())))
+				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(type.getValue())))
 			), texture);
 		} else {
 			tagMarkers.entrySet().stream().filter(entry -> tags.contains(TagKey.of(RegistryKeys.STRUCTURE, entry.getKey()))).findFirst().ifPresent(entry ->
@@ -218,7 +218,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 						}
 						if (fileJson.has("markers")) {
 							JsonElement markerJson = fileJson.get("markers");
-							Identifier markerTextureId = Identifier.of(markerJson.getAsString());
+							Identifier markerTextureId = Identifier.tryParse(markerJson.getAsString());
 							MarkerTexture texture = MarkerTextures.getInstance().asMap().get(markerTextureId);
 							if (texture == null) throw new IllegalStateException("Marker texture %s does not exist!".formatted(markerTextureId));
 							AntiqueAtlas.CONFIG.structureMarkers.putIfAbsent(fileId.toString(), true);

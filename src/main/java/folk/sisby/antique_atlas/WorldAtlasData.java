@@ -202,7 +202,7 @@ public class WorldAtlasData {
 		if (summary == null) return;
 		summary.put(world, Landmark.create(
 			SurveyorClient.getClientUuid(),
-			selectedTexture.keyId().withSuffixedPath("/" + pos.x() + "/" + pos.z()),
+			selectedTexture.keyId().withSuffixedPath("/" + color.getName() + "/" + pos.x() + "/" + pos.z()),
 			b -> b
 				.add(LandmarkComponentTypes.POS, new BlockPos(pos.x(), 0, pos.z()))
 				.add(LandmarkComponentTypes.COLOR, color.getFireworkColor())

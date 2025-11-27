@@ -15,7 +15,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColumnPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class MarkerModal extends Component {
 		super.init();
 
 		addDrawableChild(btnDone = ButtonWidget.builder(Text.translatable("gui.done"), (button) -> {
-			((AtlasScreen) MinecraftClient.getInstance().currentScreen).getworldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new BlockPos(markerX, 0, markerZ));
+			((AtlasScreen) MinecraftClient.getInstance().currentScreen).getworldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
 			((AtlasScreen) MinecraftClient.getInstance().currentScreen).updateBookmarkerList();
 			ClientPlayerEntity player = MinecraftClient.getInstance().player;
 			world.playSound(player, player.getBlockPos(),
@@ -104,7 +104,7 @@ public class MarkerModal extends Component {
 		for (MarkerTexture texture : MarkerTextures.getInstance().asMap().values()) {
 			if (!texture.keyId().getPath().startsWith("custom/")) continue;
 			if (selectedTexture == MarkerTexture.DEFAULT) selectedTexture = texture;
-			TexturePreviewButton<MarkerTexture> markerGui = new MarkerPreviewButton(texture, ColorUtil.getColorFromArgb(selectedColor.getEntityColor()));
+			TexturePreviewButton<MarkerTexture> markerGui = new MarkerPreviewButton(texture, ColorUtil.componentsFromRgb(selectedColor.getFireworkColor()));
 			textureRadioGroup.addButton(markerGui);
 			if (selectedTexture.equals(texture)) {
 				textureRadioGroup.setSelectedButton(markerGui);
@@ -127,12 +127,12 @@ public class MarkerModal extends Component {
 		colorRadioGroup.addListener(button -> {
 			selectedColor = button.getValue();
 			for (TexturePreviewButton<MarkerTexture> preview : textureRadioGroup) {
-				preview.reTint(ColorUtil.getColorFromArgb(selectedColor.getEntityColor()));
+				preview.reTint(ColorUtil.componentsFromRgb(selectedColor.getFireworkColor()));
 			}
 		});
 		int colorContentX = 0;
 		for (DyeColor color : DyeColor.values()) {
-			TexturePreviewButton<DyeColor> colorGui = new TexturePreviewButton<>(color, BookmarkButton.TEXTURE_LEFT, BookmarkButton.WIDTH, BookmarkButton.HEIGHT, BookmarkButton.HEIGHT, ColorUtil.getColorFromArgb(color.getEntityColor()));
+			TexturePreviewButton<DyeColor> colorGui = new TexturePreviewButton<>(color, BookmarkButton.TEXTURE_LEFT, BookmarkButton.WIDTH, BookmarkButton.HEIGHT, BookmarkButton.HEIGHT, ColorUtil.componentsFromRgb(color.getFireworkColor()));
 			colorRadioGroup.addButton(colorGui);
 			if (selectedColor.equals(color)) {
 				colorRadioGroup.setSelectedButton(colorGui);

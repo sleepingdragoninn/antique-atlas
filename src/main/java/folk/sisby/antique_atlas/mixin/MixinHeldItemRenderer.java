@@ -12,6 +12,7 @@ import folk.sisby.antique_atlas.util.MathUtil;
 import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
+import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -19,8 +20,8 @@ import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Rect2i;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
@@ -88,12 +89,12 @@ public class MixinHeldItemRenderer {
 
 		Rect2i mapArea = new Rect2i(bookX + MAP_BORDER_WIDTH, bookY + MAP_BORDER_HEIGHT, mapWidth, mapHeight);
 		worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
-			double markerX = worldXToScreenX(landmark.pos().getX(), bookX, mapOffsetX, mapWidth, 1) - bookX;
-			double markerY = worldZToScreenY(landmark.pos().getZ(), bookY, mapOffsetY, mapHeight, 1) - bookY;
-			DyeColor color = landmark.color();
+			double markerX = worldXToScreenX(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX(), bookX, mapOffsetX, mapWidth, 1) - bookX;
+			double markerY = worldZToScreenY(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ(), bookY, mapOffsetY, mapHeight, 1) - bookY;
+			Integer color = landmark.get(LandmarkComponentTypes.COLOR);
 			Vector2d markerPoint = new Vector2d(markerX, markerY);
 			float alpha = (float) MathHelper.clamp(MathUtil.innerDistanceToEdge(mapArea, markerPoint) / 32.0, 0, 1);
-			texture.draw(matrices, vertexConsumers, markerX, markerY, -0.02F, 1, tileChunks, color == null ? null : ColorUtil.getColorFromArgb(color.getEntityColor()), 1F, alpha, light);
+			texture.draw(matrices, vertexConsumers, markerX, markerY, -0.02F, 1, tileChunks, color == null ? null : ColorUtil.componentsFromRgb(color), 1F, alpha, light);
 		});
 
 		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();

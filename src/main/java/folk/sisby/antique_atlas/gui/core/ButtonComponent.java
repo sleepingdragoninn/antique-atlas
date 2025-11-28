@@ -19,7 +19,7 @@ public class ButtonComponent extends Component {
 
 	@Override
 	public boolean mouseClicked(double x, double y, int mouseButton) {
-		if (mouseButton == 0 && isMouseOver(x, y)) {
+		if (!isClipped && mouseButton == 0 && isMouseOver(x, y)) {
 			onClick();
 			return true;
 		}

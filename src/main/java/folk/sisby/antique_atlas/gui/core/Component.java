@@ -23,13 +23,13 @@ public class Component extends Screen {
 	/**
 	 * The component's own size.
 	 */
-	int properWidth;
-	int properHeight;
+	protected int properWidth;
+	protected int properHeight;
 	/**
 	 * The component's total calculated size, including itself and its children.
 	 */
-	int contentWidth;
-	int contentHeight;
+	protected int contentWidth;
+	protected int contentHeight;
 	/**
 	 * If true, this GUI will not be rendered.
 	 */
@@ -121,14 +121,14 @@ public class Component extends Screen {
 	/**
 	 * X coordinate relative to the parent's top left corner.
 	 */
-	int getRelativeX() {
+	public int getRelativeX() {
 		return parent == null ? guiX : (guiX - parent.guiX);
 	}
 
 	/**
 	 * Y coordinate relative to the parent's top left corner.
 	 */
-	int getRelativeY() {
+	public int getRelativeY() {
 		return parent == null ? guiY : (guiY - parent.guiY);
 	}
 
@@ -203,7 +203,7 @@ public class Component extends Screen {
 		return child;
 	}
 
-	void removeAllChildren() {
+	public void removeAllChildren() {
 		children.clear();
 		updateSize();
 	}
@@ -215,11 +215,11 @@ public class Component extends Screen {
 		return parent;
 	}
 
-	List<Component> getChildren() {
+	public List<Component> getChildren() {
 		return children;
 	}
 
-	boolean iterateInput(Predicate<Component> callMethod) {
+	public boolean iterateInput(Predicate<Component> callMethod) {
 		// Traverse children backwards, because the topmost child should be the
 		// first to process input:
 		ListIterator<Component> iter = children.listIterator(children.size());
@@ -233,7 +233,7 @@ public class Component extends Screen {
 		return false;
 	}
 
-	boolean iterateMouseInput(Predicate<Component> callMethod) {
+	protected boolean iterateMouseInput(Predicate<Component> callMethod) {
 		return iterateInput(callMethod);
 	}
 
@@ -380,11 +380,11 @@ public class Component extends Screen {
 	/**
 	 * If set to true, the parent of this GUI will not render it.
 	 */
-	void setClipped(boolean value) {
+	public void setClipped(boolean value) {
 		this.isClipped = value;
 	}
 
-	void updateSize() {
+	public void updateSize() {
 		int leftmost = Integer.MAX_VALUE;
 		int rightmost = Integer.MIN_VALUE;
 		int topmost = Integer.MAX_VALUE;

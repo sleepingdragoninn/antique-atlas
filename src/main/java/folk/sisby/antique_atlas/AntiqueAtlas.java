@@ -6,7 +6,9 @@ import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
 import folk.sisby.antique_atlas.reloader.TileTextures;
+import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.WorldSummary;
+import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.client.SurveyorClientEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -33,7 +35,10 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AntiqueAtlas implements ClientModInitializer {
 	public static final String ID = "antique_atlas";
@@ -78,6 +83,14 @@ public class AntiqueAtlas implements ClientModInitializer {
 		return false;
 	}
 
+	public static Map<UUID, PlayerSummary> getOrderedFriends() {
+		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
+		PlayerSummary playerSummary = friends.remove(SurveyorClient.getClientUuid());
+		Map<UUID, PlayerSummary> orderedFriends = new LinkedHashMap<>(friends);
+		if (playerSummary != null) orderedFriends.put(SurveyorClient.getClientUuid(), playerSummary);
+		return orderedFriends;
+	}
+
 	@Override
 	public void onInitializeClient() {
 		AntiqueAtlasKeybindings.init();
@@ -103,12 +116,6 @@ public class AntiqueAtlas implements ClientModInitializer {
 		WorldSummary.enableStructures();
 		WorldSummary.enableLandmarks();
 
-		FabricLoader.getInstance().getModContainer(ID).ifPresent(container -> {
-			ResourceManagerHelper.registerBuiltinResourcePack(asId("shader_patch"), container, "Shader Patch", ResourcePackActivationType.NORMAL);
-		});
-	}
-
-	public static Identifier asId(String path) {
-		return Identifier.of(ID, path);
+		FabricLoader.getInstance().getModContainer(ID).ifPresent(c -> ResourceManagerHelper.registerBuiltinResourcePack(id("shader_patch"), c, Text.of("Shader Patch"), ResourcePackActivationType.NORMAL));
 	}
 }

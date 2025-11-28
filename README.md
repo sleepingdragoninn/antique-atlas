@@ -87,7 +87,7 @@ dependencies {
 Please match the license of any addons to LGPLv3 if you're comfortable! It helps us improve the API.<br/>
 (LGPLv3 is a copyleft license, so this is required for any parts of your code directly adapted from AA4 code) 
 
-Try `AtlasScreen.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
+Try `AtlasRenderer.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
 
 ## Version History
 

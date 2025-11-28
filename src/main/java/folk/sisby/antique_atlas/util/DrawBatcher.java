@@ -23,6 +23,12 @@ public class DrawBatcher implements AutoCloseable {
 	private final float textureHeight;
 	private final int light;
 
+	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
+		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light)) {
+			batcher.add(x, y, z, width, height, u, v, regionWidth, regionHeight, argb);
+		}
+	}
+
 	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light) {
 		if (vertexConsumers == null) {
 			RenderSystem.setShaderTexture(0, texture);

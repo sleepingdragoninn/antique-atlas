@@ -63,11 +63,12 @@ public class MarkerModal extends Component {
 	}
 
 	@Override
-	public void init() {
+	public void init() { // set up in here because it scales to parent size
+		removeAllChildren();
 		super.init();
 
 		addDrawableChild(btnDone = ButtonWidget.builder(Text.translatable("gui.done"), (button) -> {
-			((AtlasScreen) MinecraftClient.getInstance().currentScreen).getworldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
+			((AtlasScreen) MinecraftClient.getInstance().currentScreen).worldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
 			((AtlasScreen) MinecraftClient.getInstance().currentScreen).updateBookmarkerList();
 			ClientPlayerEntity player = MinecraftClient.getInstance().player;
 			world.playSound(player, player.getBlockPos(),

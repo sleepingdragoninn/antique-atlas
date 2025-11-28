@@ -12,9 +12,7 @@ public class DrawUtil {
 		matrices.scale(scale, scale, 1.0F);
 		matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180 + rotation));
 		matrices.translate(-textureWidth / 2f, -textureHeight / 2f, 0f);
-		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light)) {
-			batcher.add(0, 0, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, argb);
-		}
+		DrawBatcher.drawSingle(matrices, vertexConsumers, texture, textureWidth, textureHeight, light, 0, 0, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, argb);
 		matrices.pop();
 	}
 }

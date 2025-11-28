@@ -55,7 +55,7 @@ public class ToggleButtonRadioGroup<B extends ToggleButtonComponent> implements 
 		listeners.add(listener);
 	}
 
-	private class ClickListener implements IButtonListener<B> {
+	public class ClickListener implements IButtonListener<B> {
 		@SuppressWarnings({"rawtypes", "unchecked"})
 		@Override
 		public void onClick(B button) {

@@ -76,6 +76,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public boolean isDragging = false;
 	public final boolean fullscreen;
 
+	private int sideButtonY = 14;
+
 	public AtlasScreen() {
 		fullscreen = AntiqueAtlas.CONFIG.fullscreen;
 		if (fullscreen) {
@@ -99,7 +101,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		});
 
 		addMarkerBookmark = new BookmarkButton(TEXT_ADD_MARKER, ICON_ADD_MARKER, DyeColor.RED.getFireworkColor(), null, 16, 16, false);
-		addChild(addMarkerBookmark).offsetGuiCoords(bookWidth - 10, 14);
+		addChild(addMarkerBookmark);
+		offsetSideButton(addMarkerBookmark);
 		addMarkerBookmark.addListener(button -> {
 			if (state.is(PLACING_MARKER)) {
 				selectedButton = null;
@@ -125,7 +128,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 		});
 		deleteMarkerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.delMarker"), ICON_DELETE_MARKER, DyeColor.YELLOW.getFireworkColor(), null, 16, 16, false);
-		addChild(deleteMarkerBookmark).offsetGuiCoords(bookWidth - 10, 33);
+		addChild(deleteMarkerBookmark);
+		offsetSideButton(deleteMarkerBookmark);
 		deleteMarkerBookmark.addListener(button -> {
 			if (state.is(DELETING_MARKER)) {
 				selectedButton = null;
@@ -136,7 +140,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 		});
 		markerVisibilityBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.hideMarkers"), ICON_HIDE_MARKERS, DyeColor.GREEN.getFireworkColor(), null, 16, 16, false);
-		addChild(markerVisibilityBookmark).offsetGuiCoords(bookWidth - 10, 52);
+		addChild(markerVisibilityBookmark);
+		offsetSideButton(markerVisibilityBookmark);
 		markerVisibilityBookmark.addListener(button -> {
 			selectedButton = null;
 			if (state.is(HIDING_MARKERS)) {
@@ -147,7 +152,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 		});
 		resetScaleBookmark = new TextBookmarkButton(Text.translatable("gui.antique_atlas.resetScale"), Text.of("1c"));
-		addChild(resetScaleBookmark).offsetGuiCoords(bookWidth - 10, 71);
+		addChild(resetScaleBookmark);
+		offsetSideButton(resetScaleBookmark);
 		resetScaleBookmark.addListener(button -> {
 			resetZoom();
 			resetScaleBookmark.setSelected(false);
@@ -728,5 +734,10 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	@Override
 	public WorldAtlasData worldAtlasData() {
 		return worldAtlasData;
+	}
+
+	public void offsetSideButton(Component component) {
+		component.offsetGuiCoords(bookWidth - 10, sideButtonY);
+		sideButtonY += component.getHeight() + 1;
 	}
 }

@@ -38,7 +38,7 @@ public class BookmarkButton extends ToggleButtonComponent {
 		setSize(WIDTH, HEIGHT);
 	}
 
-	BookmarkButton(Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
+	protected BookmarkButton(Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
 		this(left ? TEXTURE_LEFT : TEXTURE_RIGHT, title, iconTexture, backgroundTint, iconTint, iconWidth, iconHeight, left);
 	}
 

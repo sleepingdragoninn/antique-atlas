@@ -204,7 +204,7 @@ public interface AtlasRenderer {
 		}
 		int subTilePixels = tilePixels() / 2;
 		tileTextures.forEach((texture, subtiles) -> {
-			try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture.id(), 32, 48, light)) {
+			try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture.id(), 32, 48, light, true)) {
 				for (SubTile subtile : subtiles) {
 					int drawX = subtile.x * subTilePixels;
 					int drawY = subtile.y * subTilePixels;

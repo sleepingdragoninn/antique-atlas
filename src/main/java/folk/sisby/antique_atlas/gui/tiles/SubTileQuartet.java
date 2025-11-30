@@ -17,7 +17,7 @@ import java.util.Iterator;
  * @author Hunternif
  */
 public class SubTileQuartet implements Iterable<SubTile> {
-	private final SubTile[] array;
+	protected final SubTile[] array;
 
 	public SubTileQuartet(SubTile a, SubTile b, SubTile c, SubTile d) {
 		array = new SubTile[]{a, b, c, d};

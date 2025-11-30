@@ -4,11 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import folk.sisby.antique_atlas.AntiqueAtlas;
-import folk.sisby.antique_atlas.AtlasStructureLandmark;
 import folk.sisby.antique_atlas.MarkerTexture;
 import folk.sisby.antique_atlas.StructureTileProvider;
 import folk.sisby.antique_atlas.TileTexture;
 import folk.sisby.surveyor.landmark.Landmark;
+import folk.sisby.surveyor.landmark.WorldLandmarks;
+import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.structure.JigsawPieceSummary;
 import folk.sisby.surveyor.structure.StructurePieceSummary;
 import folk.sisby.surveyor.structure.StructureStartSummary;
@@ -21,6 +22,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.resource.JsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.structure.pool.StructurePoolElementType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.profiler.Profiler;
@@ -38,7 +40,7 @@ import java.util.Set;
 import static folk.sisby.antique_atlas.reloader.BiomeTileProviders.resolveTextureJson;
 
 public class StructureTileProviders extends JsonDataLoader implements IdentifiableResourceReloadListener {
-	private static final StructureTileProviders INSTANCE = new StructureTileProviders();
+	public static final StructureTileProviders INSTANCE = new StructureTileProviders();
 
 	public static final Identifier ID = AntiqueAtlas.id("structures");
 
@@ -46,18 +48,18 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		return INSTANCE;
 	}
 
-	private final Map<Identifier, StructureTileProvider> startTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> typeTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> tagTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> pieceTypeTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> pieceJigsawSingleTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> pieceJigsawFeatureTiles = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> startMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> typeMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> tagMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> pieceTypeMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> pieceJigsawSingleMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> pieceJigsawFeatureMarkers = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> startTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> typeTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> tagTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> pieceTypeTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> pieceJigsawSingleTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> pieceJigsawFeatureTiles = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> startMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> typeMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> tagMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> pieceTypeMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> pieceJigsawSingleMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> pieceJigsawFeatureMarkers = new HashMap<>();
 
 	public enum ProviderType {
 		START("start"),
@@ -67,7 +69,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		JIGSAW_SINGLE("piece/jigsaw/single"),
 		JIGSAW_FEATURE("piece/jigsaw/feature");
 
-		private final String key;
+		public final String key;
 
 		ProviderType(String key) {
 			this.key = key;
@@ -82,7 +84,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		}
 	}
 
-	private final Map<ProviderType, Pair<Map<Identifier, StructureTileProvider>, Map<Identifier, MarkerTexture>>> PROVIDER_MAPS = Map.of(
+	protected final Map<ProviderType, Pair<Map<Identifier, StructureTileProvider>, Map<Identifier, MarkerTexture>>> PROVIDER_MAPS = Map.of(
 		ProviderType.START, Pair.of(startTiles, startMarkers),
 		ProviderType.TYPE, Pair.of(typeTiles, typeMarkers),
 		ProviderType.TAG, Pair.of(tagTiles, tagMarkers),
@@ -95,7 +97,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		super(new Gson(), "atlas/structure");
 	}
 
-	public Map<ChunkPos, TileTexture> resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, World world) {
+	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, World world) {
 		if (piece instanceof JigsawPieceSummary jigsawPiece) {
 			if (pieceJigsawSingleTiles.containsKey(jigsawPiece.getId())) {
 				StructureTileProvider provider = (jigsawPiece.getElementType() == StructurePoolElementType.FEATURE_POOL_ELEMENT ? pieceJigsawFeatureTiles : pieceJigsawSingleTiles).get(jigsawPiece.getId());
@@ -104,7 +106,6 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 					outTiles.put(pos, texture);
 					structureProviders.put(pos, provider);
 				});
-				return outTiles;
 			}
 		} else {
 			Identifier pieceTypeId = Registries.STRUCTURE_PIECE.getId(piece.getType());
@@ -117,20 +118,27 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 				});
 			}
 		}
-		return outTiles;
 	}
 
-	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark<?>, MarkerTexture> outMarkers, World world, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary summary, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
+	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark, MarkerTexture> outMarkers, World world, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary summary, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
 		if (startMarkers.containsKey(key.getValue())) {
 			MarkerTexture texture = startMarkers.get(key.getValue());
-			outMarkers.put(new AtlasStructureLandmark(pos.getCenterAtY(0), ProviderType.START, key.getValue()), texture);
+			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
+				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.START.translation(key.getValue())))
+			), texture);
 		} else if (type != null && typeMarkers.containsKey(type.getValue())) {
 			MarkerTexture texture = typeMarkers.get(type.getValue());
-			outMarkers.put(new AtlasStructureLandmark(pos.getCenterAtY(0), ProviderType.TYPE, type.getValue()), texture);
+			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
+				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(type.getValue())))
+			), texture);
 		} else {
 			tagMarkers.entrySet().stream().filter(entry -> tags.contains(TagKey.of(RegistryKeys.STRUCTURE, entry.getKey()))).findFirst().ifPresent(entry ->
-				outMarkers.put(new AtlasStructureLandmark(pos.getCenterAtY(0), ProviderType.TAG, entry.getKey()), entry.getValue())
-			);
+				outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+					.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
+					.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TAG.translation(entry.getKey())))
+				), entry.getValue()));
 		}
 
 		if (startTiles.containsKey(key.getValue())) {
@@ -175,7 +183,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 				Map<Identifier, StructureTileProvider> providerMap = pair.left();
 				Map<Identifier, MarkerTexture> markerMap = pair.right();
 				if (fileId.getPath().startsWith(providerType.prefix())) {
-					Identifier id = new Identifier(fileId.getNamespace(), fileId.getPath().substring(providerType.prefix().length()));
+					Identifier id = Identifier.of(fileId.getNamespace(), fileId.getPath().substring(providerType.prefix().length()));
 					try {
 						JsonObject fileJson = fileEntry.getValue().getAsJsonObject();
 						if (fileJson.has("textures")) {
@@ -190,7 +198,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 								JsonObject textureObject = textureJson.getAsJsonObject();
 								Map<StructureTileProvider.ChunkMatcher, List<TileTexture>> matchers = new HashMap<>();
 								for (String matcherKey : textureObject.keySet()) {
-									Identifier matcherId = matcherKey.contains(":") ? new Identifier(matcherKey) : AntiqueAtlas.id(matcherKey);
+									Identifier matcherId = AntiqueAtlas.id(matcherKey);
 									StructureTileProvider.ChunkMatcher matcher = StructureTileProvider.getChunkMatcher(matcherId);
 									if (matcher == null) throw new IllegalStateException("Matcher %s does not exist!".formatted(matcherId.toString()));
 									List<TileTexture> matcherTextures = resolveTextureJson(textures, textureObject.get(matcherKey));
@@ -208,7 +216,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 						}
 						if (fileJson.has("markers")) {
 							JsonElement markerJson = fileJson.get("markers");
-							Identifier markerTextureId = new Identifier(markerJson.getAsString());
+							Identifier markerTextureId = Identifier.tryParse(markerJson.getAsString());
 							MarkerTexture texture = MarkerTextures.getInstance().asMap().get(markerTextureId);
 							if (texture == null) throw new IllegalStateException("Marker texture %s does not exist!".formatted(markerTextureId));
 							AntiqueAtlas.CONFIG.structureMarkers.putIfAbsent(fileId.toString(), true);

@@ -10,7 +10,7 @@ public enum TileElevation {
 	HIGH("high"),
 	PEAK("peak");
 
-	private final String name;
+	public final String name;
 
 	TileElevation(String name) {
 		this.name = name;

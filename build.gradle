@@ -12,6 +12,7 @@ archivesBaseName = project.slug
 
 repositories {
 	maven { url "https://repo.sleeping.town/" }
+	mavenLocal()
 }
 
 dependencies {
@@ -63,6 +64,22 @@ java {
 jar {
 	from("LICENSE") {
 		rename { "${it}_${archivesBaseName}" }
+	}
+}
+
+publishing {
+	repositories {
+		maven {
+			name 'SleepingTown'
+			url 'https://repo-api.sleeping.town/'
+			credentials(PasswordCredentials)
+		}
+	}
+
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
 	}
 }
 

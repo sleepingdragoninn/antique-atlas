@@ -67,9 +67,27 @@ Surveyor, which handles features including map sharing & visibility, can be conf
 Tiles, markers, biome detection, and structure detection is fully data-driven via resource packs.<br/>
 **Without defined biomes, atlas "guesses" tiles via tags, and shows `???` if that fails.**
 
-For a how-to on AA4 resource packs, check out the [resource pack tutorial](https://github.com/sisby-folk/antique-atlas/wiki/Resource-Packs).
+For a how-to on AA4 resource packs, check out the [resource pack tutorial](https://github.com/sisby-folk/antique-atlas/blob/1.20/RESPACKS.md).
 
 To automatically mark non-structure points of interest - instead use Surveyor's Landmark API, as in [Surveystones](https://modrinth.com/mod/surveystones).
+
+## API
+
+Nothing stable! But feel free to poke around:
+
+```groovy
+repositories {
+	maven { url "https://repo.sleeping.town/" }
+}
+dependencies {
+	modImplementation "folk.sisby:antique-atlas:3.0.0+alpha.3+1.20"
+}
+```
+
+Please match the license of any addons to LGPLv3 if you're comfortable! It helps us improve the API.<br/>
+(LGPLv3 is a copyleft license, so this is required for any parts of your code directly adapted from AA4 code) 
+
+Try `AtlasScreen.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
 
 ## Version History
 

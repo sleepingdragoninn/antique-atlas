@@ -8,8 +8,8 @@ import java.util.Iterator;
  * @author Hunternif
  */
 public class ArrayIterator<T> implements Iterator<T> {
-	private final T[] array;
-	private int currentIndex = 0;
+	protected final T[] array;
+	protected int currentIndex = 0;
 
 	public ArrayIterator(T[] array) {
 		this.array = array;

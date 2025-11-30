@@ -14,14 +14,14 @@ public class ScrollBoxComponent extends Component {
 	public static final int ARROW_TEXTURE_WIDTH = 32;
 	public static final int ARROW_TEXTURE_HEIGHT = 64;
 
-	private final int scrollStep;
-	private final boolean vertical;
-	private final ViewportComponent viewport;
+	protected final int scrollStep;
+	protected final boolean vertical;
+	protected final ViewportComponent viewport;
 
 	/**
 	 * How much the content of the viewport is displaced.
 	 */
-	int scrollPos = 0;
+	protected int scrollPos = 0;
 
 	public ScrollBoxComponent(boolean vertical, int scrollStep) {
 		this.vertical = vertical;
@@ -52,7 +52,7 @@ public class ScrollBoxComponent extends Component {
 		boolean hovered = new Rect2i(x, y, ARROW_SIZE, ARROW_SIZE).contains((int) mouseX, (int) mouseY);
 		if (hovered) {
 			int numSteps = (int) Math.round((double) getViewportSize() / scrollStep);
-			doSetScrollPos(scrollPos + numSteps * scrollStep * (prev ? -1 : 1));
+			setScrollPos(scrollPos + numSteps * scrollStep * (prev ? -1 : 1));
 			MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
 			return true;
 		}
@@ -71,7 +71,7 @@ public class ScrollBoxComponent extends Component {
 		if (isMouseOver(mx, my)) {
 			if (wheelMove != 0) {
 				wheelMove = wheelMove > 0 ? -1 : 1;
-				doSetScrollPos((int) (scrollPos + wheelMove * scrollStep));
+				setScrollPos((int) (scrollPos + wheelMove * scrollStep));
 				return true;
 			}
 		}
@@ -94,9 +94,8 @@ public class ScrollBoxComponent extends Component {
 	 * Offset of the viewport's content in pixels. This will only work
 	 * correctly after the viewport's size has been validated.
 	 */
-	private void doSetScrollPos(int scrollPos) {
-		scrollPos = Math.max(0, Math.min(scrollPos, getContentSize() - getViewportSize()));
-		this.scrollPos = scrollPos;
+	protected void doSetScrollPos(int newPos) {
+		this.scrollPos = Math.max(0, Math.min(newPos, getContentSize() - getViewportSize()));
 		updateContentPos();
 	}
 

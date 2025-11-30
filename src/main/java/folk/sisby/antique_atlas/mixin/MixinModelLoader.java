@@ -21,7 +21,7 @@ public abstract class MixinModelLoader {
 	@Shadow protected abstract void addModel(ModelIdentifier modelId);
 
 	@Inject(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/util/Map;values()Ljava/util/Collection;"))
-	private void loadAtlasModel(BlockColors blockColors, Profiler profiler, Map<Identifier, JsonUnbakedModel> jsonUnbakedModels, Map<Identifier, List<ModelLoader.SourceTrackedData>> blockStates, CallbackInfo ci) {
+	protected void loadAtlasModel(BlockColors blockColors, Profiler profiler, Map<Identifier, JsonUnbakedModel> jsonUnbakedModels, Map<Identifier, List<ModelLoader.SourceTrackedData>> blockStates, CallbackInfo ci) {
 		addModel(AntiqueAtlas.ATLAS_MODEL);
 	}
 }

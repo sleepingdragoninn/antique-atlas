@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.MarkerTexture;
 import folk.sisby.antique_atlas.util.CodecUtil;
-import folk.sisby.surveyor.landmark.LandmarkType;
+import folk.sisby.surveyor.landmark.Landmark;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -21,14 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identifier, MarkerTextures.MarkerTextureMeta>> implements IdentifiableResourceReloadListener {
-	private static final MarkerTextures INSTANCE = new MarkerTextures();
+	public static final MarkerTextures INSTANCE = new MarkerTextures();
 	public static final Identifier ID = AntiqueAtlas.id("marker_textures");
 
 	public static MarkerTextures getInstance() {
 		return INSTANCE;
 	}
 
-	private final Map<Identifier, MarkerTexture> textures = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> textures = new HashMap<>();
 
 	public MarkerTexture get(Identifier id) {
 		return textures.get(id);
@@ -42,12 +42,20 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 		return textures.getOrDefault(id, defaultTexture);
 	}
 
-	public MarkerTexture getLandmarkType(LandmarkType<?> type) {
-		return getOrDefault(new Identifier(type.id().getNamespace(), "landmark/type/" + type.id().getPath()));
+	public Identifier minimumId(Identifier id) {
+		while (get(id) == null && id.getPath().contains("/")) {
+			id = id.withPath(id.getPath().substring(0, id.getPath().lastIndexOf('/')));
+		}
+		return get(id) == null ? id.withPath("default") : id;
 	}
 
-	public MarkerTexture getLandmarkType(LandmarkType<?> type, String variant) {
-		return getOrDefault(new Identifier(type.id().getNamespace(), "landmark/type/" + type.id().getPath() + (variant == null ? "" : "/" + variant)));
+	public MarkerTexture fromLandmark(Landmark landmark) {
+		return getOrDefault(minimumId(landmark.id()));
+	}
+
+	public MarkerTexture fromLandmark(Landmark landmark, String variant) {
+		Identifier id = minimumId(landmark.id());
+		return getOrDefault(id.withPath(p -> p + "/" + variant), getOrDefault(id));
 	}
 
 	public Map<Identifier, MarkerTexture> asMap() {
@@ -58,7 +66,7 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 	protected Map<Identifier, MarkerTextureMeta> prepare(ResourceManager manager, Profiler profiler) {
 		Map<Identifier, MarkerTextures.MarkerTextureMeta> textureMeta = new HashMap<>();
 		for (Map.Entry<Identifier, Resource> e : manager.findResources("textures/atlas/marker", id -> id.getPath().endsWith(".png")).entrySet()) {
-			Identifier id = new Identifier(e.getKey().getNamespace(), e.getKey().getPath().substring("textures/atlas/marker/".length(), e.getKey().getPath().length() - ".png".length()));
+			Identifier id = Identifier.of(e.getKey().getNamespace(), e.getKey().getPath().substring("textures/atlas/marker/".length(), e.getKey().getPath().length() - ".png".length()));
 			try {
 				ResourceMetadata metadata = e.getValue().getMetadata();
 				textureMeta.put(id, metadata.decode(MarkerTextures.MarkerTextureMeta.METADATA).orElse(MarkerTextureMeta.DEFAULT));

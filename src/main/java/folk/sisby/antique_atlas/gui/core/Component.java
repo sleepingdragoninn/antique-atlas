@@ -17,28 +17,28 @@ import java.util.function.Predicate;
  * parent component.
  */
 public class Component extends Screen {
-	private Component parent = null;
-	private final List<Component> children = new CopyOnWriteArrayList<>();
+	public Component parent = null;
+	public final List<Component> children = new CopyOnWriteArrayList<>();
 
 	/**
 	 * The component's own size.
 	 */
-	int properWidth;
-	int properHeight;
+	protected int properWidth;
+	protected int properHeight;
 	/**
 	 * The component's total calculated size, including itself and its children.
 	 */
-	int contentWidth;
-	int contentHeight;
+	protected int contentWidth;
+	protected int contentHeight;
 	/**
 	 * If true, this GUI will not be rendered.
 	 */
-	private boolean isClipped = false;
+	public boolean isClipped = false;
 
 	/**
 	 * guiX and guiY are absolute coordinates on the screen.
 	 */
-	private int guiX = 0, guiY = 0;
+	public int guiX = 0, guiY = 0;
 
 	public Component() {
 		super(Text.literal("component"));
@@ -121,14 +121,14 @@ public class Component extends Screen {
 	/**
 	 * X coordinate relative to the parent's top left corner.
 	 */
-	int getRelativeX() {
+	public int getRelativeX() {
 		return parent == null ? guiX : (guiX - parent.guiX);
 	}
 
 	/**
 	 * Y coordinate relative to the parent's top left corner.
 	 */
-	int getRelativeY() {
+	public int getRelativeY() {
 		return parent == null ? guiY : (guiY - parent.guiY);
 	}
 
@@ -149,7 +149,7 @@ public class Component extends Screen {
 	 *
 	 * @return the child added.
 	 */
-	protected Component addChild(Component child) {
+	public Component addChild(Component child) {
 		doAddChild(null, child, null);
 		return child;
 	}
@@ -162,12 +162,12 @@ public class Component extends Screen {
 	 *
 	 * @return the child added.
 	 */
-	protected Component addChildBehind(Component behind, Component child) {
+	public Component addChildBehind(Component behind, Component child) {
 		doAddChild(null, child, behind);
 		return child;
 	}
 
-	private void doAddChild(Component inFrontOf, Component child, Component behind) {
+	public void doAddChild(Component inFrontOf, Component child, Component behind) {
 		if (child == null || children.contains(child) || parent == child) {
 			return;
 		}
@@ -193,7 +193,7 @@ public class Component extends Screen {
 	/**
 	 * @return the child removed.
 	 */
-	protected Component removeChild(Component child) {
+	public Component removeChild(Component child) {
 		if (child != null && children.contains(child)) {
 			child.parent = null;
 			children.remove(child);
@@ -203,7 +203,7 @@ public class Component extends Screen {
 		return child;
 	}
 
-	void removeAllChildren() {
+	public void removeAllChildren() {
 		children.clear();
 		updateSize();
 	}
@@ -215,11 +215,11 @@ public class Component extends Screen {
 		return parent;
 	}
 
-	List<Component> getChildren() {
+	public List<Component> getChildren() {
 		return children;
 	}
 
-	boolean iterateInput(Predicate<Component> callMethod) {
+	public boolean iterateInput(Predicate<Component> callMethod) {
 		// Traverse children backwards, because the topmost child should be the
 		// first to process input:
 		ListIterator<Component> iter = children.listIterator(children.size());
@@ -233,16 +233,12 @@ public class Component extends Screen {
 		return false;
 	}
 
-	boolean iterateMouseInput(Predicate<Component> callMethod) {
-		return iterateInput(callMethod);
-	}
-
 	/**
 	 * Handle mouse input for this GUI and its children.
 	 */
 	@Override
 	public boolean mouseClicked(double mx, double my, int mb) {
-		if (!iterateMouseInput((c) -> c.mouseClicked(mx, my, mb))) {
+		if (!iterateInput((c) -> c.mouseClicked(mx, my, mb))) {
 			return super.mouseClicked(mx, my, mb);
 		} else {
 			return true;
@@ -251,7 +247,7 @@ public class Component extends Screen {
 
 	@Override
 	public boolean mouseReleased(double mx, double my, int mb) {
-		if (!iterateMouseInput((c) -> c.mouseReleased(mx, my, mb))) {
+		if (!iterateInput((c) -> c.mouseReleased(mx, my, mb))) {
 			return super.mouseReleased(mx, my, mb);
 		} else {
 			return true;
@@ -260,7 +256,7 @@ public class Component extends Screen {
 
 	@Override
 	public boolean mouseDragged(double mx, double my, int mb, double mx2, double my2) {
-		if (!iterateMouseInput((c) -> c.mouseDragged(mx, my, mb, mx2, my2))) {
+		if (!iterateInput((c) -> c.mouseDragged(mx, my, mb, mx2, my2))) {
 			return super.mouseClicked(mx, my, mb);
 		} else {
 			return true;
@@ -269,7 +265,7 @@ public class Component extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mx, double my, double dy) {
-		if (!iterateMouseInput((c) -> c.mouseScrolled(mx, my, dy))) {
+		if (!iterateInput((c) -> c.mouseScrolled(mx, my, dy))) {
 			return super.mouseScrolled(mx, my, dy);
 		} else {
 			return true;
@@ -278,7 +274,7 @@ public class Component extends Screen {
 
 	@Override
 	public void mouseMoved(double mx, double my) {
-		if (!iterateMouseInput((c) -> {
+		if (!iterateInput((c) -> {
 			c.mouseMoved(mx, my);
 			return false;
 		})) {
@@ -379,11 +375,11 @@ public class Component extends Screen {
 	/**
 	 * If set to true, the parent of this GUI will not render it.
 	 */
-	void setClipped(boolean value) {
+	public void setClipped(boolean value) {
 		this.isClipped = value;
 	}
 
-	void updateSize() {
+	public void updateSize() {
 		int leftmost = Integer.MAX_VALUE;
 		int rightmost = Integer.MIN_VALUE;
 		int topmost = Integer.MAX_VALUE;
@@ -430,22 +426,22 @@ public class Component extends Screen {
 	/**
 	 * Called when a child removes itself from this component.
 	 */
-	protected void onChildClosed(Component child) {
+	public void onChildClosed(Component child) {
 	}
 
 	/**
 	 * Draw a text string centered horizontally, using this GUI's font.
 	 */
-	protected void drawCentered(DrawContext context, Text text, int y, int color, boolean dropShadow) {
+	public void drawCentered(DrawContext context, Text text, int y, int color, boolean dropShadow) {
 		int length = this.textRenderer.getWidth(text);
 		context.drawText(textRenderer, text, (this.width - length) / 2, y, color, dropShadow);
 	}
 
-	protected double getMouseX() {
+	public double getMouseX() {
 		return MinecraftClient.getInstance().mouse.getX() * width / MinecraftClient.getInstance().getWindow().getWidth();
 	}
 
-	protected double getMouseY() {
+	public double getMouseY() {
 		return MinecraftClient.getInstance().mouse.getY() * height / MinecraftClient.getInstance().getWindow().getHeight();
 	}
 }

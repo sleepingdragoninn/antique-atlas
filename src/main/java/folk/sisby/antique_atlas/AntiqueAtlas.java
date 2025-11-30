@@ -6,7 +6,9 @@ import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
 import folk.sisby.antique_atlas.reloader.TileTextures;
+import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.WorldSummary;
+import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.client.SurveyorClientEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -16,11 +18,10 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -35,7 +36,10 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AntiqueAtlas implements ClientModInitializer {
 	public static final String ID = "antique_atlas";
@@ -44,7 +48,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger(NAME);
 
 	public static final AntiqueAtlasConfig CONFIG = AntiqueAtlasConfig.createToml(FabricLoader.getInstance().getConfigDir(), "", "antique-atlas", AntiqueAtlasConfig.class);
-	public static ScreenState<AtlasScreen> lastState = new ScreenState<>();
+	public static final ScreenState<AtlasScreen> lastState = new ScreenState<>();
 
 	public static final ModelIdentifier ATLAS_MODEL = new ModelIdentifier(AntiqueAtlas.id("atlas"), "inventory");
 
@@ -53,7 +57,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	);
 
 	public static Identifier id(String path) {
-		return path.contains(":") ? new Identifier(path) : new Identifier(ID, path);
+		return path.contains(":") ? Identifier.tryParse(path) : Identifier.of(ID, path);
 	}
 
 	public static ItemStack getHandheldAtlas() {
@@ -62,8 +66,20 @@ public class AntiqueAtlas implements ClientModInitializer {
 		NbtList lore = new NbtList();
 		lore.add(NbtString.of(Text.Serializer.toJson(Text.translatable("item.antique_atlas.atlas.lore").setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)))));
 		lore.add(NbtString.of(Text.Serializer.toJson(Text.translatable("item.antique_atlas.atlas.hint", Text.translatable("item.antique_atlas.atlas")).setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false)))));
-		stack.getSubNbt(ItemStack.DISPLAY_KEY).put(ItemStack.LORE_KEY, lore);
+		stack.getOrCreateSubNbt(ItemStack.DISPLAY_KEY).put(ItemStack.LORE_KEY, lore);
 		return stack;
+	}
+
+	public static AtlasScreen openAtlasScreen() {
+		if (MinecraftClient.getInstance().currentScreen == null && (!AntiqueAtlas.CONFIG.requireItem || (MinecraftClient.getInstance().player != null && AntiqueAtlas.hasHandheldAtlas(MinecraftClient.getInstance().player)))) {
+			AtlasScreen screen = new AtlasScreen();
+			screen.init();
+			screen.prepareToOpen();
+			screen.tick();
+			MinecraftClient.getInstance().setScreen(screen);
+			return screen;
+		}
+		return null;
 	}
 
 	public static boolean isHandheldAtlas(ItemStack stack) {
@@ -78,6 +94,14 @@ public class AntiqueAtlas implements ClientModInitializer {
 			}
 		}
 		return false;
+	}
+
+	public static Map<UUID, PlayerSummary> getOrderedFriends() {
+		Map<UUID, PlayerSummary> friends = SurveyorClient.getFriends();
+		PlayerSummary playerSummary = friends.remove(SurveyorClient.getClientUuid());
+		Map<UUID, PlayerSummary> orderedFriends = new LinkedHashMap<>(friends);
+		if (playerSummary != null) orderedFriends.put(SurveyorClient.getClientUuid(), playerSummary);
+		return orderedFriends;
 	}
 
 	@Override
@@ -99,18 +123,13 @@ public class AntiqueAtlas implements ClientModInitializer {
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> WorldAtlasData.WORLDS.clear()));
 
 		ModelPredicateProviderRegistry.register(Items.BOOK, AntiqueAtlas.id("atlas"), ((stack, world, entity, seed) -> isHandheldAtlas(stack) ? 1.0F : 0.0F));
+		//noinspection UnstableApiUsage
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(e -> e.addAfter(Items.MAP, getHandheldAtlas()));
 
 		WorldSummary.enableTerrain();
 		WorldSummary.enableStructures();
 		WorldSummary.enableLandmarks();
 
-		FabricLoader.getInstance().getModContainer(ID).ifPresent(container -> {
-			ResourceManagerHelper.registerBuiltinResourcePack(asId("shader_patch"), container, "Shader Patch", ResourcePackActivationType.NORMAL);
-		});
-	}
-
-	public static Identifier asId(String path) {
-		return Identifier.of(ID, path);
+		FabricLoader.getInstance().getModContainer(ID).ifPresent(c -> ResourceManagerHelper.registerBuiltinResourcePack(id("shader_patch"), c, Text.of("Shader Patch"), ResourcePackActivationType.NORMAL));
 	}
 }

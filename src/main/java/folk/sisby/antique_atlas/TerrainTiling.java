@@ -52,7 +52,7 @@ public class TerrainTiling {
 	public static final Map<Biome, Integer> priorityCache = new Reference2IntArrayMap<>();
 	public static final Map<Biome, Boolean> swampCache = new Reference2BooleanArrayMap<>();
 
-	protected static int priorityForBiome(Registry<Biome> biomeRegistry, Biome biome) {
+	public static int priorityForBiome(Registry<Biome> biomeRegistry, Biome biome) {
 		return priorityCache.computeIfAbsent(biome, b -> {
 			RegistryEntry<Biome> biomeEntry = biomeRegistry.getEntry(biome);
 			if (biomeEntry.isIn(BiomeTags.IS_BEACH)) {
@@ -65,11 +65,11 @@ public class TerrainTiling {
 		});
 	}
 
-	protected static boolean isSwamp(Registry<Biome> biomeRegistry, Biome biome) {
+	public static boolean isSwamp(Registry<Biome> biomeRegistry, Biome biome) {
 		return swampCache.computeIfAbsent(biome, b -> biomeRegistry.getEntry(b).isIn(ConventionalBiomeTags.SWAMP));
 	}
 
-	protected static Pair<TerrainTileProvider, TileElevation> frequencyToTexture(int[][] possibleTiles, Registry<Biome> biomeRegistry, IndexedIterable<Biome> biomePalette) {
+	public static Pair<TerrainTileProvider, TileElevation> frequencyToTexture(int[][] possibleTiles, Registry<Biome> biomeRegistry, IndexedIterable<Biome> biomePalette) {
 		int elevationOrdinal = -1;
 		int biomeIndex = -1;
 		int bestFrequency = 0;

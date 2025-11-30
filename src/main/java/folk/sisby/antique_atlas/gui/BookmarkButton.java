@@ -24,7 +24,7 @@ public class BookmarkButton extends ToggleButtonComponent {
 	protected final boolean left;
 	protected final Identifier backgroundTexture;
 
-	protected BookmarkButton(Identifier backgroundTexture, Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
+	public BookmarkButton(Identifier backgroundTexture, Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
 		super(false);
 		this.backgroundTexture = backgroundTexture;
 		this.title = title;
@@ -38,11 +38,11 @@ public class BookmarkButton extends ToggleButtonComponent {
 		setSize(WIDTH, HEIGHT);
 	}
 
-	protected BookmarkButton(Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
+	public BookmarkButton(Text title, Identifier iconTexture, @Nullable Integer backgroundTint, @Nullable Integer iconTint, int iconWidth, int iconHeight, boolean left) {
 		this(left ? TEXTURE_LEFT : TEXTURE_RIGHT, title, iconTexture, backgroundTint, iconTint, iconWidth, iconHeight, left);
 	}
 
-	void setIconTexture(Identifier iconTexture) {
+	public void setIconTexture(Identifier iconTexture) {
 		this.iconTexture = iconTexture;
 	}
 
@@ -50,7 +50,7 @@ public class BookmarkButton extends ToggleButtonComponent {
 		return title;
 	}
 
-	void setTitle(Text title) {
+	public void setTitle(Text title) {
 		this.title = title;
 	}
 

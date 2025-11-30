@@ -7,17 +7,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class TileTexture {
+public class TileTexture {
 	public static TileTexture empty(Identifier id, boolean innerBorder) {
 		return new TileTexture(Identifier.of(id.getNamespace(), "textures/atlas/tile/%s.png".formatted(id.getPath())), innerBorder, new ReferenceOpenHashSet<>(), new ReferenceOpenHashSet<>(), new ReferenceOpenHashSet<>());
 	}
 
 	public static final TileTexture DEFAULT = empty(AntiqueAtlas.id(AntiqueAtlas.CONFIG.fallbackFailHandling == AntiqueAtlasConfig.FallbackHandling.TEST ? "test" : "missing"), false);
-	private final Identifier id;
-	private final boolean innerBorder;
-	private final Set<TileTexture> tilesTo;
-	private final Set<TileTexture> tilesToHorizontal;
-	private final Set<TileTexture> tilesToVertical;
+	protected final Identifier id;
+	protected final boolean innerBorder;
+	protected final Set<TileTexture> tilesTo;
+	protected final Set<TileTexture> tilesToHorizontal;
+	protected final Set<TileTexture> tilesToVertical;
 
 	public TileTexture(Identifier id, boolean innerBorder, Set<TileTexture> tilesTo, Set<TileTexture> tilesToHorizontal, Set<TileTexture> tilesToVertical) {
 		this.id = id;

@@ -15,12 +15,12 @@ import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
 public class DrawBatcher implements AutoCloseable {
-	private final Matrix4f matrix4f;
-	private final BufferBuilder bufferBuilder;
-	private final VertexConsumer vertexConsumer;
-	private final float textureWidth;
-	private final float textureHeight;
-	private final int light;
+	protected final Matrix4f matrix4f;
+	protected final BufferBuilder bufferBuilder;
+	protected final VertexConsumer vertexConsumer;
+	protected final float textureWidth;
+	protected final float textureHeight;
+	protected final int light;
 
 	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light)) {
@@ -55,7 +55,7 @@ public class DrawBatcher implements AutoCloseable {
 		);
 	}
 
-	private void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
+	protected void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
 		vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).light(light).next();
 		vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).light(light).next();
 		vertexConsumer.vertex(matrix4f, x2, y2, z).color(argb).texture(u2, v2).light(light).next();

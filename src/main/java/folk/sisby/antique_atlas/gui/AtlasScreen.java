@@ -76,7 +76,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public boolean isDragging = false;
 	public final boolean fullscreen;
 
-	private int sideButtonY = 14;
+	protected int sideButtonY = 14;
 
 	public AtlasScreen() {
 		fullscreen = AntiqueAtlas.CONFIG.fullscreen;
@@ -184,7 +184,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		};
 	}
 
-	public AtlasScreen prepareToOpen() {
+	public void prepareToOpen() {
 		MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F));
 
 		this.player = MinecraftClient.getInstance().player;
@@ -196,8 +196,6 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		if (!AntiqueAtlas.CONFIG.keepZoom) {
 			resetZoom();
 		}
-
-		return this;
 	}
 
 	@Override
@@ -567,8 +565,9 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				boolean hovering = hoveredLandmark == landmark && markerModal.getParent() == null;
 				BiFunction<Double, Double, Float> alpha = (x, y) -> state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !hovering) || (hovering && x <= MAP_BORDER_WIDTH || x >= mapWidth + MAP_BORDER_WIDTH || y <= MAP_BORDER_HEIGHT || y >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
 				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, WorldAtlasData.landmarkIsEditable(landmark), hovering, markerScale);
-				if (hovering && landmark.get(LandmarkComponentTypes.NAME) != null && !landmark.get(LandmarkComponentTypes.NAME).getString().isEmpty()) {
-					context.drawTooltip(textRenderer, Stream.concat(Stream.of(landmark.get(LandmarkComponentTypes.NAME)), landmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
+				Text name = landmark.get(LandmarkComponentTypes.NAME);
+				if (hovering && name != null && !name.getString().isEmpty()) {
+					context.drawTooltip(textRenderer, Stream.concat(Stream.of(name), landmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());
 				}
 			});
 		}

@@ -25,14 +25,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TileTextures extends SinglePreparationResourceReloader<Map<Identifier, TileTextures.TileTextureMeta>> implements IdentifiableResourceReloadListener {
-	private static final TileTextures INSTANCE = new TileTextures();
+	public static final TileTextures INSTANCE = new TileTextures();
 	public static final Identifier ID = AntiqueAtlas.id("tile_textures");
 
 	public static TileTextures getInstance() {
 		return INSTANCE;
 	}
 
-	private final Map<Identifier, TileTexture> textures = new HashMap<>();
+	protected final Map<Identifier, TileTexture> textures = new HashMap<>();
 
 	public Map<Identifier, TileTexture> getTextures() {
 		return textures;
@@ -111,7 +111,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		return ID;
 	}
 
-	public static final class TileTextureMeta {
+	public static class TileTextureMeta {
 		public static final TileTextureMeta DEFAULT = new TileTextureMeta(Optional.empty(), Optional.empty(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
 
 		public static final Codec<TileTextureMeta> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -131,15 +131,15 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		}
 
 		public static final ResourceMetadataReader<TileTextureMeta> METADATA = new CodecUtil.CodecResourceMetadataSerializer<>(CODEC, AntiqueAtlas.id("tiling"));
-		private final Optional<Identifier> parent;
-		private Optional<BorderType> borderType;
-		private final Set<Identifier> tags;
-		private final Set<Codecs.TagEntryId> tilesTo;
-		private final Set<Codecs.TagEntryId> tilesToHorizontal;
-		private final Set<Codecs.TagEntryId> tilesToVertical;
-		private final Set<Codecs.TagEntryId> tilesToThis;
-		private final Set<Codecs.TagEntryId> tilesToThisHorizontal;
-		private final Set<Codecs.TagEntryId> tilesToThisVertical;
+		protected final Optional<Identifier> parent;
+		protected Optional<BorderType> borderType;
+		protected final Set<Identifier> tags;
+		protected final Set<Codecs.TagEntryId> tilesTo;
+		protected final Set<Codecs.TagEntryId> tilesToHorizontal;
+		protected final Set<Codecs.TagEntryId> tilesToVertical;
+		protected final Set<Codecs.TagEntryId> tilesToThis;
+		protected final Set<Codecs.TagEntryId> tilesToThisHorizontal;
+		protected final Set<Codecs.TagEntryId> tilesToThisVertical;
 
 		public TileTextureMeta(Optional<Identifier> parent, Optional<BorderType> borderType, Set<Identifier> tags, Set<Codecs.TagEntryId> tilesTo, Set<Codecs.TagEntryId> tilesToHorizontal, Set<Codecs.TagEntryId> tilesToVertical, Set<Codecs.TagEntryId> tilesToThis, Set<Codecs.TagEntryId> tilesToThisHorizontal, Set<Codecs.TagEntryId> tilesToThisVertical) {
 			this.parent = parent;

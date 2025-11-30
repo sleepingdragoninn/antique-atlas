@@ -34,16 +34,16 @@ import java.util.Map;
 import java.util.Set;
 
 public class BiomeTileProviders extends JsonDataLoader implements IdentifiableResourceReloadListener {
-	private static final BiomeTileProviders INSTANCE = new BiomeTileProviders();
+	public static final BiomeTileProviders INSTANCE = new BiomeTileProviders();
 	public static final Identifier ID = AntiqueAtlas.id("tile_provider/biome");
 
 	public static BiomeTileProviders getInstance() {
 		return INSTANCE;
 	}
 
-	private final Map<Identifier, TerrainTileProvider> tileProviders = new HashMap<>();
-	private final Map<Identifier, Identifier> biomeFallbacks = new HashMap<>();
-	private boolean hasFallbacks = false;
+	protected final Map<Identifier, TerrainTileProvider> tileProviders = new HashMap<>();
+	protected final Map<Identifier, Identifier> biomeFallbacks = new HashMap<>();
+	protected boolean hasFallbacks = false;
 
 	public BiomeTileProviders() {
 		super(new Gson(), "atlas/biome");
@@ -84,7 +84,7 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 		return hasFallbacks;
 	}
 
-	private static Identifier getFallbackBiome(RegistryEntry<Biome> biome) {
+	public static Identifier getFallbackBiome(RegistryEntry<Biome> biome) {
 		if (biome.isIn(ConventionalBiomeTags.VOID) || biome.isIn(ForgeTags.Biomes.IS_VOID)) {
 			return BiomeKeys.THE_VOID.getValue();
 		} else if (biome.isIn(BiomeTags.IS_END) || biome.isIn(ConventionalBiomeTags.IN_THE_END) || biome.isIn(ConventionalBiomeTags.END_ISLANDS)) {

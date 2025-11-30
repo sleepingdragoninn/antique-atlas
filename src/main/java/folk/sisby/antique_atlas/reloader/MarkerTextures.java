@@ -21,14 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identifier, MarkerTextures.MarkerTextureMeta>> implements IdentifiableResourceReloadListener {
-	private static final MarkerTextures INSTANCE = new MarkerTextures();
+	public static final MarkerTextures INSTANCE = new MarkerTextures();
 	public static final Identifier ID = AntiqueAtlas.id("marker_textures");
 
 	public static MarkerTextures getInstance() {
 		return INSTANCE;
 	}
 
-	private final Map<Identifier, MarkerTexture> textures = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> textures = new HashMap<>();
 
 	public MarkerTexture get(Identifier id) {
 		return textures.get(id);

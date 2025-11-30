@@ -13,19 +13,19 @@ import org.lwjgl.opengl.GL11;
  * @author Hunternif
  */
 public class BlinkingTextureComponent extends Component {
-	private Identifier texture;
+	protected Identifier texture;
 	/**
 	 * The number of milliseconds the icon spends visible or invisible.
 	 */
-	private final long blinkTime;
-	private final float visibleAlpha;
-	private final float invisibleAlpha;
+	protected final long blinkTime;
+	protected final float visibleAlpha;
+	protected final float invisibleAlpha;
 
-	private long lastTickTime;
+	protected long lastTickTime;
 	/**
 	 * The flag that switches value every "blink".
 	 */
-	private boolean isVisible;
+	protected boolean isVisible;
 
 	public BlinkingTextureComponent(long blinkTime, float visibleAlpha, float invisibleAlpha) {
 		this.blinkTime = blinkTime;
@@ -62,7 +62,7 @@ public class BlinkingTextureComponent extends Component {
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 	}
 
-	private void drawImage(DrawContext context) {
+	protected void drawImage(DrawContext context) {
 		context.drawTexture(texture, getGuiX(), getGuiY(), 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
 	}
 }

@@ -5,10 +5,10 @@ package folk.sisby.antique_atlas.gui.core;
  * a different ToggleButton.
  */
 public class ToggleButtonComponent extends ButtonComponent {
-	private final boolean canToggle;
-	private boolean selected;
+	protected final boolean canToggle;
+	protected boolean selected;
 
-	protected ToggleButtonComponent(boolean canToggle) {
+	public ToggleButtonComponent(boolean canToggle) {
 		this.canToggle = canToggle;
 	}
 
@@ -25,7 +25,7 @@ public class ToggleButtonComponent extends ButtonComponent {
 	}
 
 	@Override
-	protected void onClick() {
+	public void onClick() {
 		if (!isSelected() || canToggle) setSelected(!isSelected());
 		super.onClick();
 	}

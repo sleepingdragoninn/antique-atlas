@@ -13,7 +13,7 @@ import java.util.List;
  */
 @SuppressWarnings("rawtypes")
 public class ButtonComponent extends Component {
-	private final List<IButtonListener> listeners = new ArrayList<>();
+	protected final List<IButtonListener> listeners = new ArrayList<>();
 
 	protected SoundEvent clickSound = SoundEvents.UI_BUTTON_CLICK.value();
 
@@ -31,7 +31,7 @@ public class ButtonComponent extends Component {
 	 * Called when the user left-clicks on this component.
 	 */
 	@SuppressWarnings("unchecked")
-	void onClick() {
+	public void onClick() {
 		if (clickSound != null) {
 			MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(clickSound, 1.0F));
 		}

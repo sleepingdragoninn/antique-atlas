@@ -35,7 +35,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 		this(id, priority, Map.of(matcher, textures));
 	}
 
-	private Map<ChunkPos, TileTexture> getTextures(Function<ChunkMatcher, Collection<ChunkPos>> matcherFunction, Map<ChunkPos, String> tilePredicates) {
+	public Map<ChunkPos, TileTexture> getTextures(Function<ChunkMatcher, Collection<ChunkPos>> matcherFunction, Map<ChunkPos, String> tilePredicates) {
 		Map<ChunkPos, TileTexture> outMap = new HashMap<>();
 		matchers.forEach((matcher, textures) -> {
 			for (ChunkPos pos : matcherFunction.apply(matcher)) {

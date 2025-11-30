@@ -42,7 +42,7 @@ public record HandheldAtlasRenderer(int bookX, int bookY, int bookWidth, int boo
 		matrices.translate(-1.2D, -0.88D, 0D);
 		matrices.scale(1.0F / 128.0F, 1.0F / 128.0F, 1.0F / 128.0F);
 
-		DrawBatcher.drawSingle(matrices, vertexConsumers, AtlasScreen.BOOK, bookWidth, bookHeight, light, bookX, bookY, 0.01F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
+		DrawBatcher.drawSingle(matrices, vertexConsumers, AtlasScreen.BOOK, bookWidth, bookHeight, light, bookX, bookY, 0.01F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF, false);
 
 		if (!(MinecraftClient.getInstance().currentScreen instanceof AtlasScreen)) {
 			renderTiles(matrices, vertexConsumers, light);
@@ -55,7 +55,7 @@ public record HandheldAtlasRenderer(int bookX, int bookY, int bookWidth, int boo
 
 			AntiqueAtlas.getOrderedFriends().forEach((uuid, friend) -> renderPlayer(matrices, vertexConsumers, -0.04F, light, friend, 1, 1, false, uuid.equals(SurveyorClient.getClientUuid())));
 
-			DrawBatcher.drawSingle(matrices, vertexConsumers, BOOK_FRAME, bookWidth, bookHeight, light, bookX, bookY, -0.03F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF);
+			DrawBatcher.drawSingle(matrices, vertexConsumers, BOOK_FRAME, bookWidth, bookHeight, light, bookX, bookY, -0.03F, bookWidth, bookHeight, 0, 0, bookWidth, bookHeight, 0xFFFFFFFF, true);
 		}
 
 		matrices.pop();

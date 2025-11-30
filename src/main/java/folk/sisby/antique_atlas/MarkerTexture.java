@@ -72,7 +72,6 @@ public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int
 
 	public void draw(MatrixStack matrices, VertexConsumerProvider vertexConsumers, double markerX, double markerY, float z, float markerScale, int tileChunks, float[] accent, float tint, float alpha, int light) {
 		if (alpha == 0) return;
-		if (AntiqueAtlas.CONFIG.shaderCompat) alpha = 1.0F;
 		matrices.push();
 		matrices.translate(markerX, markerY, 0.0);
 		matrices.scale(markerScale, markerScale, 1.0F);
@@ -80,14 +79,14 @@ public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int
 		int accentArgb = accent != null ? ColorHelper.Argb.getArgb((int) (alpha * 255), (int) (tint * accent[0] * 255), (int) (tint * accent[1] * 255), (int) (tint * accent[2] * 255)) : 0;
 		if (tileChunks > 1 && mipLevels > 0) {
 			int mipLevel = MathHelper.clamp(MathHelper.ceilLog2(tileChunks), 0, mipLevels);
-			DrawBatcher.drawSingle(matrices, vertexConsumers, id, fullTextureWidth(), textureHeight, light, offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), z, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), mainArgb);
+			DrawBatcher.drawSingle(matrices, vertexConsumers, id, fullTextureWidth(), textureHeight, light, offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), z, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), mainArgb, false);
 			if (accentId != null && accent != null) {
-				DrawBatcher.drawSingle(matrices, vertexConsumers, accentId, fullTextureWidth(), textureHeight, light, offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), z, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), accentArgb);
+				DrawBatcher.drawSingle(matrices, vertexConsumers, accentId, fullTextureWidth(), textureHeight, light, offsetX / (1 << mipLevel), offsetY / (1 << mipLevel), z, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), getU(mipLevel), 0, textureWidth / (1 << mipLevel), textureHeight / (1 << mipLevel), accentArgb, false);
 			}
 		} else {
-			DrawBatcher.drawSingle(matrices, vertexConsumers, id, fullTextureWidth(), textureHeight, light, offsetX, offsetY, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, mainArgb);
+			DrawBatcher.drawSingle(matrices, vertexConsumers, id, fullTextureWidth(), textureHeight, light, offsetX, offsetY, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, mainArgb, false);
 			if (accentId != null && accent != null) {
-				DrawBatcher.drawSingle(matrices, vertexConsumers, accentId, fullTextureWidth(), textureHeight, light, offsetX, offsetY, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, accentArgb);
+				DrawBatcher.drawSingle(matrices, vertexConsumers, accentId, fullTextureWidth(), textureHeight, light, offsetX, offsetY, z, textureWidth, textureHeight, 0, 0, textureWidth, textureHeight, accentArgb, false);
 			}
 		}
 		matrices.pop();

@@ -233,16 +233,12 @@ public class Component extends Screen {
 		return false;
 	}
 
-	protected boolean iterateMouseInput(Predicate<Component> callMethod) {
-		return iterateInput(callMethod);
-	}
-
 	/**
 	 * Handle mouse input for this GUI and its children.
 	 */
 	@Override
 	public boolean mouseClicked(double mx, double my, int mb) {
-		if (!iterateMouseInput((c) -> c.mouseClicked(mx, my, mb))) {
+		if (!iterateInput((c) -> c.mouseClicked(mx, my, mb))) {
 			return super.mouseClicked(mx, my, mb);
 		} else {
 			return true;
@@ -251,7 +247,7 @@ public class Component extends Screen {
 
 	@Override
 	public boolean mouseReleased(double mx, double my, int mb) {
-		if (!iterateMouseInput((c) -> c.mouseReleased(mx, my, mb))) {
+		if (!iterateInput((c) -> c.mouseReleased(mx, my, mb))) {
 			return super.mouseReleased(mx, my, mb);
 		} else {
 			return true;
@@ -260,7 +256,7 @@ public class Component extends Screen {
 
 	@Override
 	public boolean mouseDragged(double mx, double my, int mb, double mx2, double my2) {
-		if (!iterateMouseInput((c) -> c.mouseDragged(mx, my, mb, mx2, my2))) {
+		if (!iterateInput((c) -> c.mouseDragged(mx, my, mb, mx2, my2))) {
 			return super.mouseClicked(mx, my, mb);
 		} else {
 			return true;
@@ -269,7 +265,7 @@ public class Component extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mx, double my, double dy) {
-		if (!iterateMouseInput((c) -> c.mouseScrolled(mx, my, dy))) {
+		if (!iterateInput((c) -> c.mouseScrolled(mx, my, dy))) {
 			return super.mouseScrolled(mx, my, dy);
 		} else {
 			return true;
@@ -278,7 +274,7 @@ public class Component extends Screen {
 
 	@Override
 	public void mouseMoved(double mx, double my) {
-		if (!iterateMouseInput((c) -> {
+		if (!iterateInput((c) -> {
 			c.mouseMoved(mx, my);
 			return false;
 		})) {

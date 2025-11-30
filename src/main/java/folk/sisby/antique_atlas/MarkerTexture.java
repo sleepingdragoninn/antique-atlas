@@ -11,7 +11,7 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Vector2d;
 
 public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int offsetY, int textureWidth, int textureHeight, int mipLevels, int nearClip, int farClip) {
-	private static Identifier idToTexture(Identifier id) {
+	public static Identifier idToTexture(Identifier id) {
 		return id.withPrefixedPath("textures/atlas/marker/").withSuffixedPath(".png");
 	}
 

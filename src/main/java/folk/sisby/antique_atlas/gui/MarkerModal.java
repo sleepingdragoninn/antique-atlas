@@ -27,29 +27,29 @@ import java.util.List;
  * @author Hunternif
  */
 public class MarkerModal extends Component {
-	private World world;
-	private int markerX;
-	private int markerZ;
+	protected World world;
+	protected int markerX;
+	protected int markerZ;
 
-	MarkerTexture selectedTexture = MarkerTexture.DEFAULT;
-	DyeColor selectedColor = DyeColor.WHITE;
+	protected MarkerTexture selectedTexture = MarkerTexture.DEFAULT;
+	protected DyeColor selectedColor = DyeColor.WHITE;
 
-	private static final int BUTTON_WIDTH = 80;
-	private static final int BUTTON_SPACING = 8;
+	public static final int BUTTON_WIDTH = 80;
+	public static final int BUTTON_SPACING = 8;
 
-	private static final int TYPE_SPACING = 1;
+	public static final int TYPE_SPACING = 1;
 
-	private ButtonWidget btnDone;
-	private ButtonWidget btnCancel;
-	private TextFieldWidget textField;
-	private ScrollBoxComponent textureScrollBox;
-	private ToggleButtonRadioGroup<TexturePreviewButton<MarkerTexture>> textureRadioGroup;
-	private ScrollBoxComponent colorScrollBox;
-	private ToggleButtonRadioGroup<TexturePreviewButton<DyeColor>> colorRadioGroup;
+	protected ButtonWidget btnDone;
+	protected ButtonWidget btnCancel;
+	protected TextFieldWidget textField;
+	protected ScrollBoxComponent textureScrollBox;
+	protected ToggleButtonRadioGroup<TexturePreviewButton<MarkerTexture>> textureRadioGroup;
+	protected ScrollBoxComponent colorScrollBox;
+	protected ToggleButtonRadioGroup<TexturePreviewButton<DyeColor>> colorRadioGroup;
 
-	private final List<IMarkerTypeSelectListener> markerListeners = new ArrayList<>();
+	protected final List<IMarkerTypeSelectListener> markerListeners = new ArrayList<>();
 
-	MarkerModal() {
+	public MarkerModal() {
 	}
 
 	void setMarkerData(World world, int markerX, int markerZ) {
@@ -68,12 +68,10 @@ public class MarkerModal extends Component {
 		super.init();
 
 		addDrawableChild(btnDone = ButtonWidget.builder(Text.translatable("gui.done"), (button) -> {
-			((AtlasScreen) MinecraftClient.getInstance().currentScreen).worldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
-			((AtlasScreen) MinecraftClient.getInstance().currentScreen).updateBookmarkerList();
+			((AtlasScreen) getParent()).worldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
+			((AtlasScreen) getParent()).updateBookmarkerList();
 			ClientPlayerEntity player = MinecraftClient.getInstance().player;
-			world.playSound(player, player.getBlockPos(),
-				SoundEvents.ENTITY_VILLAGER_WORK_CARTOGRAPHER, SoundCategory.AMBIENT,
-				1F, 1F);
+			if (player != null) world.playSound(player, player.getBlockPos(), SoundEvents.ENTITY_VILLAGER_WORK_CARTOGRAPHER, SoundCategory.AMBIENT, 1F, 1F);
 			closeChild();
 		}).dimensions(this.width / 2 - BUTTON_WIDTH - BUTTON_SPACING / 2, this.height / 2 + 70, BUTTON_WIDTH, 20).build());
 		addDrawableChild(btnCancel = ButtonWidget.builder(Text.translatable("gui.cancel"), (button) -> closeChild())
@@ -185,7 +183,7 @@ public class MarkerModal extends Component {
 		super.render(context, mouseX, mouseY, partialTick);
 	}
 
-	interface IMarkerTypeSelectListener {
+	public interface IMarkerTypeSelectListener {
 		void onSelectMarkerType(MarkerTexture texture);
 	}
 }

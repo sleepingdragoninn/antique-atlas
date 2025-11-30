@@ -61,7 +61,7 @@ public class ForgeTags {
 		public static final TagKey<Biome> IS_SLOPE = tag("is_slope");
 		public static final TagKey<Biome> IS_MOUNTAIN = tag("is_mountain");
 
-		private static TagKey<Biome> tag(String name) {
+		public static TagKey<Biome> tag(String name) {
 			return TagKey.of(RegistryKeys.BIOME, Identifier.of("forge", name));
 		}
 	}

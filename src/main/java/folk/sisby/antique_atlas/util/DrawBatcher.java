@@ -15,6 +15,7 @@ import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
 public class DrawBatcher implements AutoCloseable {
+
 	private final Matrix4f matrix4f;
 	private final BufferBuilder bufferBuilder;
 	private final VertexConsumer vertexConsumer;
@@ -22,6 +23,7 @@ public class DrawBatcher implements AutoCloseable {
 	private final float textureHeight;
 	private final int light;
 	private final boolean in_world;
+
 
 	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light, false)) {
@@ -61,7 +63,7 @@ public class DrawBatcher implements AutoCloseable {
 		);
 	}
 
-	private void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
+	protected void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
 		if (in_world) {
 			vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).overlay(0).light(light).normal(0,0,0).next();
 			vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).overlay(0).light(light).normal(0,0,0).next();

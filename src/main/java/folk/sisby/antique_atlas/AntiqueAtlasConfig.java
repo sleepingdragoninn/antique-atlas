@@ -7,6 +7,7 @@ import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueMap;
 
 import java.util.Map;
 
+@SuppressWarnings("CanBeFinal")
 public class AntiqueAtlasConfig extends WrappedConfig {
 	public enum GraveStyle {
 		CAUSE,

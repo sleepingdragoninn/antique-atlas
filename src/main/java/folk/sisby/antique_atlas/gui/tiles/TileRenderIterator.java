@@ -19,14 +19,14 @@ import java.util.Iterator;
  */
 public class TileRenderIterator implements Iterator<SubTileQuartet>, Iterable<SubTileQuartet> {
 
-	private final WorldAtlasData tiles;
+	protected final WorldAtlasData tiles;
 
 	/**
 	 * How many chunks a tile spans. Used for viewing the map at a scale below
 	 * the threshold at which the tile texture is of minimum size and no longer
 	 * scales down. Can't be less than 1.
 	 */
-	private int step = 1;
+	protected int step = 1;
 
 	public void setStep(int step) {
 		if (step >= 1) {
@@ -37,7 +37,7 @@ public class TileRenderIterator implements Iterator<SubTileQuartet>, Iterable<Su
 	/**
 	 * The scope of iteration.
 	 */
-	private final Rect scope = new Rect();
+	protected final Rect scope = new Rect();
 
 	public void setScope(Rect scope) {
 		this.scope.set(scope);
@@ -57,25 +57,25 @@ public class TileRenderIterator implements Iterator<SubTileQuartet>, Iterable<Su
 	 * 'i' is at (x, y).
 	 * The returned array of subtiles represents the corner 'd-e-h-i'
 	 */
-	private TileTexture a, b, c, d, e, f, g, h, i, j, k, l;
+	protected TileTexture a, b, c, d, e, f, g, h, i, j, k, l;
 
 	/**
 	 * Shortcuts for the quartet.
 	 */
-	private final SubTile _d = new SubTile(Part.BOTTOM_RIGHT),
+	protected final SubTile _d = new SubTile(Part.BOTTOM_RIGHT),
 		_e = new SubTile(Part.BOTTOM_LEFT),
 		_h = new SubTile(Part.TOP_RIGHT),
 		_i = new SubTile(Part.TOP_LEFT);
-	private final SubTileQuartet quartet = new SubTileQuartet(_d, _e, _h, _i);
+	protected final SubTileQuartet quartet = new SubTileQuartet(_d, _e, _h, _i);
 
 	/**
 	 * Current index into the tile storage, which presumably has every tile spanning exactly 1 chunk.
 	 */
-	private int chunkX, chunkY;
+	protected int chunkX, chunkY;
 	/**
 	 * Current index into the grid of subtiles, starting at (-1, -1).
 	 */
-	private int subtileX = -1, subtileY = -1;
+	protected int subtileX = -1, subtileY = -1;
 
 	public TileRenderIterator(WorldAtlasData tiles) {
 		this.tiles = tiles;
@@ -196,24 +196,24 @@ public class TileRenderIterator implements Iterator<SubTileQuartet>, Iterable<Su
 		return quartet;
 	}
 
-	private static boolean tilesTo(TileTexture tile, TileTexture to) {
+	public static boolean tilesTo(TileTexture tile, TileTexture to) {
 		return tile != null && to != null && tile.tiles(to);
 	}
 
-	private static boolean tilesToHorizontal(TileTexture tile, TileTexture to) {
+	public static boolean tilesToHorizontal(TileTexture tile, TileTexture to) {
 		return tile != null && to != null && tile.tilesHorizontally(to);
 	}
 
-	private static boolean tilesToVertical(TileTexture tile, TileTexture to) {
+	public static boolean tilesToVertical(TileTexture tile, TileTexture to) {
 		return tile != null && to != null && tile.tilesVertically(to);
 	}
 
-	private static void applyTilingHorizontally(SubTile subtile) {
+	public static void applyTilingHorizontally(SubTile subtile) {
 		if (subtile.shape == Shape.VERTICAL) subtile.shape = Shape.CONCAVE;
 		else if (subtile.shape == Shape.CONVEX) subtile.shape = Shape.HORIZONTAL;
 	}
 
-	private static void applyTilingVertically(SubTile subtile) {
+	public static void applyTilingVertically(SubTile subtile) {
 		if (subtile.shape == Shape.HORIZONTAL) subtile.shape = Shape.CONCAVE;
 		else if (subtile.shape == Shape.CONVEX) subtile.shape = Shape.VERTICAL;
 	}

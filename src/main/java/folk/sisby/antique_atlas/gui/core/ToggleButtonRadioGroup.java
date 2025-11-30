@@ -10,25 +10,22 @@ import java.util.List;
  * A group of GuiToggleButtons only one of which can be selected at any time.
  */
 public class ToggleButtonRadioGroup<B extends ToggleButtonComponent> implements Iterable<B> {
-	private final List<B> buttons = new ArrayList<>();
+	protected final List<B> buttons = new ArrayList<>();
 
-	private final List<ISelectListener<? extends B>> listeners = new ArrayList<>();
+	protected final List<ISelectListener<? extends B>> listeners = new ArrayList<>();
 
-	private B selectedButton = null;
+	protected B selectedButton = null;
 
-	private final ClickListener clickListener;
+	protected final ClickListener clickListener;
 
 	public ToggleButtonRadioGroup() {
 		clickListener = this.new ClickListener();
 	}
 
-	public boolean addButton(B button) {
+	public void addButton(B button) {
 		if (!buttons.contains(button)) {
 			buttons.add(button);
 			button.addListener(clickListener);
-			return true;
-		} else {
-			return false;
 		}
 	}
 

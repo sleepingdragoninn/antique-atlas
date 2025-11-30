@@ -18,6 +18,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.component.DataComponentTypes;
@@ -47,7 +48,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger(NAME);
 
 	public static final AntiqueAtlasConfig CONFIG = AntiqueAtlasConfig.createToml(FabricLoader.getInstance().getConfigDir(), "", "antique-atlas", AntiqueAtlasConfig.class);
-	public static ScreenState<AtlasScreen> lastState = new ScreenState<>();
+	public static final ScreenState<AtlasScreen> lastState = new ScreenState<>();
 
 	public static final ModelIdentifier ATLAS_MODEL = new ModelIdentifier(AntiqueAtlas.id("atlas"), "inventory");
 
@@ -67,6 +68,18 @@ public class AntiqueAtlas implements ClientModInitializer {
 			Text.translatable("item.antique_atlas.atlas.hint", Text.translatable("item.antique_atlas.atlas")).setStyle(Style.EMPTY.withColor(Formatting.GRAY).withItalic(false))
 		)));
 		return stack;
+	}
+
+	public static AtlasScreen openAtlasScreen() {
+		if (MinecraftClient.getInstance().currentScreen == null && (!AntiqueAtlas.CONFIG.requireItem || (MinecraftClient.getInstance().player != null && AntiqueAtlas.hasHandheldAtlas(MinecraftClient.getInstance().player)))) {
+			AtlasScreen screen = new AtlasScreen();
+			screen.init();
+			screen.prepareToOpen();
+			screen.tick();
+			MinecraftClient.getInstance().setScreen(screen);
+			return screen;
+		}
+		return null;
 	}
 
 	public static boolean isHandheldAtlas(ItemStack stack) {

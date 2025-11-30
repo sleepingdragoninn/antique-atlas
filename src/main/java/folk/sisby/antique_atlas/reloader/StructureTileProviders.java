@@ -40,7 +40,7 @@ import java.util.Set;
 import static folk.sisby.antique_atlas.reloader.BiomeTileProviders.resolveTextureJson;
 
 public class StructureTileProviders extends JsonDataLoader implements IdentifiableResourceReloadListener {
-	private static final StructureTileProviders INSTANCE = new StructureTileProviders();
+	public static final StructureTileProviders INSTANCE = new StructureTileProviders();
 
 	public static final Identifier ID = AntiqueAtlas.id("structures");
 
@@ -48,18 +48,18 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		return INSTANCE;
 	}
 
-	private final Map<Identifier, StructureTileProvider> startTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> typeTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> tagTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> pieceTypeTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> pieceJigsawSingleTiles = new HashMap<>();
-	private final Map<Identifier, StructureTileProvider> pieceJigsawFeatureTiles = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> startMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> typeMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> tagMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> pieceTypeMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> pieceJigsawSingleMarkers = new HashMap<>();
-	private final Map<Identifier, MarkerTexture> pieceJigsawFeatureMarkers = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> startTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> typeTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> tagTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> pieceTypeTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> pieceJigsawSingleTiles = new HashMap<>();
+	protected final Map<Identifier, StructureTileProvider> pieceJigsawFeatureTiles = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> startMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> typeMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> tagMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> pieceTypeMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> pieceJigsawSingleMarkers = new HashMap<>();
+	protected final Map<Identifier, MarkerTexture> pieceJigsawFeatureMarkers = new HashMap<>();
 
 	public enum ProviderType {
 		START("start"),
@@ -69,7 +69,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		JIGSAW_SINGLE("piece/jigsaw/single"),
 		JIGSAW_FEATURE("piece/jigsaw/feature");
 
-		private final String key;
+		public final String key;
 
 		ProviderType(String key) {
 			this.key = key;
@@ -84,7 +84,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		}
 	}
 
-	private final Map<ProviderType, Pair<Map<Identifier, StructureTileProvider>, Map<Identifier, MarkerTexture>>> PROVIDER_MAPS = Map.of(
+	protected final Map<ProviderType, Pair<Map<Identifier, StructureTileProvider>, Map<Identifier, MarkerTexture>>> PROVIDER_MAPS = Map.of(
 		ProviderType.START, Pair.of(startTiles, startMarkers),
 		ProviderType.TYPE, Pair.of(typeTiles, typeMarkers),
 		ProviderType.TAG, Pair.of(tagTiles, tagMarkers),
@@ -97,7 +97,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		super(new Gson(), "atlas/structure");
 	}
 
-	public Map<ChunkPos, TileTexture> resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, World world) {
+	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, World world) {
 		if (piece instanceof JigsawPieceSummary jigsawPiece) {
 			if (pieceJigsawSingleTiles.containsKey(jigsawPiece.getId())) {
 				StructureTileProvider provider = (jigsawPiece.getElementType() == StructurePoolElementType.FEATURE_POOL_ELEMENT ? pieceJigsawFeatureTiles : pieceJigsawSingleTiles).get(jigsawPiece.getId());
@@ -106,7 +106,6 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 					outTiles.put(pos, texture);
 					structureProviders.put(pos, provider);
 				});
-				return outTiles;
 			}
 		} else {
 			Identifier pieceTypeId = Registries.STRUCTURE_PIECE.getId(piece.getType());
@@ -119,7 +118,6 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 				});
 			}
 		}
-		return outTiles;
 	}
 
 	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark, MarkerTexture> outMarkers, World world, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary summary, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {

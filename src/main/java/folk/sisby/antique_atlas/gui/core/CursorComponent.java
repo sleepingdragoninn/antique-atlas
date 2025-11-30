@@ -11,12 +11,12 @@ import net.minecraft.util.Identifier;
  */
 public class CursorComponent extends Component {
 
-	private Identifier texture;
-	private int textureWidth, textureHeight;
+	protected Identifier texture;
+	protected int textureWidth, textureHeight;
 	/**
 	 * Coordinates of the cursor point on the texture.
 	 */
-	private int pointX, pointY;
+	protected int pointX, pointY;
 
 	/**
 	 * @param texture texture image file

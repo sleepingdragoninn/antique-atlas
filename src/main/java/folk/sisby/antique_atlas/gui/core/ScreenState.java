@@ -11,7 +11,7 @@ import java.util.function.Function;
  * @author Hunternif
  */
 public class ScreenState<T> {
-	private final BiConsumer<State<T>, State<T>> onChangedState;
+	protected final BiConsumer<State<T>, State<T>> onChangedState;
 
 	/**
 	 * Meant to declare anonymous classes.
@@ -52,7 +52,7 @@ public class ScreenState<T> {
 		this.onChangedState = null;
 	}
 
-	private volatile State<T> currentState;
+	protected volatile State<T> currentState;
 
 	public State<T> current() {
 		return currentState;

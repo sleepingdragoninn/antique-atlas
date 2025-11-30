@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(ItemModels.class)
 public class MixinItemModels {
 	@ModifyReturnValue(method = "getModel(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/client/render/model/BakedModel;", at = @At("RETURN"))
-	private BakedModel useAtlasBookModel(BakedModel original, ItemStack stack) {
+	protected BakedModel useAtlasBookModel(BakedModel original, ItemStack stack) {
 		if (AntiqueAtlas.isHandheldAtlas(stack)) {
 			return ((ItemModels) (Object) this).getModelManager().getModel(AntiqueAtlas.ATLAS_MODEL);
 		}

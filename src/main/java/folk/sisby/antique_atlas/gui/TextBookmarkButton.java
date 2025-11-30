@@ -8,9 +8,9 @@ import net.minecraft.util.Identifier;
 public class TextBookmarkButton extends BookmarkButton {
 	public static final Identifier RULER_TEXTURE_RIGHT = AntiqueAtlas.id("textures/gui/ruler_right.png");
 	public static final int SHORT_WIDTH = 20;
-	private Text label;
+	protected Text label;
 
-	TextBookmarkButton(Text title, Text label) {
+	public TextBookmarkButton(Text title, Text label) {
 		super(RULER_TEXTURE_RIGHT, title, null, null, null, 32, 32, false);
 		this.clickSound = null;
 		this.label = label;

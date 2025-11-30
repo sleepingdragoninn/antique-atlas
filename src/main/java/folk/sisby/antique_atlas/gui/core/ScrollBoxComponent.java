@@ -14,9 +14,9 @@ public class ScrollBoxComponent extends Component {
 	public static final int ARROW_TEXTURE_WIDTH = 32;
 	public static final int ARROW_TEXTURE_HEIGHT = 64;
 
-	private final int scrollStep;
-	private final boolean vertical;
-	private final ViewportComponent viewport;
+	protected final int scrollStep;
+	protected final boolean vertical;
+	protected final ViewportComponent viewport;
 
 	/**
 	 * How much the content of the viewport is displaced.
@@ -94,7 +94,7 @@ public class ScrollBoxComponent extends Component {
 	 * Offset of the viewport's content in pixels. This will only work
 	 * correctly after the viewport's size has been validated.
 	 */
-	private void doSetScrollPos(int newPos) {
+	protected void doSetScrollPos(int newPos) {
 		this.scrollPos = Math.max(0, Math.min(newPos, getContentSize() - getViewportSize()));
 		updateContentPos();
 	}

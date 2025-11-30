@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(HeldItemRenderer.class)
 public class MixinHeldItemRenderer {
 	@Inject(method = "renderFirstPersonMap", at = @At("HEAD"), cancellable = true)
-	void renderFirstPersonAtlas(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, ItemStack stack, CallbackInfo ci) {
+	protected void renderFirstPersonAtlas(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, ItemStack stack, CallbackInfo ci) {
 		if (MinecraftClient.getInstance().player == null || MinecraftClient.getInstance().world == null) return;
 		if (!(AntiqueAtlas.isHandheldAtlas(stack))) return;
 		HandheldAtlasRenderer.fromContext(MinecraftClient.getInstance().player).renderHandheldAtlas(matrices, vertexConsumers, light);
@@ -26,7 +26,7 @@ public class MixinHeldItemRenderer {
 	}
 
 	@ModifyExpressionValue(method = "renderFirstPersonItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z", ordinal = 0))
-	private boolean enableFirstPersonAtlasRendering(boolean original, AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand, float swingProgress, ItemStack stack, float equipProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+	protected boolean enableFirstPersonAtlasRendering(boolean original, AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand, float swingProgress, ItemStack stack, float equipProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
 		return original || AntiqueAtlas.isHandheldAtlas(stack);
 	}
 }

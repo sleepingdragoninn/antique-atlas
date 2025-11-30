@@ -67,7 +67,7 @@ Surveyor, which handles features including map sharing & visibility, can be conf
 Tiles, markers, biome detection, and structure detection is fully data-driven via resource packs.<br/>
 **Without defined biomes, atlas "guesses" tiles via tags, and shows `???` if that fails.**
 
-For a how-to on AA4 resource packs, check out the [resource pack tutorial](https://github.com/sisby-folk/antique-atlas/wiki/Resource-Packs).
+For a how-to on AA4 resource packs, check out the [resource pack tutorial](https://github.com/sisby-folk/antique-atlas/blob/RESPACKS.md).
 
 To automatically mark non-structure points of interest - instead use Surveyor's Landmark API, as in [Surveystones](https://modrinth.com/mod/surveystones).
 

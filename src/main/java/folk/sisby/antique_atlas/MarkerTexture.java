@@ -72,7 +72,6 @@ public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int
 
 	public void draw(MatrixStack matrices, VertexConsumerProvider vertexConsumers, double markerX, double markerY, float z, float markerScale, int tileChunks, float[] accent, float tint, float alpha, int light) {
 		if (alpha == 0) return;
-		if (AntiqueAtlas.CONFIG.shaderCompat) alpha = 1.0F;
 		matrices.push();
 		matrices.translate(markerX, markerY, 0.0);
 		matrices.scale(markerScale, markerScale, 1.0F);

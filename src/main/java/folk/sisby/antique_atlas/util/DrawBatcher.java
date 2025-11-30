@@ -1,5 +1,7 @@
 package folk.sisby.antique_atlas.util;
 
+import net.irisshaders.iris.api.v0;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
@@ -16,13 +18,13 @@ import org.joml.Matrix4f;
 
 public class DrawBatcher implements AutoCloseable {
 
-	private final Matrix4f matrix4f;
-	private final BufferBuilder bufferBuilder;
-	private final VertexConsumer vertexConsumer;
-	private final float textureWidth;
-	private final float textureHeight;
-	private final int light;
-	private final boolean in_world;
+	protected final Matrix4f matrix4f;
+	protected final BufferBuilder bufferBuilder;
+	protected final VertexConsumer vertexConsumer;
+	protected final float textureWidth;
+	protected final float textureHeight;
+	protected final int light;
+	protected final boolean inWorld;
 
 
 	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
@@ -32,7 +34,7 @@ public class DrawBatcher implements AutoCloseable {
 	}
 
 	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, boolean drawingTiles) {
-		this.in_world = !(vertexConsumers == null);
+		this.inWorld = !(vertexConsumers == null);
 		if (vertexConsumers == null) {
 			RenderSystem.setShaderTexture(0, texture);
 			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
@@ -41,10 +43,14 @@ public class DrawBatcher implements AutoCloseable {
 			this.vertexConsumer = bufferBuilder;
 		} else {
 			this.bufferBuilder = null;
-			if (drawingTiles) {
-				this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityNoOutline(texture));
+			if (IrisApi.getInstance().isShaderPackInUse()) {
+				if (drawingTiles) {
+					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityNoOutline(texture));
+				} else {
+					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(texture));
+				}
 			} else {
-				this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(texture));
+				this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getText(texture));
 			}
 		}
 		this.matrix4f = matrices.peek().getPositionMatrix();
@@ -64,7 +70,7 @@ public class DrawBatcher implements AutoCloseable {
 	}
 
 	protected void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
-		if (in_world) {
+		if (inWorld) {
 			vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).overlay(0).light(light).normal(0,0,0).next();
 			vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).overlay(0).light(light).normal(0,0,0).next();
 			vertexConsumer.vertex(matrix4f, x2, y2, z).color(argb).texture(u2, v2).overlay(0).light(light).normal(0,0,0).next();

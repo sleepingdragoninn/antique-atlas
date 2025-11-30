@@ -38,13 +38,13 @@ public class DrawBatcher implements AutoCloseable {
 		}
 	}
 
-	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb, boolean drawingTiles) {
-		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light, drawingTiles)) {
+	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb, boolean drawingTransparent) {
+		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light, drawingTransparent)) {
 			batcher.add(x, y, z, width, height, u, v, regionWidth, regionHeight, argb);
 		}
 	}
 
-	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, boolean drawingTiles) {
+	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, boolean drawingTransparent) {
 		this.inWorld = !(vertexConsumers == null);
 		if (vertexConsumers == null) {
 			RenderSystem.setShaderTexture(0, texture);
@@ -55,7 +55,7 @@ public class DrawBatcher implements AutoCloseable {
 		} else {
 			this.bufferBuilder = null;
 			if (areWeShadersRightNow()) {
-				if (drawingTiles) {
+				if (drawingTransparent) {
 					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityNoOutline(texture));
 				} else {
 					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(texture));

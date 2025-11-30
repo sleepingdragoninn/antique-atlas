@@ -45,9 +45,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 			Identifier id = Identifier.of(e.getKey().getNamespace(), e.getKey().getPath().substring("textures/atlas/tile/".length(), e.getKey().getPath().length() - ".png".length()));
 			try {
 				ResourceMetadata metadata = e.getValue().getMetadata();
-				metadata.decode(TileTextureMeta.METADATA).ifPresentOrElse(meta -> {
-					textureMeta.put(id, meta);
-				}, () -> {
+				metadata.decode(TileTextureMeta.METADATA).ifPresentOrElse(meta -> textureMeta.put(id, meta), () -> {
 					AntiqueAtlas.LOGGER.info("[Antique Atlas] Metadata not present for {} - using defaults.", e.getKey());
 					textureMeta.put(id, TileTextureMeta.DEFAULT);
 				});
@@ -68,8 +66,8 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		// Validate Parents
 		Map<Identifier, Identifier> invalidParents = new HashMap<>();
 		prepared.forEach((id, meta) -> {
-			if (meta.parent.isPresent() && !prepared.containsKey(meta.parent.orElseThrow())) {
-				invalidParents.put(id, meta.parent.orElseThrow());
+			if (meta.parent != null && !prepared.containsKey(meta.parent)) {
+				invalidParents.put(id, meta.parent);
 				AntiqueAtlas.LOGGER.error("[Antique Atlas] Failed to reload a tile texture! {} had invalid parent {}", id, meta.parent);
 			}
 		});
@@ -77,10 +75,10 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 
 		// Propagate fields to children
 		prepared.forEach((id, meta) -> {
-			Optional<TileTextureMeta> parent = meta.parent.map(prepared::get);
+			Optional<TileTextureMeta> parent = meta.parent().map(prepared::get);
 			while (parent.isPresent()) {
 				meta.inheritFromAncestor(parent.orElseThrow());
-				parent = parent.orElseThrow().parent.map(prepared::get);
+				parent = parent.orElseThrow().parent().map(prepared::get);
 			}
 		});
 
@@ -112,7 +110,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 	}
 
 	public static class TileTextureMeta {
-		public static final TileTextureMeta DEFAULT = new TileTextureMeta(Optional.empty(), Optional.empty(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
+		public static final TileTextureMeta DEFAULT = new TileTextureMeta(null, null, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
 
 		public static final Codec<TileTextureMeta> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Identifier.CODEC.optionalFieldOf("parent").forGetter(TileTextureMeta::parent),
@@ -124,15 +122,15 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 			CodecUtil.set(Codecs.TAG_ENTRY_ID).fieldOf("tilesToThis").orElseGet(HashSet::new).forGetter(TileTextureMeta::tilesToThis),
 			CodecUtil.set(Codecs.TAG_ENTRY_ID).fieldOf("tilesToThisHorizontal").orElseGet(HashSet::new).forGetter(TileTextureMeta::tilesToThisHorizontal),
 			CodecUtil.set(Codecs.TAG_ENTRY_ID).fieldOf("tilesToThisVertical").orElseGet(HashSet::new).forGetter(TileTextureMeta::tilesToThisVertical)
-		).apply(instance, TileTextureMeta::new));
+		).apply(instance, (p, b, t, tt, tth, ttv, ttt, ttth, tttv) -> new TileTextureMeta(p.orElse(null), b.orElse(null), t, tt, tth, ttv, ttt, ttth, tttv)));
 
 		public enum BorderType {
 			OUTER, INNER
 		}
 
 		public static final ResourceMetadataReader<TileTextureMeta> METADATA = new CodecUtil.CodecResourceMetadataSerializer<>(CODEC, AntiqueAtlas.id("tiling"));
-		protected final Optional<Identifier> parent;
-		protected Optional<BorderType> borderType;
+		protected final Identifier parent;
+		protected BorderType borderType;
 		protected final Set<Identifier> tags;
 		protected final Set<Codecs.TagEntryId> tilesTo;
 		protected final Set<Codecs.TagEntryId> tilesToHorizontal;
@@ -141,7 +139,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		protected final Set<Codecs.TagEntryId> tilesToThisHorizontal;
 		protected final Set<Codecs.TagEntryId> tilesToThisVertical;
 
-		public TileTextureMeta(Optional<Identifier> parent, Optional<BorderType> borderType, Set<Identifier> tags, Set<Codecs.TagEntryId> tilesTo, Set<Codecs.TagEntryId> tilesToHorizontal, Set<Codecs.TagEntryId> tilesToVertical, Set<Codecs.TagEntryId> tilesToThis, Set<Codecs.TagEntryId> tilesToThisHorizontal, Set<Codecs.TagEntryId> tilesToThisVertical) {
+		public TileTextureMeta(Identifier parent, BorderType borderType, Set<Identifier> tags, Set<Codecs.TagEntryId> tilesTo, Set<Codecs.TagEntryId> tilesToHorizontal, Set<Codecs.TagEntryId> tilesToVertical, Set<Codecs.TagEntryId> tilesToThis, Set<Codecs.TagEntryId> tilesToThisHorizontal, Set<Codecs.TagEntryId> tilesToThisVertical) {
 			this.parent = parent;
 			this.borderType = borderType;
 			this.tags = tags;
@@ -164,7 +162,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		}
 
 		void inheritFromAncestor(TileTextureMeta other) {
-			if (other.borderType.isPresent()) borderType = other.borderType;
+			if (other.borderType().isPresent()) borderType = other.borderType;
 			tags.addAll(other.tags);
 			tilesTo.addAll(other.tilesTo);
 			tilesToHorizontal.addAll(other.tilesToHorizontal);
@@ -222,15 +220,15 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		}
 
 		public TileTexture.Builder toBuilder(Identifier thisId) {
-			return new TileTexture.Builder(thisId, borderType.orElse(BorderType.OUTER) == BorderType.INNER, tilesTo.stream().map(Codecs.TagEntryId::id).collect(Collectors.toSet()), tilesToHorizontal.stream().map(Codecs.TagEntryId::id).collect(Collectors.toSet()), tilesToVertical.stream().map(Codecs.TagEntryId::id).collect(Collectors.toSet()));
+			return new TileTexture.Builder(thisId, borderType().orElse(BorderType.OUTER) == BorderType.INNER, tilesTo.stream().map(Codecs.TagEntryId::id).collect(Collectors.toSet()), tilesToHorizontal.stream().map(Codecs.TagEntryId::id).collect(Collectors.toSet()), tilesToVertical.stream().map(Codecs.TagEntryId::id).collect(Collectors.toSet()));
 		}
 
 		public Optional<Identifier> parent() {
-			return parent;
+			return Optional.ofNullable(parent);
 		}
 
 		public Optional<BorderType> borderType() {
-			return borderType;
+			return Optional.ofNullable(borderType);
 		}
 
 		public Set<Identifier> tags() {

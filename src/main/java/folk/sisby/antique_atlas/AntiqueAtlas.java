@@ -48,7 +48,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger(NAME);
 
 	public static final AntiqueAtlasConfig CONFIG = AntiqueAtlasConfig.createToml(FabricLoader.getInstance().getConfigDir(), "", "antique-atlas", AntiqueAtlasConfig.class);
-	public static ScreenState<AtlasScreen> lastState = new ScreenState<>();
+	public static final ScreenState<AtlasScreen> lastState = new ScreenState<>();
 
 	public static final ModelIdentifier ATLAS_MODEL = new ModelIdentifier(AntiqueAtlas.id("atlas"), "inventory");
 
@@ -123,6 +123,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> WorldAtlasData.WORLDS.clear()));
 
 		ModelPredicateProviderRegistry.register(Items.BOOK, AntiqueAtlas.id("atlas"), ((stack, world, entity, seed) -> isHandheldAtlas(stack) ? 1.0F : 0.0F));
+		//noinspection UnstableApiUsage
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(e -> e.addAfter(Items.MAP, getHandheldAtlas()));
 
 		WorldSummary.enableTerrain();

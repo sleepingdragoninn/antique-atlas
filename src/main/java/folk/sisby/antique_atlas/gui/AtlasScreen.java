@@ -117,7 +117,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 					addChild(markerModal);
 
 					markerCursor.setTexture(markerModal.selectedTexture.id(), markerModal.selectedTexture.textureWidth(), markerModal.selectedTexture.textureHeight());
-					addChildBehind(markerModal, markerCursor).setGuiCoords((int) worldXToScreenX(player.getBlockX() - MARKER_SIZE / 2), (int) worldZToScreenY(player.getBlockZ() - MARKER_SIZE / 2));
+					addChildBehind(markerModal, markerCursor).setGuiCoords((int) worldXToScreenX(player.getBlockX() - MARKER_SIZE / 2.0), (int) worldZToScreenY(player.getBlockZ() - MARKER_SIZE / 2.0));
 
 					// Un-press all keys to prevent player from walking infinitely:
 					KeyBinding.unpressAll();
@@ -432,7 +432,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public void updateScaleBookmark() {
 		int tileSizeBlocks = (tileChunks * 16 * 16) / tilePixels;
 		int defaultTileSizeBlocks = 16;
-		int rulerSizeBlocks = (int)(tileSizeBlocks / getEffectiveScale());
+		int rulerSizeBlocks = (int) (tileSizeBlocks / getEffectiveScale());
 		resetScaleBookmark.setLabel(Text.literal(
 			rulerSizeBlocks == 16 | rulerSizeBlocks >= 32 ? "%dc".formatted(rulerSizeBlocks / 16) : "%db".formatted(rulerSizeBlocks)).formatted(
 			tileSizeBlocks < defaultTileSizeBlocks ? Formatting.DARK_RED : tileSizeBlocks == defaultTileSizeBlocks ? Formatting.BLACK : Formatting.DARK_BLUE
@@ -469,6 +469,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		return true;
 	}
 
+	@SuppressWarnings("StatementWithEmptyBody")
 	public void resetZoom() {
 		if (zoomIn(true, 8)) {
 			while (zoomIn(false, 8)) ;
@@ -666,7 +667,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	}
 
 	@Override
-	public double getPixelsPerBlock()  {
+	public double getPixelsPerBlock() {
 		return (double) getEffectiveScale() * ((double) tilePixels()) / ((double) tileChunks() * 16.0);
 	}
 

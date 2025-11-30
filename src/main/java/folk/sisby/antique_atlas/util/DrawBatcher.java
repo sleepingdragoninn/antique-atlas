@@ -14,21 +14,38 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
+import java.lang.reflect.Method;
+
 public class DrawBatcher implements AutoCloseable {
+
 	protected final Matrix4f matrix4f;
 	protected final BufferBuilder bufferBuilder;
 	protected final VertexConsumer vertexConsumer;
 	protected final float textureWidth;
 	protected final float textureHeight;
 	protected final int light;
+	protected final boolean inWorld;
 
-	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb) {
-		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light)) {
+	public static boolean areWeShadersRightNow() {
+		try {
+			Class<?> apiClass = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
+			Method instanceMethod = apiClass.getDeclaredMethod("getInstance");
+			Method inUseMethod = apiClass.getDeclaredMethod("isShaderPackInUse");
+			Object apiInstance = instanceMethod.invoke(null);
+			return (boolean) inUseMethod.invoke(apiInstance);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb, boolean drawingTransparent) {
+		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light, drawingTransparent)) {
 			batcher.add(x, y, z, width, height, u, v, regionWidth, regionHeight, argb);
 		}
 	}
 
-	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light) {
+	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, boolean drawingTransparent) {
+		this.inWorld = !(vertexConsumers == null);
 		if (vertexConsumers == null) {
 			RenderSystem.setShaderTexture(0, texture);
 			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
@@ -37,7 +54,15 @@ public class DrawBatcher implements AutoCloseable {
 			this.vertexConsumer = bufferBuilder;
 		} else {
 			this.bufferBuilder = null;
-			this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getText(texture));
+			if (areWeShadersRightNow()) {
+				if (drawingTransparent) {
+					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityNoOutline(texture));
+				} else {
+					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(texture));
+				}
+			} else {
+				this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getText(texture));
+			}
 		}
 		this.matrix4f = matrices.peek().getPositionMatrix();
 		this.textureWidth = textureWidth;
@@ -56,10 +81,17 @@ public class DrawBatcher implements AutoCloseable {
 	}
 
 	protected void innerAdd(float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2, int argb) {
-		vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).light(light).next();
-		vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).light(light).next();
-		vertexConsumer.vertex(matrix4f, x2, y2, z).color(argb).texture(u2, v2).light(light).next();
-		vertexConsumer.vertex(matrix4f, x2, y1, z).color(argb).texture(u2, v1).light(light).next();
+		if (inWorld) {
+			vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).overlay(0).light(light).normal(0,0,0).next();
+			vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).overlay(0).light(light).normal(0,0,0).next();
+			vertexConsumer.vertex(matrix4f, x2, y2, z).color(argb).texture(u2, v2).overlay(0).light(light).normal(0,0,0).next();
+			vertexConsumer.vertex(matrix4f, x2, y1, z).color(argb).texture(u2, v1).overlay(0).light(light).normal(0,0,0).next();
+		} else {
+			vertexConsumer.vertex(matrix4f, x1, y1, z).color(argb).texture(u1, v1).light(light).next();
+			vertexConsumer.vertex(matrix4f, x1, y2, z).color(argb).texture(u1, v2).light(light).next();
+			vertexConsumer.vertex(matrix4f, x2, y2, z).color(argb).texture(u2, v2).light(light).next();
+			vertexConsumer.vertex(matrix4f, x2, y1, z).color(argb).texture(u2, v1).light(light).next();
+		}
 	}
 
 	@Override

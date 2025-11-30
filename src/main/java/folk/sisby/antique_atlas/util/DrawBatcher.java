@@ -1,7 +1,5 @@
 package folk.sisby.antique_atlas.util;
 
-import net.irisshaders.iris.api.v0;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
@@ -16,6 +14,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
+import java.lang.reflect.Method;
+
 public class DrawBatcher implements AutoCloseable {
 
 	protected final Matrix4f matrix4f;
@@ -26,6 +26,17 @@ public class DrawBatcher implements AutoCloseable {
 	protected final int light;
 	protected final boolean inWorld;
 
+	public static boolean areWeShadersRightNow() {
+		try {
+			Class<?> apiClass = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
+			Method instanceMethod = apiClass.getDeclaredMethod("getInstance");
+			Method inUseMethod = apiClass.getDeclaredMethod("isShaderPackInUse");
+			Object apiInstance = instanceMethod.invoke(null);
+			return (boolean) inUseMethod.invoke(apiInstance);
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
 	public static void drawSingle(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, int x, int y, float z, int width, int height, int u, int v, int regionWidth, int regionHeight, int argb, boolean drawingTiles) {
 		try (DrawBatcher batcher = new DrawBatcher(matrices, vertexConsumers, texture, textureWidth, textureHeight, light, drawingTiles)) {
@@ -43,7 +54,7 @@ public class DrawBatcher implements AutoCloseable {
 			this.vertexConsumer = bufferBuilder;
 		} else {
 			this.bufferBuilder = null;
-			if (IrisApi.getInstance().isShaderPackInUse()) {
+			if (areWeShadersRightNow()) {
 				if (drawingTiles) {
 					this.vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityNoOutline(texture));
 				} else {

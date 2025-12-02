@@ -15,6 +15,7 @@ import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
+import folk.sisby.surveyor.util.RegionPos;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
@@ -34,8 +35,10 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -507,12 +510,13 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			(int) (guiScale() * mapWidth),
 			(int) (guiScale() * mapHeight)
 		);
+
 		RenderSystem.enableBlend();
 		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
 		RenderSystem.setShaderColor(1, 1, 1, state.is(DELETING_MARKER) ? 0.5f : 1.0f);
 		renderTiles(context.getMatrices(), null, MAX_LIGHT);
 		RenderSystem.setShaderColor(1, 1, 1, 1);
+		RenderSystem.disableBlend();
 
 		// Overlay the frame so that edges of the map are smooth:
 		if (fullscreen) {
@@ -542,13 +546,29 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				for (Map.Entry<Landmark, MarkerTexture> entry : worldAtlasData.getAllMarkers(tileChunks).entrySet()) {
 					Landmark landmark = entry.getKey();
 					MarkerTexture texture = entry.getValue();
-					double markerX = worldXToScreenX(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX());
-					double markerY = worldZToScreenY(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ());
-					Vector2d markerCenter = texture.getCenter(tileChunks);
-					double squaredDistance = Vector2d.distanceSquared(markerX + markerScale * markerCenter.x, markerY + markerScale * markerCenter.y, mouseX, mouseY);
-					if (squaredDistance > 0 && squaredDistance < bestDistance && squaredDistance < (texture.getSquaredSize(tileChunks) * markerScale * markerScale) / 4.0) {
-						bestDistance = squaredDistance;
-						hoveredLandmark = landmark;
+					BlockPos pos = landmark.get(LandmarkComponentTypes.POS);
+					if (pos == null) {
+						Set<ChunkPos> chunks = RegionPos.regionsToChunks(landmark.getOrDefault(LandmarkComponentTypes.CHUNKS, new HashMap<>()));
+						for (ChunkPos chunk : chunks) {
+							double screenX = worldXToScreenX(chunk.getStartX());
+							double screenEndX = worldXToScreenX(chunk.getStartX() + 16);
+							double screenY = worldZToScreenY(chunk.getStartZ());
+							double screenEndY = worldZToScreenY(chunk.getStartZ() + 16);
+							boolean isInside = mouseX >= screenX && mouseX < screenEndX && mouseY >= screenY && mouseY < screenEndY;
+							if (isInside && 10 < bestDistance) {
+								hoveredLandmark = landmark;
+								bestDistance = 10;
+							}
+						}
+					} else {
+						double markerX = worldXToScreenX(pos.getX());
+						double markerY = worldZToScreenY(pos.getZ());
+						Vector2d markerCenter = texture.getCenter(tileChunks);
+						double squaredDistance = Vector2d.distanceSquared(markerX + markerScale * markerCenter.x, markerY + markerScale * markerCenter.y, mouseX, mouseY);
+						if (squaredDistance > 0 && squaredDistance < bestDistance && squaredDistance < (texture.getSquaredSize(tileChunks) * markerScale * markerScale) / 4.0) {
+							bestDistance = squaredDistance;
+							hoveredLandmark = landmark;
+						}
 					}
 				}
 				for (PlayerSummary friend : friends.values()) {
@@ -601,14 +621,11 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		});
 		context.getMatrices().pop();
 
-		RenderSystem.enableBlend();
-		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		if (state.is(PLACING_MARKER)) {
 			RenderSystem.setShaderColor(1, 1, 1, 0.5f);
 			context.drawTexture(markerModal.selectedTexture.id(), mouseX + markerModal.selectedTexture.offsetX(), mouseY + markerModal.selectedTexture.offsetY(), 0, 0, markerModal.selectedTexture.textureWidth(), markerModal.selectedTexture.textureHeight(), markerModal.selectedTexture.textureWidth(), markerModal.selectedTexture.textureHeight());
 			RenderSystem.setShaderColor(1, 1, 1, 1);
 		}
-		RenderSystem.disableBlend();
 
 		addMarkerBookmark.setTitle(hasShiftDown() ? TEXT_ADD_MARKER_HERE : TEXT_ADD_MARKER);
 

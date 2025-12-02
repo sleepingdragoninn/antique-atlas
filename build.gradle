@@ -114,5 +114,6 @@ modrinth {
 tasks.register("fullRelease") {
 	group "publishing"
 	dependsOn "githubRelease"
+	dependsOn "publish"
 	// dependsOn "modrinth"
 }

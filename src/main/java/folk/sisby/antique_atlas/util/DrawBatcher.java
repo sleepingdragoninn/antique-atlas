@@ -14,6 +14,7 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.reflect.Method;
 
@@ -46,8 +47,10 @@ public class DrawBatcher implements AutoCloseable {
 	}
 
 	public DrawBatcher(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture, int textureWidth, int textureHeight, int light, boolean drawingTransparent) {
-		this.inWorld = !(vertexConsumers == null);
+		this.inWorld = vertexConsumers != null;
 		if (vertexConsumers == null) {
+			RenderSystem.enableBlend();
+			RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			RenderSystem.setShaderTexture(0, texture);
 			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
 			this.bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
@@ -99,6 +102,7 @@ public class DrawBatcher implements AutoCloseable {
 		if (bufferBuilder != null) {
 			BuiltBuffer bb = bufferBuilder.endNullable();
 			if (bb != null) BufferRenderer.drawWithGlobalProgram(bb);
+			RenderSystem.disableBlend();
 		}
 	}
 }

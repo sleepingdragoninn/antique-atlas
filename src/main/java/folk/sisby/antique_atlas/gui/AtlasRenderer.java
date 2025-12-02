@@ -16,13 +16,16 @@ import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
+import folk.sisby.surveyor.util.RegionPos;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 
@@ -30,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 public interface AtlasRenderer {
@@ -70,7 +74,7 @@ public interface AtlasRenderer {
 	int BOOKMARK_SPACING = 2;
 	int MARKER_SIZE = 32;
 	int NAVIGATE_STEP = 24; // How much the map view is offset, in blocks, per click (or per tick).
-	int MAX_LIGHT = 15728640;
+	int MAX_LIGHT = 0xF000F0;
 
 	ScreenState.State<AtlasScreen> NORMAL = new ScreenState.ToggleState<>();
 	ScreenState.State<AtlasScreen> PLACING_MARKER = new ScreenState.ToggleState<>(s -> s.addMarkerBookmark);
@@ -150,19 +154,44 @@ public interface AtlasRenderer {
 		return mapY + bookY + MAP_BORDER_HEIGHT;
 	}
 
-	default void renderMarker(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Landmark landmark, MarkerTexture texture, float z, int light, BiFunction<Double, Double, Float> alpha, boolean pinned, boolean hovering, float markerScale) {
-		double markerX = worldXToScreenX(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getX()) - bookX();
-		double markerY = worldZToScreenY(landmark.getOrDefault(LandmarkComponentTypes.POS, BlockPos.ORIGIN).getZ()) - bookY();
-
+	default void renderMarker(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Landmark landmark, MarkerTexture texture, float z, int light, BiFunction<Double, Double, Float> alphaGetter, boolean pinned, boolean hovering, float markerScale) {
+		BlockPos pos = landmark.get(LandmarkComponentTypes.POS);
+		Integer color = landmark.get(LandmarkComponentTypes.COLOR);
+		float[] accent = color == null ? null : ColorUtil.componentsFromRgb(color);
 		float tint = hovering ? 0.8f : 1.0f;
+
+		if (pos == null) {
+			Set<ChunkPos> chunks = RegionPos.regionsToChunks(landmark.getOrDefault(LandmarkComponentTypes.CHUNKS, new HashMap<>()));
+			for (ChunkPos chunk : chunks) {
+				double markerX = worldXToScreenX(chunk.getStartX()) - bookX();
+				double chunkEndX = worldXToScreenX(chunk.getStartX() + 16) - bookX();
+				double markerY = worldZToScreenY(chunk.getStartZ()) - bookY();
+				double chunkEndY = worldZToScreenY(chunk.getStartZ() + 16) - bookY();
+				matrices.push();
+				matrices.translate(markerX, markerY, 0.0);
+				matrices.scale((float) ((chunkEndX - markerX) / 16.0F), (float) ((chunkEndY - markerY) / 16.0F), 1.0F);
+				float[] fillColor = accent == null ? ColorUtil.componentsFromRgb(0xFFFFFF) : new float[] { tint * accent[0], tint * accent[1], tint * accent[2] };
+				float alpha = alphaGetter.apply(markerX, markerY);
+				DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, 16, 16, 0.25F * alpha, fillColor);
+				if (!chunks.contains(new ChunkPos(chunk.x - 1, chunk.z))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, 1, 16, 0.5F * alpha, fillColor);
+				if (!chunks.contains(new ChunkPos(chunk.x, chunk.z - 1))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, 16, 1, 0.5F * alpha, fillColor);
+				if (!chunks.contains(new ChunkPos(chunk.x + 1, chunk.z))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 15, 0, 16, 16, 0.5F * alpha, fillColor);
+				if (!chunks.contains(new ChunkPos(chunk.x, chunk.z + 1))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 15, 16, 16, 0.5F * alpha, fillColor);
+				matrices.pop();
+			}
+			return;
+		}
+
+		double markerX = worldXToScreenX(pos.getX()) - bookX();
+		double markerY = worldZToScreenY(pos.getZ()) - bookY();
 
 		if (pinned) {
 			markerX = MathHelper.clamp(markerX, MAP_BORDER_WIDTH, mapWidth() + MAP_BORDER_WIDTH);
 			markerY = MathHelper.clamp(markerY, MAP_BORDER_HEIGHT, mapHeight() + MAP_BORDER_HEIGHT);
 		}
 
-		Integer color = landmark.get(LandmarkComponentTypes.COLOR);
-		texture.draw(matrices, vertexConsumers, markerX, markerY, z, markerScale, tileChunks(), color == null ? null : ColorUtil.componentsFromRgb(color), tint, alpha.apply(markerX, markerY), light);
+
+		texture.draw(matrices, vertexConsumers, markerX, markerY, z, markerScale, tileChunks(), accent, tint, alphaGetter.apply(markerX, markerY), light);
 	}
 
 	default void renderPlayer(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float z, int light, PlayerSummary player, float iconScale, float alpha, boolean hovering, boolean self) {
@@ -193,7 +222,7 @@ public interface AtlasRenderer {
 		tiles.setStep(tileChunks());
 		int mapX = bookX() + MAP_BORDER_WIDTH;
 		int mapY = bookY() + MAP_BORDER_HEIGHT;
-		float effectiveScale = (float)(mapScale()/guiScale());
+		float effectiveScale = (float) (mapScale() / guiScale());
 		matrices.push();
 		matrices.translate(mapStartScreenX, mapStartScreenY, 0);
 		matrices.scale(effectiveScale, effectiveScale, 1.0F);

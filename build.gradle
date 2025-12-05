@@ -8,7 +8,7 @@ plugins {
 }
 
 version = "$baseVersion+$branch"
-archivesBaseName = project.slug
+base.archivesName = project.slug
 
 repositories {
 	maven { url "https://repo.sleeping.town/" }
@@ -63,7 +63,7 @@ java {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${archivesBaseName}" }
+		rename { "${it}_${base.archivesName}" }
 	}
 }
 

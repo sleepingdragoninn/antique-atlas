@@ -161,19 +161,24 @@ public interface AtlasRenderer {
 			Set<ChunkPos> chunks = RegionPos.regionsToChunks(landmark.getOrDefault(LandmarkComponentTypes.CHUNKS, new HashMap<>()));
 			for (ChunkPos chunk : chunks) {
 				double markerX = worldXToScreenX(chunk.getStartX()) - bookX();
-				double chunkEndX = worldXToScreenX(chunk.getStartX() + 16) - bookX();
 				double markerY = worldZToScreenY(chunk.getStartZ()) - bookY();
-				double chunkEndY = worldZToScreenY(chunk.getStartZ() + 16) - bookY();
+				float effectiveScale = (float) (mapScale() / guiScale());
 				matrices.push();
 				matrices.translate(markerX, markerY, 0.0);
-				matrices.scale((float) ((chunkEndX - markerX) / 16.0F), (float) ((chunkEndY - markerY) / 16.0F), 1.0F);
-				float[] fillColor = accent == null ? ColorUtil.componentsFromRgb(0xFFFFFF) : new float[] { tint * accent[0], tint * accent[1], tint * accent[2] };
-				float alpha = alphaGetter.apply(markerX, markerY);
-				DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, 16, 16, 0.25F * alpha, fillColor);
-				if (!chunks.contains(new ChunkPos(chunk.x - 1, chunk.z))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, 1, 16, 0.5F * alpha, fillColor);
-				if (!chunks.contains(new ChunkPos(chunk.x, chunk.z - 1))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, 16, 1, 0.5F * alpha, fillColor);
-				if (!chunks.contains(new ChunkPos(chunk.x + 1, chunk.z))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 15, 0, 16, 16, 0.5F * alpha, fillColor);
-				if (!chunks.contains(new ChunkPos(chunk.x, chunk.z + 1))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 15, 16, 16, 0.5F * alpha, fillColor);
+				matrices.scale(effectiveScale, effectiveScale, 1.0F);
+				int size = tilePixels() / tileChunks();
+				int lineSize = tilePixels() / 16;
+				if (size > 0) {
+					float[] fillColor = accent == null ? ColorUtil.componentsFromRgb(0xFFFFFF) : new float[] { tint * accent[0], tint * accent[1], tint * accent[2] };
+					float alpha = alphaGetter.apply(markerX, markerY);
+					DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, size, size, 0.25F * alpha, fillColor);
+					if (lineSize > 0) {
+						if (!chunks.contains(new ChunkPos(chunk.x - 1, chunk.z))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, lineSize, size, 0.5F * alpha, fillColor);
+						if (!chunks.contains(new ChunkPos(chunk.x, chunk.z - 1))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, 0, size, lineSize, 0.5F * alpha, fillColor);
+						if (!chunks.contains(new ChunkPos(chunk.x + 1, chunk.z))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, size - lineSize, 0, size, size, 0.5F * alpha, fillColor);
+						if (!chunks.contains(new ChunkPos(chunk.x, chunk.z + 1))) DrawUtil.fill(matrices, vertexConsumers, RenderLayer.getTextBackgroundSeeThrough(), z, light, 0, size - lineSize, size, size, 0.5F * alpha, fillColor);
+					}
+				}
 				matrices.pop();
 			}
 			return;

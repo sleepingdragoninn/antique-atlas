@@ -1,5 +1,5 @@
 [versions]
-loom = "1.11.+"
+loom = "1.13.+"
 githubRelease = "2.4.1"
 minotaur = "2.+"
 
@@ -10,7 +10,7 @@ fl = "0.16.14"
 yarn = "1.21.1+build.3"
 fapi = "0.116.7+1.21.1"
 
-surveyor = "1.0.0-alpha.19+1.21"
+surveyor = "1.0.0-alpha.25+1.21"
 
 [plugins]
 loom = { id = "fabric-loom", version.ref = "loom" }

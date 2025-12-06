@@ -64,9 +64,6 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	@Comment("How to handle biomes that aren't in any minecraft, conventional, or forge biome tags")
 	public FallbackHandling fallbackFailHandling = FallbackHandling.MISSING;
 
-	@Comment("Whether to show debug information about hovered tiles and markers")
-	public boolean debugRender = false;
-
 	public Map<String, Boolean> structureMarkers = ValueMap.builder(true)
 		.put("minecraft:type/end_city", false)
 		.build();

@@ -139,7 +139,7 @@ public class WorldAtlasData {
 
 	public void addLandmark(Landmark landmark) {
 		if (landmark == null) return;
-		if (landmark.id().getPath().startsWith("player_death")) {
+		if (landmark.id().getPath().startsWith("grave")) {
 			AntiqueAtlasConfig.GraveStyle style = AntiqueAtlas.CONFIG.graveStyle;
 			Text name = landmark.get(LandmarkComponentTypes.NAME);
 			if (name == null && style == AntiqueAtlasConfig.GraveStyle.CAUSE) style = AntiqueAtlasConfig.GraveStyle.DIED;

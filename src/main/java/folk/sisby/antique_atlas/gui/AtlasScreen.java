@@ -629,7 +629,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 		addMarkerBookmark.setTitle(hasShiftDown() ? TEXT_ADD_MARKER_HERE : TEXT_ADD_MARKER);
 
-		if (AntiqueAtlas.CONFIG.debugRender && !isDragging && isMouseOverMap && markerModal.getParent() == null) {
+		if (hasAltDown() && !isDragging && isMouseOverMap && markerModal.getParent() == null) {
 			int x = screenXToWorldX((int) getMouseX());
 			int z = screenYToWorldZ((int) getMouseY());
 			ChunkPos pos = new ChunkPos(new BlockPos(x, 0, z));

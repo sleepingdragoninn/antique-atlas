@@ -1,0 +1,20 @@
+{
+	"antique_atlas:tiling": {
+		"tilesToThis": [
+			"#antique_atlas:caves",
+			"#antique_atlas:cliffs",
+			"#antique_atlas:flat",
+			"#antique_atlas:floating_islands",
+			"#antique_atlas:grass",
+			"#antique_atlas:plateaus",
+			"#antique_atlas:low_plateaus",
+			"#antique_atlas:sky",
+			"#antique_atlas:mountains",
+			"#antique_atlas:snow",
+			"#antique_atlas:tiered",
+			"#antique_atlas:ice",
+			"#antique_atlas:lava",
+			"#antique_atlas:water"
+		]
+	}
+}

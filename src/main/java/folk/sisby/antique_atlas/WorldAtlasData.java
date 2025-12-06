@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
+import folk.sisby.antique_atlas.reloader.TileTextures;
 import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
@@ -113,7 +114,7 @@ public class WorldAtlasData {
 	}
 
 	public TileTexture getTile(ChunkPos pos) {
-		if (!biomeTiles.containsKey(pos)) return null;
+		if (!biomeTiles.containsKey(pos)) return AntiqueAtlas.CONFIG.emptyHandling == AntiqueAtlasConfig.EmptyHandling.CLOUDS ? TileTextures.getInstance().getTextures().get(AntiqueAtlas.id("clouds")) : null;
 		return structureTiles.getOrDefault(pos, biomeTiles.get(pos));
 	}
 

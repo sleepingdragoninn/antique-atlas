@@ -23,6 +23,11 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 		CRASH
 	}
 
+	public enum EmptyHandling {
+		CLOUDS,
+		EMPTY
+	}
+
 	@Comment("Whether to display the map in full-screen")
 	@Comment("The background is slightly less stylish, but more tiles are shown at once")
 	public boolean fullscreen = true;
@@ -63,6 +68,9 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 
 	@Comment("How to handle biomes that aren't in any minecraft, conventional, or forge biome tags")
 	public FallbackHandling fallbackFailHandling = FallbackHandling.MISSING;
+
+	@Comment("How to display areas that aren't explored yet")
+	public EmptyHandling emptyHandling = EmptyHandling.EMPTY;
 
 	public Map<String, Boolean> structureMarkers = ValueMap.builder(true)
 		.put("minecraft:type/end_city", false)

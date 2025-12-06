@@ -644,7 +644,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				String predicate = worldAtlasData.getTilePredicate(pos);
 				if (texture != null) {
 					if (predicate != null) context.drawText(textRenderer, Text.literal(predicate), getGuiX() + bookWidth - textRenderer.getWidth(Text.literal(predicate)), getGuiY() - 12, 0xFFFFFFFF, true);
-					context.drawText(textRenderer, Text.literal(providerId.toString()), getGuiX(), getGuiY() + bookHeight, 0xFFFFFFFF, true);
+					if (providerId != null) context.drawText(textRenderer, Text.literal(providerId.toString()), getGuiX(), getGuiY() + bookHeight, 0xFFFFFFFF, true);
 					context.drawText(textRenderer, Text.literal(texture.displayId()), getGuiX() + bookWidth - textRenderer.getWidth(Text.literal(texture.displayId())), getGuiY() + bookHeight, 0xFFFFFFFF, true);
 				}
 			}

@@ -14,6 +14,7 @@ import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
+import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.util.RegionPos;
 import net.minecraft.client.MinecraftClient;
@@ -116,7 +117,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 				// While holding shift, we create a marker on the player's position
 				if (hasShiftDown()) {
-					markerModal.setMarkerData(player.getEntityWorld(), player.getBlockX(), player.getBlockZ());
+					markerModal.setMarkerData(player.getEntityWorld(), Landmark.create(SurveyorClient.getClientUuid(), AntiqueAtlas.id("newmarker"), b -> b.add(LandmarkComponentTypes.POS, player.getBlockPos())));
 					addChild(markerModal);
 
 					markerCursor.setTexture(markerModal.selectedTexture.id(), markerModal.selectedTexture.textureWidth(), markerModal.selectedTexture.textureHeight());
@@ -218,7 +219,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 		if (worldAtlasData == null) return;
 
-		worldAtlasData.getEditableLandmarks().forEach((landmark, texture) -> {
+		worldAtlasData.getEditableLandmarks(player.getEntityWorld()).forEach((landmark, texture) -> {
 			BookmarkButton bookmark = new MarkerBookmarkButton(landmark.getOrDefault(LandmarkComponentTypes.NAME, Text.literal(landmark.id().getPath())), texture, landmark.getOrDefault(LandmarkComponentTypes.COLOR, 0xFFFFFF), true);
 
 			bookmark.addListener(button -> {
@@ -273,9 +274,21 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		if (super.mouseClicked(mouseX, mouseY, mouseState)) return true;
 
 		// If clicked on the map, start dragging
-		if (!state.is(NORMAL) && !state.is(HIDING_MARKERS)) {
+		if (state.is(NORMAL) && hoveredLandmark != null && hoveredLandmark.contains(LandmarkComponentTypes.POS) && WorldLandmarks.canModify(hoveredLandmark.owner(), player.getEntityWorld(), null) && mouseState == GLFW.GLFW_MOUSE_BUTTON_2) {
+			markerModal.setMarkerData(player.getEntityWorld(), hoveredLandmark);
+			addChild(markerModal);
+
+			markerCursor.setTexture(markerModal.selectedTexture.id(), MARKER_SIZE, MARKER_SIZE);
+			addChildBehind(markerModal, markerCursor).setGuiCoords((int) mouseX - MARKER_SIZE / 2, (int) mouseY - MARKER_SIZE / 2);
+
+			// Un-press all keys to prevent player from walking infinitely:
+			KeyBinding.unpressAll();
+
+			state.switchTo(NORMAL, this);
+			return true;
+		} else if (!state.is(NORMAL) && !state.is(HIDING_MARKERS)) {
 			if (state.is(PLACING_MARKER) && isMouseOverMap && mouseState == GLFW.GLFW_MOUSE_BUTTON_1) {
-				markerModal.setMarkerData(player.getEntityWorld(), screenXToWorldX(mouseX), screenYToWorldZ(mouseY));
+				markerModal.setMarkerData(player.getEntityWorld(), Landmark.create(SurveyorClient.getClientUuid(), AntiqueAtlas.id("newmarker"), b -> b.add(LandmarkComponentTypes.POS, new BlockPos(screenXToWorldX(mouseX), 0, screenYToWorldZ(mouseY)))));
 				addChild(markerModal);
 
 				markerCursor.setTexture(markerModal.selectedTexture.id(), MARKER_SIZE, MARKER_SIZE);
@@ -286,7 +299,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 				state.switchTo(NORMAL, this);
 				return true;
-			} else if (state.is(DELETING_MARKER) && hoveredLandmark != null && isMouseOverMap && mouseState == 0) {
+			} else if (state.is(DELETING_MARKER) && hoveredLandmark != null && isMouseOverMap && mouseState == GLFW.GLFW_MOUSE_BUTTON_1) {
 				if (worldAtlasData.deleteLandmark(player.getEntityWorld(), hoveredLandmark)) {
 					updateBookmarkerList();
 					player.getEntityWorld().playSound(player, player.getBlockPos(), SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundCategory.AMBIENT, 1F, 0.5F);
@@ -585,7 +598,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
 				boolean hovering = hoveredLandmark == landmark && markerModal.getParent() == null;
 				BiFunction<Double, Double, Float> alpha = (x, y) -> state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !hovering) || (hovering && x <= MAP_BORDER_WIDTH || x >= mapWidth + MAP_BORDER_WIDTH || y <= MAP_BORDER_HEIGHT || y >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
-				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, WorldAtlasData.landmarkIsEditable(landmark), hovering, markerScale);
+				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, WorldLandmarks.canModify(landmark.owner(), player.getEntityWorld(), null), hovering, markerScale);
 				Text name = landmark.get(LandmarkComponentTypes.NAME);
 				if (hovering && name != null && !name.getString().isEmpty()) {
 					context.drawTooltip(textRenderer, Stream.concat(Stream.of(name), landmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());

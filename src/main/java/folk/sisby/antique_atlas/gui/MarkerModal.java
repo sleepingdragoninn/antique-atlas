@@ -1,11 +1,16 @@
 package folk.sisby.antique_atlas.gui;
 
 import folk.sisby.antique_atlas.MarkerTexture;
+import folk.sisby.antique_atlas.WorldAtlasData;
 import folk.sisby.antique_atlas.gui.core.Component;
 import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
 import folk.sisby.antique_atlas.gui.core.ToggleButtonRadioGroup;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.util.ColorUtil;
+import folk.sisby.surveyor.WorldSummary;
+import folk.sisby.surveyor.landmark.Landmark;
+import folk.sisby.surveyor.landmark.WorldLandmarks;
+import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -13,13 +18,16 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.math.ColumnPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * This GUI is used select marker icon and enter a label.
@@ -29,8 +37,7 @@ import java.util.List;
  */
 public class MarkerModal extends Component {
 	protected World world;
-	protected int markerX;
-	protected int markerZ;
+	protected Landmark baseLandmark = null;
 
 	protected MarkerTexture selectedTexture = MarkerTexture.DEFAULT;
 	protected DyeColor selectedColor = DyeColor.WHITE;
@@ -47,20 +54,30 @@ public class MarkerModal extends Component {
 	protected ToggleButtonRadioGroup<TexturePreviewButton<MarkerTexture>> textureRadioGroup;
 	protected ScrollBoxComponent colorScrollBox;
 	protected ToggleButtonRadioGroup<TexturePreviewButton<DyeColor>> colorRadioGroup;
+	protected Map<MarkerTexture, TexturePreviewButton<MarkerTexture>> textureButtons = new LinkedHashMap<>();
+	protected Map<DyeColor, TexturePreviewButton<DyeColor>> colorButtons = new LinkedHashMap<>();
 
 	protected final List<IMarkerTypeSelectListener> markerListeners = new ArrayList<>();
 
 	public MarkerModal() {
 	}
 
-	void setMarkerData(World world, int markerX, int markerZ) {
+	void setMarkerData(World world, Landmark baseLandmark) {
 		this.world = world;
-		this.markerX = markerX;
-		this.markerZ = markerZ;
+		this.baseLandmark = baseLandmark;
+		this.selectedColor = Objects.requireNonNullElse(DyeColor.byFireworkColor(baseLandmark.getOrDefault(LandmarkComponentTypes.COLOR, DyeColor.WHITE.getFireworkColor())), DyeColor.WHITE);
+		this.selectedTexture = MarkerTextures.getInstance().fromLandmark(baseLandmark);
+		if (!selectedTexture.keyId().getPath().startsWith("custom/")) selectedTexture = textureButtons.keySet().stream().findFirst().orElse(MarkerTexture.DEFAULT);
+		if (colorRadioGroup != null) updateSelected();
 	}
 
 	void addMarkerListener(IMarkerTypeSelectListener listener) {
 		markerListeners.add(listener);
+	}
+
+	protected void updateSelected() {
+		colorRadioGroup.setSelectedButton(colorButtons.get(selectedColor));
+		textureRadioGroup.setSelectedButton(textureButtons.get(selectedTexture));
 	}
 
 	@Override
@@ -69,7 +86,18 @@ public class MarkerModal extends Component {
 		super.init();
 
 		addDrawableChild(btnDone = ButtonWidget.builder(Text.translatable("gui.done"), (button) -> {
-			((AtlasScreen) getParent()).worldAtlasData().placeCustomMarker(world, selectedTexture, selectedColor, Text.literal(textField.getText()), new ColumnPos(markerX, markerZ));
+			MutableText label = Text.literal(textField.getText());
+			WorldLandmarks summary = WorldSummary.of(world).landmarks();
+			if (summary != null) {
+				summary.remove(world, baseLandmark.owner(), baseLandmark.id());
+				summary.put(world, WorldAtlasData.copyLandmarkWith(
+					baseLandmark,
+					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getName() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
+					copy -> {
+					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getFireworkColor());
+					copy.set(LandmarkComponentTypes.NAME, label);
+				}));
+			}
 			((AtlasScreen) getParent()).updateBookmarkerList();
 			ClientPlayerEntity player = MinecraftClient.getInstance().player;
 			if (player != null) world.playSound(player, player.getBlockPos(), SoundEvents.ENTITY_VILLAGER_WORK_CARTOGRAPHER, SoundCategory.AMBIENT, 1F, 1F);
@@ -82,6 +110,7 @@ public class MarkerModal extends Component {
 		textField.setFocusUnlocked(true);
 		textField.setFocused(true);
 		textField.setPlaceholder(Text.translatable("gui.antique_atlas.marker.label"));
+		textField.setText(baseLandmark.getOrDefault(LandmarkComponentTypes.NAME, Text.empty()).getString());
 
 		textureScrollBox = new ScrollBoxComponent(false, (TexturePreviewButton.FRAME_SIZE + TYPE_SPACING));
 		this.addChild(textureScrollBox);
@@ -104,10 +133,8 @@ public class MarkerModal extends Component {
 			if (!texture.keyId().getPath().startsWith("custom/")) continue;
 			if (selectedTexture == MarkerTexture.DEFAULT) selectedTexture = texture;
 			TexturePreviewButton<MarkerTexture> markerGui = new MarkerPreviewButton(texture, ColorUtil.componentsFromRgb(selectedColor.getFireworkColor()));
+			textureButtons.put(texture, markerGui);
 			textureRadioGroup.addButton(markerGui);
-			if (selectedTexture.equals(texture)) {
-				textureRadioGroup.setSelectedButton(markerGui);
-			}
 			textureScrollBox.getViewport().addContent(markerGui).setRelativeX(contentX);
 			contentX += TexturePreviewButton.FRAME_SIZE + TYPE_SPACING;
 		}
@@ -132,13 +159,13 @@ public class MarkerModal extends Component {
 		int colorContentX = 0;
 		for (DyeColor color : DyeColor.values()) {
 			TexturePreviewButton<DyeColor> colorGui = new TexturePreviewButton<>(color, BookmarkButton.TEXTURE_LEFT, BookmarkButton.WIDTH, BookmarkButton.HEIGHT, BookmarkButton.HEIGHT, ColorUtil.componentsFromRgb(color.getFireworkColor()));
+			colorButtons.put(color, colorGui);
 			colorRadioGroup.addButton(colorGui);
-			if (selectedColor.equals(color)) {
-				colorRadioGroup.setSelectedButton(colorGui);
-			}
 			colorScrollBox.getViewport().addContent(colorGui).setRelativeX(colorContentX);
 			colorContentX += TexturePreviewButton.FRAME_SIZE + TYPE_SPACING;
 		}
+
+		updateSelected();
 	}
 
 	@Override

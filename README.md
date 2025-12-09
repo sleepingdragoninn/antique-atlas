@@ -69,7 +69,7 @@ Tiles, markers, biome detection, and structure detection is fully data-driven vi
 
 For a how-to on AA4 resource packs, check out the [resource pack tutorial](https://github.com/sisby-folk/antique-atlas/blob/1.20/RESPACKS.md).
 
-To automatically mark non-structure points of interest - instead use Surveyor's Landmark API, as in [Surveystones](https://modrinth.com/mod/surveystones).
+To automatically mark non-structure points of interest - instead use [Surveyor](https://modrinth.com/mod/surveyor)'s Landmark API.
 
 ## API
 
@@ -80,7 +80,7 @@ repositories {
 	maven { url "https://repo.sleeping.town/" }
 }
 dependencies {
-	modImplementation "folk.sisby:antique-atlas:3.0.0+alpha.3+1.20"
+	modImplementation "folk.sisby:antique-atlas:3.0.0+1.20"
 }
 ```
 
@@ -89,15 +89,6 @@ Please match the license of any addons to LGPLv3 if you're comfortable! It helps
 
 Try `AtlasRenderer.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
 
-## Version History
-
-This is a loveletter rewrite. We want to introduce new players to atlas, and make it easier to maintain and improve.<br/>
-`0.x` uses arch, keeps the old `antiqueatlas` ID, and is API-compatible with [tyra's port](https://modrinth.com/mod/antique-atlas).<br/>
-`1.x` uses fabric, and is API-incompatible with 0.x.<br/>
-`2.x` uses fabric and [Surveyor](https://modrinth.com/mod/surveyor) - and is save/API/network/respack-incompatible with older versions.<br/>
-
-Once stable and feature-complete, we intend to maintain atlas on most modpack versions >=1.18.2 ([more info](https://github.com/sisby-folk/antique-atlas/issues/81))
-
 ## Afterword
 
 All mods are built on the work of many others.
@@ -105,17 +96,4 @@ All mods are built on the work of many others.
 The art for antique atlas was created by [Hunternif](https://github.com/Hunternif) ([DA](https://www.deviantart.com/hunternif)) and [lumiscosity](https://github.com/lumiscosity) ([Neocities](https://lumiscosity.neocities.org/)).<br/>
 [Click here](https://github.com/sisby-folk/antique-atlas/blob/1.20/CREDITS) for detailed art credit.
 
-This mod is a fourth-gen rewrite, and relies heavily on contributions of many developers and artists before us.<br/>
-We can't draw autotile to save our lives - feel free to [contribute](https://github.com/sisby-folk/antique-atlas/issues?q=is%3Aissue+is%3Aopen+label%3Atexturing)!
-
-This mod is included in [Tinkerer's Quilt Plus](https://modrinth.com/modpack/tinkerers-quilt) - our modpack about rediscovering vanilla.
-
-We're open to better ways to implement our mods. If you see something odd and have an idea, let us know!
-
----
-
-<center>
-<b>Tinkerer's:</b> <a href="https://modrinth.com/modpack/tinkerers-quilt">Quilt</a> - <a href="https://modrinth.com/mod/tinkerers-smithing">Smithing</a> - <a href="https://modrinth.com/mod/origins-minus">Origins</a> - <a href="https://modrinth.com/mod/tinkerers-statures">Statures</a> - <a href="https://modrinth.com/mod/picohud">HUD</a><br/>
-<b>Loveletters:</b> <a href="https://modrinth.com/mod/inventory-tabs">Tabs</a> - <i>Atlas</i> - <a href="https://modrinth.com/mod/portable-crafting">Portable Crafting</a> - <a href="https://modrinth.com/mod/drogstyle">Drogstyle</a><br/>
-<b>Others:</b> <a href="https://modrinth.com/mod/switchy">Switchy</a> - <a href="https://modrinth.com/mod/crunchy-crunchy-advancements">Crunchy</a> - <a href="https://modrinth.com/mod/starcaller">Starcaller</a><br/>
-</center>
+This mod is a loveletter rewrite, and relies heavily on contributions of many developers and artists before us.<br/>

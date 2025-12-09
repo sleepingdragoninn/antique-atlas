@@ -4,9 +4,9 @@ import com.google.common.collect.Multimap;
 import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
+import folk.sisby.antique_atlas.reloader.TileTextures;
 import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.WorldSummary;
-import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentMap;
@@ -19,12 +19,9 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ColumnPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.Structure;
 
@@ -39,6 +36,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
 
 public class WorldAtlasData {
 	public static final Map<RegistryKey<World>, WorldAtlasData> WORLDS = new HashMap<>();
@@ -113,7 +111,7 @@ public class WorldAtlasData {
 	}
 
 	public TileTexture getTile(ChunkPos pos) {
-		if (!biomeTiles.containsKey(pos)) return null;
+		if (!biomeTiles.containsKey(pos)) return AntiqueAtlas.CONFIG.emptyHandling == AntiqueAtlasConfig.EmptyHandling.CLOUDS ? TileTextures.getInstance().getTextures().get(AntiqueAtlas.id("clouds")) : null;
 		return structureTiles.getOrDefault(pos, biomeTiles.get(pos));
 	}
 
@@ -137,9 +135,16 @@ public class WorldAtlasData {
 		landmarkMarkers.computeIfAbsent(landmark.owner(), t -> new ConcurrentHashMap<>()).put(landmark.id(), Pair.of(landmark, texture));
 	}
 
+	public static Landmark copyLandmarkWith(Landmark landmark, Identifier id, Consumer<LandmarkComponentMap> modifier) {
+		LandmarkComponentMap copy = LandmarkComponentMap.builder().build();
+		landmark.components().keySet().forEach(t -> copy.set(t, landmark.components().get(t)));
+		modifier.accept(copy);
+		return new Landmark(landmark.owner(), id, copy);
+	}
+
 	public void addLandmark(Landmark landmark) {
 		if (landmark == null) return;
-		if (landmark.id().getPath().startsWith("player_death")) {
+		if (landmark.id().getPath().startsWith("grave")) {
 			AntiqueAtlasConfig.GraveStyle style = AntiqueAtlas.CONFIG.graveStyle;
 			Text name = landmark.get(LandmarkComponentTypes.NAME);
 			if (name == null && style == AntiqueAtlasConfig.GraveStyle.CAUSE) style = AntiqueAtlasConfig.GraveStyle.DIED;
@@ -150,10 +155,7 @@ public class WorldAtlasData {
 				case GRAVE, ITEMS, DIED -> Text.translatable(key, Text.translatable("gui.antique_atlas.marker.death.%s.verb".formatted(style.toString().toLowerCase())).formatted(Formatting.RED), timeText).formatted(Formatting.GRAY);
 				case EUPHEMISMS -> Text.translatable(key, Text.translatable("gui.antique_atlas.marker.death.%s.verb.%s".formatted(style.toString().toLowerCase(), new Random(landmark.getOrDefault(LandmarkComponentTypes.SEED, 0)).nextInt(11))).formatted(Formatting.RED), timeText).formatted(Formatting.GRAY);
 			};
-			LandmarkComponentMap copy = LandmarkComponentMap.builder().build();
-			landmark.components().keySet().forEach(t -> copy.set(t, landmark.components().get(t)));
-			copy.set(LandmarkComponentTypes.NAME, text);
-			addLandmarkMarker(new Landmark(landmark.owner(), landmark.id(), copy), MarkerTextures.getInstance().fromLandmark(landmark, style == AntiqueAtlasConfig.GraveStyle.ITEMS ? "items" : null));
+			addLandmarkMarker(copyLandmarkWith(landmark, landmark.id(), m -> m.set(LandmarkComponentTypes.NAME, text)), MarkerTextures.getInstance().fromLandmark(landmark, style == AntiqueAtlasConfig.GraveStyle.ITEMS ? "items" : null));
 		} else {
 			addLandmarkMarker(landmark, MarkerTextures.getInstance().fromLandmark(landmark));
 		}
@@ -172,21 +174,17 @@ public class WorldAtlasData {
 		});
 	}
 
-	public static boolean landmarkIsEditable(Landmark landmark) {
-		return landmark.owner() != null && SurveyorClient.getClientUuid().equals(landmark.owner());
-	}
-
 	public boolean deleteLandmark(World world, Landmark landmark) {
 		WorldLandmarks summary = WorldSummary.of(world).landmarks();
-		if (summary == null || !landmarkIsEditable(landmark)) return false;
+		if (summary == null || !WorldLandmarks.canModify(landmark.owner(), world, null)) return false;
 		summary.remove(world, landmark.owner(), landmark.id());
 		return true;
 	}
 
-	public Map<Landmark, MarkerTexture> getEditableLandmarks() {
+	public Map<Landmark, MarkerTexture> getEditableLandmarks(World world) {
 		Map<Landmark, MarkerTexture> map = new HashMap<>();
 		landmarkMarkers.forEach((type, landmarks) -> landmarks.forEach((pos, pair) -> {
-			if (landmarkIsEditable(pair.left())) map.put(pair.left(), pair.right());
+			if (WorldLandmarks.canModify(pair.left().owner(), world, null)) map.put(pair.left(), pair.right());
 		}));
 		return map;
 	}
@@ -202,18 +200,5 @@ public class WorldAtlasData {
 
 	public MarkerTexture getMarkerTexture(Landmark landmark) {
 		return landmarkMarkers.containsKey(landmark.owner()) && landmarkMarkers.get(landmark.owner()).containsKey(landmark.id()) ? landmarkMarkers.get(landmark.owner()).get(landmark.id()).right() : structureMarkers.get(landmark);
-	}
-
-	public void placeCustomMarker(World world, MarkerTexture selectedTexture, DyeColor color, MutableText label, ColumnPos pos) {
-		WorldLandmarks summary = WorldSummary.of(world).landmarks();
-		if (summary == null) return;
-		summary.put(world, Landmark.create(
-			SurveyorClient.getClientUuid(),
-			selectedTexture.keyId().withSuffixedPath("/" + color.getName() + "/" + pos.x() + "/" + pos.z()),
-			b -> b
-				.add(LandmarkComponentTypes.POS, new BlockPos(pos.x(), 0, pos.z()))
-				.add(LandmarkComponentTypes.COLOR, color.getFireworkColor())
-				.add(LandmarkComponentTypes.NAME, label)
-		));
 	}
 }

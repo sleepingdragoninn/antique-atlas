@@ -597,8 +597,9 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 			worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
 				boolean hovering = hoveredLandmark == landmark && markerModal.getParent() == null;
-				BiFunction<Double, Double, Float> alpha = (x, y) -> state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !hovering) || (hovering && x <= MAP_BORDER_WIDTH || x >= mapWidth + MAP_BORDER_WIDTH || y <= MAP_BORDER_HEIGHT || y >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
-				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, WorldLandmarks.canModify(landmark.owner(), player.getEntityWorld(), null), hovering, markerScale);
+				boolean editable = WorldLandmarks.canModify(landmark.owner(), player.getEntityWorld(), null);
+				BiFunction<Double, Double, Float> alpha = (x, y) -> state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !editable) || (hovering && x <= MAP_BORDER_WIDTH || x >= mapWidth + MAP_BORDER_WIDTH || y <= MAP_BORDER_HEIGHT || y >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
+				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, editable, hovering, markerScale);
 				Text name = landmark.get(LandmarkComponentTypes.NAME);
 				if (hovering && name != null && !name.getString().isEmpty()) {
 					context.drawTooltip(textRenderer, Stream.concat(Stream.of(name), landmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), (int) getMouseX() - getGuiX(), (int) getMouseY() - getGuiY());

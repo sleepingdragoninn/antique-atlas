@@ -1,6 +1,7 @@
 package folk.sisby.antique_atlas;
 
 import com.google.common.collect.Multimap;
+import folk.sisby.antique_atlas.gui.AtlasScreen;
 import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
@@ -15,6 +16,7 @@ import folk.sisby.surveyor.structure.WorldStructureSummary;
 import folk.sisby.surveyor.terrain.WorldTerrainSummary;
 import folk.sisby.surveyor.util.RegionPos;
 import it.unimi.dsi.fastutil.Pair;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
@@ -163,6 +165,7 @@ public class WorldAtlasData {
 
 	public void onLandmarksAdded(World ignored, WorldLandmarks worldLandmarks, Multimap<UUID, Identifier> landmarks) {
 		landmarks.forEach((type, pos) -> this.addLandmark(worldLandmarks.get(type, pos)));
+		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen as) as.updateBookmarkerList();
 	}
 
 	public void onLandmarksRemoved(World ignored, WorldLandmarks ignored2, Multimap<UUID, Identifier> landmarks) {
@@ -172,6 +175,7 @@ public class WorldAtlasData {
 				if (landmarkMarkers.get(type).isEmpty()) landmarkMarkers.remove(type);
 			}
 		});
+		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen as) as.updateBookmarkerList();
 	}
 
 	public boolean deleteLandmark(World world, Landmark landmark) {

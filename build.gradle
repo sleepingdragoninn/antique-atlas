@@ -121,7 +121,7 @@ tasks.register('curseforge', net.darkhax.curseforgegradle.TaskPublishCurseForge)
 	compatibleVersions.split(", ").toList().forEach { mainFile.addGameVersion(it) }
 	mainFile.addEnvironment("client", "server")
 	mainFile.addRequirement(libs.fapi.get().getName())
-	// mainFile.addRequirement(libs.surveyor.get().getName()) // doesn't work until it's published
+	mainFile.addRequirement("surveyor-map-framework")
 	mainFile.changelog = !file("CHANGELOG.md").exists() ? "" : rootProject.file("CHANGELOG.md").text + "\n\nChangelog: https://github.com/${user}/${slug}/releases/tag/v${baseVersion}+${tagBranch}"
 	mainFile.changelogType = "markdown"
 	mainFile.releaseType = "release"

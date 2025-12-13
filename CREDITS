@@ -87,12 +87,13 @@ HS        |     terracotta_shrubs_tiered.png
 H         |     terracotta_tiered.png
 HS        |     terracotta_tiered_rough.png
 H         |     terracotta_tiered_separate.png
-H         |     cacti_hills_low.png
+HL        |     cacti_hills_low.png
+HL        |     sand_hills_low.png
 H         |     sand_1.png
 H         |     sand_cacti.png
 H         |     sand_cacti_sparse.png
 H         |     sand_shrubs.png
-H         |     shrubs_hills_low.png
+HL        |     shrubs_hills_low.png
 H         |     grass_acacia_plateau_1.png
 H         |     grass_acacia_plateau_2.png
 H         |     grass_acacia_plateau_3.png
@@ -138,7 +139,7 @@ H         |     grass_oak_fancy_tall_sparse_hills_low.png
 H         |     grass_oak_sparse.png
 H         |     grass_oak_sparse_hills_low.png
 HL        |     smooth_cherry_mountains.png
-H         |     smooth_spruce_mountains.png
+HL        |     smooth_spruce_mountains.png
 HS        |     grass_daisies_plateau.png
 HS        |     grass_dandelions_plateau.png
 H         |     rough_mountains.png
@@ -153,6 +154,15 @@ H         |     basalt_columns_1.png
 H         |     basalt_columns_2.png
 H         |     basalt_columns_3.png
 H         |     basalt_lava_columns.png
+L         |     crimson_forest_low.png
+HL        |     soul_sand.png
+HLS       |     soul_sand_island.png
+HLS       |     soul_sand_lava.png
+HLS       |     soul_sand_plateau.png
+HLS       |     soul_sand_plateau_low.png
+L         |     warped_forest_low.png
+L         |     nether_wastes_low.png
+L         |     nether_wastes_low_fire.png
 H         |     nether_shore_lava_1.png
 H         |     nether_shore_lava_2.png
 H         |     mycelium_mushrooms_huge_mixed_dense.png
@@ -257,6 +267,8 @@ H         |     nether_fortress_bridge_vertical.png
 H         |     nether_fortress_corridor.png
 H         |     nether_fortress_corridor_exit.png
 H         |     nether_fortress_corridor_nether_warts_room.png
+L         |     nether_fossil.png
+L         |     nether_fossil_2.png
 L         |     igloo.png
 L         |     cage.png
 L         |     tent.png
@@ -324,6 +336,7 @@ L         |     path_crossroad.png
 L         |     path_horizontal.png
 L         |     path_vertical.png
 L         |     swamp_hut.png
+S         |     clouds.png
 S         |     missing.png
 H         |     test.png
 H         |     add_marker.png
@@ -348,5 +361,8 @@ H         |     frame.png
 H         |     frame_selected.png
 H         |     player.png
 HS        |     ruler_right.png
-HS        |     icon.png
+H         |     nether_portal.png
+0         |     items.png
+H         |     grave.png
+S         |     icon.png
 --------------------------------------------

@@ -62,12 +62,6 @@ Additional options can be found in the Surveyor config in `config/surveyor.toml`
 
 ## Addons & Compatibility
 
-Please match the licenses of addons to LGPLv3 (+respacks to CC BY-NC-SA) to help the ecosystem!<br/>
-(LGPLv3 and CC BY-NC-SA are a copyleft licenses, so this is required for anything _directly_ adapted from AA4)
-
-If you've made something, hit us up and we'll link it here! We'll also answer questions for any in-progress project.<br/>
-You can reach out to us through the [modfest discord](https://discord.gg/gn543Ee) (#projects->Surveyor), on [mastodon](https://tech.lgbt/@sleepingdragoninn), or hell, via [email](mailto:sleepingdragoninn@gmail.com).
-
 ### Resource Packs
 
 Tiles, markers, biome detection, and structure detection is fully data-driven via resource packs.<br/>
@@ -91,6 +85,14 @@ dependencies {
 Try `AtlasRenderer.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
 
 To automatically mark non-structure points of interest - instead use [Surveyor](https://modrinth.com/mod/surveyor)'s Landmark API.
+
+### Licensing + Credit
+
+Please match your addon/respack licenses to LGPLv3 for code & CC BY-NC-SA for assets to help the ecosystem!<br/>
+(LGPLv3 and CC BY-NC-SA are a copyleft licenses, so this is required for anything directly adapted from AA4)
+
+If you've made something, hit us up and we might link it here! We'll also answer questions for in-progress projects.<br/>
+You can reach out to us through the [modfest discord](https://discord.gg/gn543Ee) (#projects->Surveyor), on [mastodon](https://tech.lgbt/@sleepingdragoninn), or hell, via [email](mailto:sleepingdragoninn@gmail.com).
 
 ## Afterword
 

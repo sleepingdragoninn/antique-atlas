@@ -46,9 +46,9 @@ Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and 
 ## Troubleshooting / Suggestions
 
 Antique Atlas 4 is a **clientside map frontend** for [Surveyor Map Framework](https://modrinth.com/mod/surveyor).<br/>
-It transforms surveyor save data into tiles via its resource packs, displays them, and provides a GUI editor for surveyor waypoints.<br/>
-Issues and suggestions regarding the screen, tiles, markers, and resource packs can be filed as [Antique Atlas 4 Issues](https://github.com/sisby-folk/antique-atlas/issues).<br/>
-Issues and suggestions regarding map sharing, explored map area, and automatic markers can be filed as [Surveyor Issues](https://github.com/sisby-folk/surveyor).
+It renders surveyor save data as tiles on screen using respacks, and provides a GUI editor for waypoints.<br/>
+Issues and suggestions regarding the screen, tiles, markers, and resource packs are [Antique Atlas 4 Issues](https://github.com/sisby-folk/antique-atlas/issues).<br/>
+Issues and suggestions regarding map sharing, explored map area, and automatic markers are [Surveyor Issues](https://github.com/sisby-folk/surveyor).
 
 ## Configuration
 

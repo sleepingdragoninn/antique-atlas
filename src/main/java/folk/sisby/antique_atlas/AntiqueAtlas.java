@@ -83,7 +83,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	}
 
 	public static boolean isHandheldAtlas(ItemStack stack) {
-		return stack.isOf(Items.BOOK) && ATLAS_NAMES.stream().anyMatch(n -> stack.getName().getString().contains(n));
+		return stack.isOf(Items.BOOK) && ATLAS_NAMES.stream().anyMatch(n -> stack.getName().getString().toLowerCase().contains(n.toLowerCase()));
 	}
 
 	public static boolean hasHandheldAtlas(PlayerEntity player) {

@@ -1,9 +1,6 @@
 <!--suppress HtmlDeprecatedTag, XmlDeprecatedElement -->
-<center><img alt="mod preview" src="https://cdn.modrinth.com/data/Y5Ve4Ui4/images/14513bf9172fa0d058e9486958de4884408ed4e4.png" /></center>
-
 <center>
-A hand-drawn client-side world map with biomes, structures, waypoints, and less!<br/>
-
+A hand-drawn clientside world map, with map sharing, structure discovery, and more!<br/>
 A rewrite of <a href="https://modrinth.com/mod/antique-atlas">Antique Atlas</a> by <a href="https://github.com/Hunternif">Hunternif</a>, as continued by <a href="https://github.com/Kenkron">Kenkron</a>, <a href="https://github.com/asiekierka">asie</a>, and <a href="https://github.com/tyra314">tyra314</a>.<br/>
 <b>Requires <a href="https://modrinth.com/mod/surveyor">Surveyor Map Framework</a>.</b>
 <b>Requires <a href="https://modrinth.com/mod/connector">Connector</a> and <a href="https://modrinth.com/mod/forgified-fabric-api">FFAPI</a> on (neo)forge.</b><br/>
@@ -11,33 +8,26 @@ A rewrite of <a href="https://modrinth.com/mod/antique-atlas">Antique Atlas</a> 
 
 ---
 
-Press **[M]** at any time to bring up a stylized world map screen.<br/>
-Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and remove waypoints.
-
-**AA4 has _absolutely no items!_** - This means the map works right away, can't be lost, and works on any server!
+Press **[M]** at any time to bring up the world map.<br/>
+Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and remove map markers.
 
 ## Client-Side Features
 
-- Antique Atlas 4 is designed to let you focus on exploring the world, not get stuck staring at the map!
-	- The map is rendered using hand-drawn "tiles" to represent terrain, biomes, and structures.
-	- Tiles represent entire chunks at least - no peeking for caves or bases!
-- Gravestones automatically appear where you die, with customizable flavour text:
+- A physical-feeling map screen, with hand-drawn tiles representing chunks in the world:
 
-> ![grave style euphemisms](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/c6f5e20bcef2c26c40390e888e540dcdd89a1818.png)
+> ![map preview](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/14513bf9172fa0d058e9486958de4884408ed4e4.png)
 
-- Waypoint markers come in a variety of styles:
+- Waypoint markers in a variety of styles and accent colors:
 
 > ![marker styles](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/b7064c3287c5535cd9ac6d454c10ead984c7a7b3.png)
 
-- Books renamed "Antique Atlas" will display your immediate surroundings, like a minimap:
+- Hold the map in your hands by renaming a book "Antique Atlas" at an anvil:
 
 > ![handheld atlas](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/b3002225851522c2d4eabc7462a374fbcdd2db6b.png)
 
-If you'd instead prefer a low-tech compass, try [PicoHUD](https://modrinth.com/mod/picohud)!
+- Extra features via addons like [Antique Trains](https://modrinth.com/mod/antique-trains) and [Antique Atlas Compass HUD](https://modrinth.com/mod/antique-atlas-compass-hud)!
 
-## Mixed-Side Features
-
-_These work in singleplayer, or on servers with [Surveyor](https://modrinth.com/mod/surveyor) installed._
+## Mixed-Side / Singleplayer Features
 
 - Markers are automatically added for notable structures and active nether portals:
 
@@ -47,20 +37,28 @@ _These work in singleplayer, or on servers with [Surveyor](https://modrinth.com/
 
 > ![structure discovery](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/86054c7949fed59341cef60d0d9f27aee86ae6ef.gif)
 
-- Map exploration can be shared with `/surveyor share [player]` which will also reveal those players' position:
+- Map exploration and waypoints can be shared with friends via `/surveyor share [player]`:
 
-> ![map sharing](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/4422049c395a856c35bbc361c52e8bcd30e89523.png)
+> ![map sharing](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/305e5c88b384bc1a0a6fd2d0fcdc21f72b8d3a57.png)
+
+- Add [AA4 Atlas](https://modrinth.com/mod/aa4-atlas) to give the handheld atlas a full item ID and crafting recipe!
+
+## Troubleshooting / Suggestions
+
+Antique Atlas 4 is a **clientside map frontend** for [Surveyor Map Framework](https://modrinth.com/mod/surveyor).<br/>
+It renders surveyor save data as tiles on screen using respacks, and provides a GUI editor for waypoints.<br/>
+Issues and suggestions regarding the screen, tiles, markers, and resource packs are [Antique Atlas 4 Issues](https://github.com/sisby-folk/antique-atlas/issues).<br/>
+Issues and suggestions regarding map sharing, explored map area, and automatic markers are [Surveyor Issues](https://github.com/sisby-folk/surveyor).
 
 ## Configuration
 
-Antique Atlas can be configured from `config/antique-atlas.toml`:<br/>
+Antique Atlas can be configured from `config/antique-atlas.toml` or in-game using [McQoy](https://modrinth.com/mod/mcqoy), including:<br/>
+- Whether to require having an atlas item in the inventory in order to enable the map hotkey.
+- Adjustments to the size and scale of the map screen.
+- Adjustments to which structures to mark on the map.
+- Adjustments for how to stylize player graves.
 
-> `fullscreen` can be disabled to lock the size of the map screen based on your GUI scale.<br/>
-> `mapScale` can be adjusted to change the effective GUI scale of the tiles on the map.<br/>
-> `structureMarkers` can be edited to toggle markers for structures - this is populated at runtime.<br/>
-> `graveStyle` will change the icon and tooltip for player graves - try each out to suit your pack's aesthetics.<br/>
-
-Surveyor, which handles features including map sharing & visibility, can be configured from `config/surveyor.toml`
+Additional options can be found in the Surveyor config in `config/surveyor.toml`.
 
 ## Resource Packs
 

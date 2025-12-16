@@ -15,6 +15,8 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
@@ -93,6 +95,8 @@ public class MarkerModal extends Component {
 					baseLandmark,
 					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getName() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
 					copy -> {
+					Item item = world.getRegistryManager().get(RegistryKeys.ITEM).get(selectedTexture.item());
+					if (item != null) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
 					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getFireworkColor());
 					copy.set(LandmarkComponentTypes.NAME, label);
 				}));

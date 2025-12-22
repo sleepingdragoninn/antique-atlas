@@ -25,6 +25,7 @@ Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and 
 
 > ![handheld atlas](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/b3002225851522c2d4eabc7462a374fbcdd2db6b.png)
 
+- Automatic migration of waypoints from Xaero's Minimap, and a shared save format with [Hoofprint](https://modrinth.com/mod/hoofprint).
 - Extra features via addons like [Antique Trains](https://modrinth.com/mod/antique-trains) and [Antique Atlas Compass HUD](https://modrinth.com/mod/antique-atlas-compass-hud)!
 
 ## Mixed-Side / Singleplayer Features
@@ -60,16 +61,16 @@ Antique Atlas can be configured from `config/antique-atlas.toml` or in-game usin
 
 Additional options can be found in the Surveyor config in `config/surveyor.toml`.
 
-## Resource Packs
+## Addons & Compatibility
+
+### Resource Packs
 
 Tiles, markers, biome detection, and structure detection is fully data-driven via resource packs.<br/>
 **Without defined biomes, atlas "guesses" tiles via tags, and shows `???` if that fails.**
 
 For a how-to on AA4 resource packs, check out the [resource pack tutorial](https://github.com/sisby-folk/antique-atlas/blob/1.20/RESPACKS.md).
 
-To automatically mark non-structure points of interest - instead use [Surveyor](https://modrinth.com/mod/surveyor)'s Landmark API.
-
-## API
+### API
 
 Nothing stable! But feel free to poke around:
 
@@ -82,10 +83,17 @@ dependencies {
 }
 ```
 
-Please match the license of any addons to LGPLv3 if you're comfortable! It helps us improve the API.<br/>
-(LGPLv3 is a copyleft license, so this is required for any parts of your code directly adapted from AA4 code) 
+Try `AtlasRenderer.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
 
-Try `AtlasScreen.registerOverlay()` for non-surveyor mod compat (i.e. mods that already have client sync)
+To automatically mark non-structure points of interest - instead use [Surveyor](https://modrinth.com/mod/surveyor)'s Landmark API.
+
+### Licensing + Credit
+
+Please match your addon/respack licenses to LGPLv3 for code & CC BY-NC-SA for assets to help the ecosystem!<br/>
+(LGPLv3 and CC BY-NC-SA are a copyleft licenses, so this is required for anything directly adapted from AA4)
+
+If you've made something, hit us up and we might link it here! We'll also answer questions for in-progress projects.<br/>
+You can reach out to us through the [modfest discord](https://discord.gg/gn543Ee) (#projects->Surveyor), on [mastodon](https://tech.lgbt/@sleepingdragoninn), or hell, via [email](mailto:sleepingdragoninn@gmail.com).
 
 ## Afterword
 

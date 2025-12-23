@@ -94,7 +94,7 @@ Please match your addon/respack licenses to LGPLv3 for code & CC BY-NC-SA for as
 (LGPLv3 and CC BY-NC-SA are a copyleft licenses, so this is required for anything directly adapted from AA4)
 
 If you've made an addon/respack, hit us up and we might link it here! If it's still WIP feel free to ask us questions.<br/>
-Devs can reach out to us on [mastodon](https://tech.lgbt/@sleepingdragoninn), via [email](mailto:sleepingdragoninn@gmail.com), or in [#projects->Surveyor on ModFest](https://discord.gg/gn543Ee).
+Devs can reach out to us on [mastodon](https://tech.lgbt/@sleepingdragoninn), via [email](mailto:sleepingdragoninn@gmail.com), or in [#projects->Surveyor on ModFest](https://discord.gg/HKuwYuZ7Qu).
 
 ## Afterword
 

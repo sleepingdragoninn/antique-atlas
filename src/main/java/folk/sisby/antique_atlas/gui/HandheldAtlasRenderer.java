@@ -30,7 +30,7 @@ public record HandheldAtlasRenderer(int bookX, int bookY, int bookWidth, int boo
 			-player.getBlockZ(),
 			1,
 			player,
-			WorldAtlasData.getOrCreate(player.getWorld())
+			WorldAtlasData.getOrCreate(player.getWorld().getRegistryKey())
 		);
 	}
 

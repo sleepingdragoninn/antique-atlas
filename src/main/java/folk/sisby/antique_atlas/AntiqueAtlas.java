@@ -112,18 +112,16 @@ public class AntiqueAtlas implements ClientModInitializer {
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(BiomeTileProviders.getInstance());
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(MarkerTextures.getInstance());
 
-		SurveyorClientEvents.Register.worldLoad(id("world_data"), WorldAtlasData::onLoad);
-		SurveyorClientEvents.Register.terrainUpdated(id("world_data"), (w, s, k) -> WorldAtlasData.getOrCreate(w).onTerrainUpdated(w, s, k));
-		SurveyorClientEvents.Register.structuresAdded(id("world_data"), (w, s, k) -> WorldAtlasData.getOrCreate(w).onStructuresAdded(w, s, k));
-		SurveyorClientEvents.Register.landmarksAdded(id("world_data"), (w, s, k) -> WorldAtlasData.getOrCreate(w).onLandmarksAdded(w, s, k));
-		SurveyorClientEvents.Register.landmarksRemoved(id("world_data"), (w, s, k) -> WorldAtlasData.getOrCreate(w).onLandmarksRemoved(w, s, k));
-		ClientTickEvents.END_WORLD_TICK.register((w -> WorldAtlasData.getOrCreate(w).tick(w)));
+		SurveyorClientEvents.Register.terrainUpdated(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onTerrainUpdated(s, k));
+		SurveyorClientEvents.Register.structuresAdded(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onStructuresAdded(s, k));
+		SurveyorClientEvents.Register.landmarksAdded(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onLandmarksAdded(s, k));
+		SurveyorClientEvents.Register.landmarksRemoved(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onLandmarksRemoved(s, k));
+		ClientTickEvents.END_WORLD_TICK.register((w -> SurveyorClient.getSummaries(MinecraftClient.getInstance().getNetworkHandler()).values().forEach(s -> WorldAtlasData.getOrCreate(s.dimension()).tick(s))));
 		CommonLifecycleEvents.TAGS_LOADED.register(((manager, client) -> BiomeTileProviders.getInstance().registerFallbacks(manager.get(RegistryKeys.BIOME))));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> BiomeTileProviders.getInstance().clearFallbacks()));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> WorldAtlasData.WORLDS.clear()));
 
 		ModelPredicateProviderRegistry.register(Items.BOOK, AntiqueAtlas.id("atlas"), ((stack, world, entity, seed) -> isHandheldAtlas(stack) ? 1.0F : 0.0F));
-		//noinspection UnstableApiUsage
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(e -> e.addAfter(Items.MAP, getHandheldAtlas()));
 
 		WorldSummary.enableTerrain();

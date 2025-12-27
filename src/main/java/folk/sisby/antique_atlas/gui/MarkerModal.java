@@ -90,8 +90,8 @@ public class MarkerModal extends Component {
 			MutableText label = Text.literal(textField.getText());
 			WorldLandmarks summary = WorldSummary.of(world).landmarks();
 			if (summary != null) {
-				summary.remove(world, baseLandmark.owner(), baseLandmark.id());
-				summary.put(world, WorldAtlasData.copyLandmarkWith(
+				summary.remove(baseLandmark.owner(), baseLandmark.id());
+				summary.put(WorldAtlasData.copyLandmarkWith(
 					baseLandmark,
 					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getName() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
 					copy -> {

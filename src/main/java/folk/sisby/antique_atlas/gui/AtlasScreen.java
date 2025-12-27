@@ -14,7 +14,6 @@ import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
-import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.util.RegionPos;
 import net.minecraft.client.MinecraftClient;
@@ -219,7 +218,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 		if (worldAtlasData == null) return;
 
-		worldAtlasData.getEditableLandmarks(player.getEntityWorld()).forEach((landmark, texture) -> {
+		worldAtlasData.getEditableLandmarks().forEach((landmark, texture) -> {
 			BookmarkButton bookmark = new MarkerBookmarkButton(landmark.getOrDefault(LandmarkComponentTypes.NAME, Text.literal(landmark.id().getPath())), texture, landmark.getOrDefault(LandmarkComponentTypes.COLOR, 0xFFFFFF), true);
 
 			bookmark.addListener(button -> {
@@ -274,7 +273,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		if (super.mouseClicked(mouseX, mouseY, mouseState)) return true;
 
 		// If clicked on the map, start dragging
-		if (state.is(NORMAL) && hoveredLandmark != null && hoveredLandmark.contains(LandmarkComponentTypes.POS) && WorldLandmarks.canModify(hoveredLandmark.owner(), player.getEntityWorld(), null) && mouseState == GLFW.GLFW_MOUSE_BUTTON_2) {
+		if (state.is(NORMAL) && hoveredLandmark != null && hoveredLandmark.contains(LandmarkComponentTypes.POS) && SurveyorClient.canModify(hoveredLandmark.owner()) && mouseState == GLFW.GLFW_MOUSE_BUTTON_2) {
 			markerModal.setMarkerData(player.getEntityWorld(), hoveredLandmark);
 			addChild(markerModal);
 
@@ -412,7 +411,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 	public void updateAtlasData() {
 		if (MinecraftClient.getInstance().world != null) {
-			worldAtlasData = WorldAtlasData.getOrCreate(MinecraftClient.getInstance().world);
+			worldAtlasData = WorldAtlasData.getOrCreate(MinecraftClient.getInstance().world.getRegistryKey());
 		}
 	}
 
@@ -597,7 +596,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 			worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
 				boolean hovering = hoveredLandmark == landmark && markerModal.getParent() == null;
-				boolean editable = WorldLandmarks.canModify(landmark.owner(), player.getEntityWorld(), null);
+				boolean editable = SurveyorClient.canModify(landmark.owner());
 				BiFunction<Double, Double, Float> alpha = (x, y) -> state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !editable) || (hovering && x <= MAP_BORDER_WIDTH || x >= mapWidth + MAP_BORDER_WIDTH || y <= MAP_BORDER_HEIGHT || y >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
 				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, editable, hovering, markerScale);
 				Text name = landmark.get(LandmarkComponentTypes.NAME);

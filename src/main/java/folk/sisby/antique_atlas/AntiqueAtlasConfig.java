@@ -3,8 +3,16 @@ package folk.sisby.antique_atlas;
 import folk.sisby.kaleido.api.WrappedConfig;
 import folk.sisby.kaleido.lib.quiltconfig.api.annotations.Comment;
 import folk.sisby.kaleido.lib.quiltconfig.api.annotations.IntegerRange;
+import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueList;
 import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueMap;
+import folk.sisby.surveyor.client.SurveyorClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("CanBeFinal")
@@ -75,4 +83,16 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	public Map<String, Boolean> structureMarkers = ValueMap.builder(true)
 		.put("minecraft:type/end_city", false)
 		.build();
+
+	@Comment("Cycle order of dimension maps.")
+	@Comment("Automatically populates after loading into the world.")
+	public List<String> order = ValueList.create("", "minecraft:overworld", "minecraft:the_nether", "minecraft:the_end");
+
+	public List<RegistryKey<World>> getOrder(ClientPlayNetworkHandler handler) {
+		List<RegistryKey<World>> dims = new ArrayList<>(SurveyorClient.getSummaries(handler).keySet().stream().sorted(Comparator.comparing(RegistryKey::toString)).toList());
+		dims.removeIf(WorldAtlasData::isEmpty);
+		order.removeIf(v -> dims.stream().noneMatch(d -> d.getValue().toString().equals(v)));
+		dims.stream().filter(dim -> !order.contains(dim.getValue().toString())).forEach(dim -> order.add(dim.getValue().toString()));
+		return dims.stream().sorted(Comparator.comparing(dim -> order.indexOf(dim.getValue().toString()))).toList();
+	}
 }

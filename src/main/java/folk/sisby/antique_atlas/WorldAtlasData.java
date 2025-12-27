@@ -42,7 +42,11 @@ public class WorldAtlasData {
 	public static final Map<RegistryKey<World>, WorldAtlasData> WORLDS = new HashMap<>();
 
 	public static WorldAtlasData getOrCreate(RegistryKey<World> dimension) {
-		return WorldAtlasData.WORLDS.computeIfAbsent(dimension, k -> new WorldAtlasData());
+		return WORLDS.computeIfAbsent(dimension, k -> new WorldAtlasData());
+	}
+
+	public static boolean isEmpty(RegistryKey<World> dimension) {
+		return !WORLDS.containsKey(dimension) || WORLDS.get(dimension).isEmpty();
 	}
 
 	protected final Map<ChunkPos, TileTexture> biomeTiles = new HashMap<>();
@@ -60,6 +64,11 @@ public class WorldAtlasData {
 	protected final Map<ChunkPos, String> debugStructurePredicates = new HashMap<>();
 	protected final Map<ChunkPos, TerrainTileProvider> debugBiomes = new HashMap<>();
 	protected final Map<ChunkPos, StructureTileProvider> debugStructures = new HashMap<>();
+
+
+	private boolean isEmpty() {
+		return tileScope.maxY == tileScope.minY && terrainDequeHash.isEmpty();
+	}
 
 	public void onTerrainUpdated(WorldSummary summary, Map<RegionPos, BitSet> chunks) {
 		for (ChunkPos pos : RegionPos.regionsToChunks(chunks)) {

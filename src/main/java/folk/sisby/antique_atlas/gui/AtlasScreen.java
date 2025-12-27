@@ -21,7 +21,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -30,6 +30,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ColumnPos;
+import net.minecraft.world.World;
+import org.apache.commons.lang3.text.WordUtils;
 import org.joml.Vector2d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -53,6 +55,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public static double mapOffsetY;
 	public static int tilePixels = 16;
 	public static int tileChunks = 1;
+	private RegistryKey<World> dim;
 	public int mapScale;
 	public PlayerEntity player;
 	public WorldAtlasData worldAtlasData;
@@ -64,10 +67,12 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public final TextBookmarkButton resetScaleBookmark; // Button for displaying the scale, and setting the scale to 1 chunk / 1 tile / 16px.
 	public final BookmarkButton playerBookmark; // Button for restoring player's position at the center of the Atlas.
 	public final ScrollBoxComponent markerScrollBox = new ScrollBoxComponent(true, BookmarkButton.HEIGHT + BOOKMARK_SPACING);
+	public final ScrollBoxComponent dimensionScrollBox = new ScrollBoxComponent(false, BookmarkButton.WIDTH + BOOKMARK_SPACING);
 	public final MarkerModal markerModal = new MarkerModal();
 	public final BlinkingMarkerComponent markerCursor = new BlinkingMarkerComponent();
 	public final CursorComponent eraser = new CursorComponent();
 	public final List<BookmarkButton> markerBookmarks = new ArrayList<>();
+	public final List<BookmarkButton> dimBookmarks = new ArrayList<>();
 
 	// Screen State
 	public final ScreenState<AtlasScreen> state = new ScreenState<>((oldState, newState) -> AntiqueAtlas.lastState.switchTo(newState, this));
@@ -166,6 +171,10 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		int markersOnScreen = (mapHeight - 20) / ((BookmarkButton.HEIGHT + BOOKMARK_SPACING) - BOOKMARK_SPACING);
 		markerScrollBox.getViewport().setSize(BookmarkButton.WIDTH, markersOnScreen * (BookmarkButton.HEIGHT + BOOKMARK_SPACING) - BOOKMARK_SPACING);
 
+		addChild(dimensionScrollBox).setRelativeCoords(MAP_BORDER_WIDTH + 8, mapHeight);
+		int dimsOnScreen = (mapWidth - 20) / ((BookmarkButton.WIDTH + BOOKMARK_SPACING) - BOOKMARK_SPACING);
+		dimensionScrollBox.getViewport().setSize(dimsOnScreen * (BookmarkButton.WIDTH + BOOKMARK_SPACING) - BOOKMARK_SPACING, BookmarkButton.HEIGHT);
+
 		markerModal.addMarkerListener(markerCursor);
 
 		eraser.setTexture(ERASER, 12, 14, 2, 11);
@@ -191,6 +200,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F));
 
 		this.player = MinecraftClient.getInstance().player;
+		this.dim = MinecraftClient.getInstance().world.getRegistryKey();
 		updateAtlasData();
 		if (!AntiqueAtlas.CONFIG.keepOffset) {
 			playerBookmark.setSelected(true);
@@ -212,6 +222,25 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	}
 
 	public void updateBookmarkerList() {
+		dimensionScrollBox.getViewport().removeAllContent();
+		dimensionScrollBox.setScrollPos(0);
+		dimBookmarks.clear();
+
+		for (RegistryKey<World> dimension : dim == null ? new ArrayList<RegistryKey<World>>() : AntiqueAtlas.CONFIG.getOrder(MinecraftClient.getInstance().getNetworkHandler())) {
+			BookmarkButton bookmark = new MarkerBookmarkButton(Text.of(WordUtils.capitalizeFully(dimension.getValue().getPath().replaceAll("[/_-]", " "))), MarkerTexture.DEFAULT, 0xFFFFFF, true);
+			bookmark.addListener(button -> {
+				dim = dimension;
+				updateAtlasData();
+			});
+			dimBookmarks.add(bookmark);
+		}
+
+		final int[] dimContentY = {0};
+		for (BookmarkButton bookmark : markerBookmarks) {
+			dimensionScrollBox.getViewport().addContent(bookmark).setRelativeY(dimContentY[0]);
+			dimContentY[0] += BookmarkButton.WIDTH + BOOKMARK_SPACING;
+		}
+
 		markerScrollBox.getViewport().removeAllContent();
 		markerScrollBox.setScrollPos(0);
 		markerBookmarks.clear();
@@ -228,7 +257,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				} else if (state.is(DELETING_MARKER)) {
 					if (!worldAtlasData.deleteLandmark(player.getEntityWorld(), landmark)) return;
 					updateBookmarkerList();
-					player.getEntityWorld().playSound(player, player.getBlockPos(), SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundCategory.AMBIENT, 1F, 0.5F);
+					MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 1F, 0.5F));
 					if (!hasShiftDown()) {
 						state.switchTo(NORMAL, this);
 					}
@@ -301,7 +330,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			} else if (state.is(DELETING_MARKER) && hoveredLandmark != null && isMouseOverMap && mouseState == GLFW.GLFW_MOUSE_BUTTON_1) {
 				if (worldAtlasData.deleteLandmark(player.getEntityWorld(), hoveredLandmark)) {
 					updateBookmarkerList();
-					player.getEntityWorld().playSound(player, player.getBlockPos(), SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundCategory.AMBIENT, 1F, 0.5F);
+					MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 1F, 0.5F));
 				}
 			}
 			if (!hasShiftDown() || !state.is(DELETING_MARKER)) {
@@ -317,24 +346,30 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_UP) {
-			navigateMap(0, NAVIGATE_STEP);
-		} else if (keyCode == GLFW.GLFW_KEY_DOWN) {
-			navigateMap(0, -NAVIGATE_STEP);
-		} else if (keyCode == GLFW.GLFW_KEY_LEFT) {
-			navigateMap(NAVIGATE_STEP, 0);
-		} else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
-			navigateMap(-NAVIGATE_STEP, 0);
-		} else if (keyCode == GLFW.GLFW_KEY_EQUAL || keyCode == GLFW.GLFW_KEY_KP_ADD) {
-			zoomIn(true, (16 << AntiqueAtlas.CONFIG.maxTilePixels));
-		} else if (keyCode == GLFW.GLFW_KEY_MINUS || keyCode == GLFW.GLFW_KEY_KP_SUBTRACT) {
-			zoomOut(true, (1 << AntiqueAtlas.CONFIG.maxTileChunks));
-		} else if (keyCode == GLFW.GLFW_KEY_ESCAPE || (AntiqueAtlasKeybindings.ATLAS_KEYMAPPING.matchesKey(keyCode, scanCode) && this.markerModal.getParent() == null)) {
+		if ((AntiqueAtlasKeybindings.ATLAS_KEYMAPPING.matchesKey(keyCode, scanCode) && this.markerModal.getParent() == null)) {
 			close();
-		} else {
-			return super.keyPressed(keyCode, scanCode, modifiers);
+			return true;
 		}
-
+		switch (keyCode) {
+			case GLFW.GLFW_KEY_UP -> navigateMap(0, NAVIGATE_STEP);
+			case GLFW.GLFW_KEY_DOWN -> navigateMap(0, -NAVIGATE_STEP);
+			case GLFW.GLFW_KEY_LEFT -> navigateMap(NAVIGATE_STEP, 0);
+			case GLFW.GLFW_KEY_RIGHT -> navigateMap(-NAVIGATE_STEP, 0);
+			case GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> zoomIn(true, (16 << AntiqueAtlas.CONFIG.maxTilePixels));
+			case GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> zoomOut(true, (1 << AntiqueAtlas.CONFIG.maxTileChunks));
+			case GLFW.GLFW_KEY_TAB -> {
+				List<RegistryKey<World>> regKeys = AntiqueAtlas.CONFIG.getOrder(client.getNetworkHandler());
+				if (regKeys.contains(dim)) {
+					dim = regKeys.get((regKeys.size() + regKeys.indexOf(dim) - 1) % regKeys.size());
+					client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.1F));
+					updateAtlasData();
+				}
+			}
+			case GLFW.GLFW_KEY_ESCAPE -> close();
+			default -> {
+				return super.keyPressed(keyCode, scanCode, modifiers);
+			}
+		}
 		return true;
 	}
 
@@ -410,9 +445,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	}
 
 	public void updateAtlasData() {
-		if (MinecraftClient.getInstance().world != null) {
-			worldAtlasData = WorldAtlasData.getOrCreate(MinecraftClient.getInstance().world.getRegistryKey());
-		}
+		worldAtlasData = WorldAtlasData.getOrCreate(dim);
+		updateBookmarkerList();
 	}
 
 	public void navigateMap(int dx, int dy) {

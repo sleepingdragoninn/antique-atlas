@@ -1,11 +1,11 @@
 {
 	"gui.antique_atlas.scalebar": "Échelle en blocs",
-	"gui.antique_atlas.addMarker": "Ajouter une marque",
-	"gui.antique_atlas.delMarker": "Supprimer une marque",
+	"gui.antique_atlas.addMarker": "Ajouter un marqueur",
+	"gui.antique_atlas.delMarker": "Supprimer un marqueur",
 	"gui.antique_atlas.followPlayer": "Suivre le joueur",
-	"gui.antique_atlas.hideMarkers": "Masquer les marques",
-	"gui.antique_atlas.showMarkers": "Afficher les marques",
-	"gui.antique_atlas.marker.label": "Marques",
+	"gui.antique_atlas.hideMarkers": "Masquer les marqueurs",
+	"gui.antique_atlas.showMarkers": "Afficher les marqueurs",
+	"gui.antique_atlas.marker.label": "Marqueurs",
 	"structure.tag.minecraft.village": "Village",
 	"key.antique_atlas.open": "Ouvrir l'Atlas",
 	"key.antique_atlas.category": "Antique Atlas"

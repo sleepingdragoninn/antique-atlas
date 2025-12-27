@@ -7,7 +7,7 @@
 	"gui.antique_atlas.showMarkers": "Afficher les marqueurs",
 	"gui.antique_atlas.marker.label": "Marqueurs",
 	"key.antique_atlas.open": "Ouvrir l'Atlas",
-	"key.antique_atlas.category": "Antique Atlas"
+	"key.antique_atlas.category": "Antique Atlas",
     "structure.start.minecraft.bastion_remnant": "Vestige de Bastion",
     "structure.start.minecraft.village_plains": "Village des plaines",
     "structure.start.minecraft.village_desert": "Village du desert",
@@ -17,5 +17,5 @@
     "structure.tag.minecraft.village": "Village",
     "structure.type.minecraft.end_city": "Cité de l'end",
     "structure.type.minecraft.ocean_monument": "Monument sous-marin",
-    "structure.type.minecraft.woodland_mansion": "Manoir des bois",
+    "structure.type.minecraft.woodland_mansion": "Manoir des bois"
 }

@@ -61,6 +61,7 @@ public interface AtlasRenderer {
 	Identifier ICON_DELETE_MARKER = AntiqueAtlas.id("textures/gui/icons/del_marker.png");
 	Identifier ICON_SHOW_MARKERS = AntiqueAtlas.id("textures/gui/icons/show_markers.png");
 	Identifier ICON_HIDE_MARKERS = AntiqueAtlas.id("textures/gui/icons/hide_markers.png");
+	Identifier ICON_UNKNOWN = AntiqueAtlas.id("textures/gui/icons/unknown.png");
 	Text TEXT_ADD_MARKER = Text.translatable("gui.antique_atlas.addMarker");
 	Text TEXT_ADD_MARKER_HERE = Text.translatable("gui.antique_atlas.addMarkerHere");
 
@@ -210,11 +211,10 @@ public interface AtlasRenderer {
 			Map<RegistryKey<World>, Integer> scales = AntiqueAtlas.CONFIG.dimensions.getScales(MinecraftClient.getInstance().getNetworkHandler());
 			int newScale = scales.getOrDefault(dim(), 0);
 			int oldScale = scales.getOrDefault(player.dimension(), 0);
-			if (newScale * oldScale > 0) {
-				double mult = newScale / (double) oldScale;
-				dimX = mult * dimX;
-				dimZ = mult * dimZ;
-			}
+			if (newScale * oldScale == 0) return; // no ratio!
+			double mult = newScale / (double) oldScale;
+			dimX = mult * dimX;
+			dimZ = mult * dimZ;
 		}
 
 		double playerOffsetX = worldXToScreenX(dimX) - bookX();

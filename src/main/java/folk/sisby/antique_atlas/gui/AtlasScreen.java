@@ -1,6 +1,8 @@
 package folk.sisby.antique_atlas.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.AntiqueAtlasKeybindings;
 import folk.sisby.antique_atlas.MarkerTexture;
@@ -11,6 +13,7 @@ import folk.sisby.antique_atlas.gui.core.Component;
 import folk.sisby.antique_atlas.gui.core.CursorComponent;
 import folk.sisby.antique_atlas.gui.core.ScreenState;
 import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
+import folk.sisby.antique_atlas.util.CodecUtil;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
@@ -22,6 +25,8 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.metadata.ResourceMetadataReader;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -31,11 +36,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ColumnPos;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.joml.Vector2d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +66,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public int mapScale;
 	public PlayerEntity player;
 	public WorldAtlasData worldAtlasData;
+	public int prevDimScale = 0; // allows tabbing between dims cleanly if you don't manually touch the map in a 0scale dim.
 
 	// Screen Components
 	public final BookmarkButton addMarkerBookmark; // Button for placing a marker at current position, local to this Atlas instance.
@@ -121,21 +129,20 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 				// While holding shift, we create a marker on the player's position
 				if (hasShiftDown()) {
-					markerModal.setMarkerData(SurveyorClient.tryGetSummary(dim), player.getEntityWorld().getRegistryManager(), Landmark.create(SurveyorClient.getClientUuid(), AntiqueAtlas.id("newmarker"), b -> b.add(LandmarkComponentTypes.POS, player.getBlockPos())));
-					addChild(markerModal);
-
-					markerCursor.setTexture(markerModal.selectedTexture.id(), markerModal.selectedTexture.textureWidth(), markerModal.selectedTexture.textureHeight());
-
 					double dimX = player.getBlockX();
 					double dimZ = player.getBlockZ();
 					Map<RegistryKey<World>, Integer> scales = AntiqueAtlas.CONFIG.dimensions.getScales(MinecraftClient.getInstance().getNetworkHandler());
 					int newScale = scales.getOrDefault(dim(), 0);
 					int oldScale = scales.getOrDefault(player.getEntityWorld().getRegistryKey(), 0);
-					if (newScale * oldScale > 0 && newScale * oldScale != 1) {
-						double mult = newScale / (double) oldScale;
-						dimX = mult * dimX;
-						dimZ = mult * dimZ;
-					}
+					if (newScale * oldScale == 0) return; // no ratio!
+					double mult = newScale / (double) oldScale;
+					dimX = mult * dimX;
+					dimZ = mult * dimZ;
+
+					markerModal.setMarkerData(SurveyorClient.tryGetSummary(dim), player.getEntityWorld().getRegistryManager(), Landmark.create(SurveyorClient.getClientUuid(), AntiqueAtlas.id("newmarker"), b -> b.add(LandmarkComponentTypes.POS, player.getBlockPos())));
+					addChild(markerModal);
+
+					markerCursor.setTexture(markerModal.selectedTexture.id(), markerModal.selectedTexture.textureWidth(), markerModal.selectedTexture.textureHeight());
 
 					addChildBehind(markerModal, markerCursor).setGuiCoords((int) worldXToScreenX(dimX - MARKER_SIZE / 2.0), (int) worldZToScreenY(dimZ - MARKER_SIZE / 2.0));
 
@@ -144,6 +151,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 					selectedButton = null;
 					state.switchTo(NORMAL, this);
+
 				}
 			}
 		});
@@ -233,13 +241,44 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		updateBookmarkerList();
 	}
 
+	public static final ResourceMetadataReader<DimensionTextureMeta> METADATA = new CodecUtil.CodecResourceMetadataSerializer<>(DimensionTextureMeta.CODEC, AntiqueAtlas.id("dimension"));
+
+	public record DimensionTextureMeta(int color, String name) {
+		public static final Codec<DimensionTextureMeta> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.STRING.fieldOf("color").xmap(s -> {
+				try {
+					return Integer.parseUnsignedInt(s.replace("#", ""), 16);
+				} catch (NumberFormatException e) {
+					return 0xFFFFFF;
+				}
+			}, i -> "#" + StringUtils.leftPad(Integer.toHexString(i & 0x00_FFFFFF), 6, "0")).forGetter(DimensionTextureMeta::color),
+			Codec.STRING.fieldOf("name").forGetter(DimensionTextureMeta::name)
+		).apply(instance, DimensionTextureMeta::new));
+	}
+
 	public void updateBookmarkerList() {
 		dimensionScrollBox.getViewport().removeAllContent();
 		dimensionScrollBox.setScrollPos(0);
 		dimBookmarks.clear();
 
 		for (RegistryKey<World> dimension : dim == null ? new ArrayList<RegistryKey<World>>() : AntiqueAtlas.CONFIG.dimensions.getOrder(MinecraftClient.getInstance().getNetworkHandler())) {
-			BookmarkButton bookmark = new MarkerBookmarkButton(Text.of(WordUtils.capitalizeFully(dimension.getValue().getPath().replaceAll("[/_-]", " "))), MarkerTexture.DEFAULT, 0xFFFFFF, false, true);
+			Identifier iconId = dimension.getValue().withPath("textures/atlas/dimension/%s.png"::formatted);
+			Resource icon = MinecraftClient.getInstance().getResourceManager().getResource(iconId).orElse(null);
+			Integer backgroundTint = null;
+			Text name = Text.of(WordUtils.capitalizeFully(dimension.getValue().getPath().replaceAll("[/_-]", " ")));
+			if (icon == null) {
+				iconId = ICON_UNKNOWN;
+			}
+			try {
+				DimensionTextureMeta meta = icon.getMetadata().decode(METADATA).orElse(null);
+				if (meta != null) {
+					backgroundTint = meta.color();
+					name = Text.translatable(meta.name());
+				}
+			} catch (IOException e) {
+				// pass
+			}
+			BookmarkButton bookmark = new BookmarkButton(name, iconId, backgroundTint, null, 16, 16, false, true);
 			bookmark.setSelected(dimension.equals(dim));
 			bookmark.addListener(button -> {
 				List<RegistryKey<World>> regKeys = AntiqueAtlas.CONFIG.dimensions.getOrder(client.getNetworkHandler());
@@ -361,6 +400,12 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		Map<RegistryKey<World>, Integer> scales = AntiqueAtlas.CONFIG.dimensions.getScales(MinecraftClient.getInstance().getNetworkHandler());
 		int newScale = scales.getOrDefault(newDim, 0);
 		int oldScale = scales.getOrDefault(this.dim, 0);
+		int newPrevDimScale = 0;
+		if (oldScale == 0 && prevDimScale != 0) {
+			oldScale = prevDimScale;
+		} else if (newScale == 0) {
+			newPrevDimScale = oldScale;
+		}
 		dim = newDim;
 		if (newScale * oldScale > 0) {
 			double mult = newScale / (double) oldScale;
@@ -378,6 +423,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				}
 			}
 		}
+		if (newPrevDimScale != 0) prevDimScale = newPrevDimScale;
 		client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.1F));
 		updateAtlasData();
 	}
@@ -397,7 +443,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			case GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> zoomOut(true, (1 << AntiqueAtlas.CONFIG.maxTileChunks));
 			case GLFW.GLFW_KEY_TAB -> {
 				List<RegistryKey<World>> regKeys = AntiqueAtlas.CONFIG.dimensions.getOrder(client.getNetworkHandler());
-				if (regKeys.contains(dim)) changeDim(regKeys.get((regKeys.size() + regKeys.indexOf(dim) - 1) % regKeys.size()));
+				if (regKeys.contains(dim)) changeDim(regKeys.get((regKeys.size() + regKeys.indexOf(dim) + 1) % regKeys.size()));
 			}
 			case GLFW.GLFW_KEY_ESCAPE -> close();
 			default -> {
@@ -442,6 +488,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public boolean mouseDragged(double mouseX, double mouseY, int lastMouseButton, double deltaX, double deltaY) {
 		boolean result = false;
 		if (isDragging) {
+			prevDimScale = 0;
 			clearTargetBookmarks(null);
 			mapOffsetX += deltaX;
 			mapOffsetY += deltaY;
@@ -460,13 +507,13 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		Map<RegistryKey<World>, Integer> scales = AntiqueAtlas.CONFIG.dimensions.getScales(MinecraftClient.getInstance().getNetworkHandler());
 		int newScale = scales.getOrDefault(dim(), 0);
 		int oldScale = scales.getOrDefault(player.getEntityWorld().getRegistryKey(), 0);
-		if (newScale * oldScale > 0 && newScale * oldScale != 1) {
+		if (newScale * oldScale > 0) {
 			double mult = newScale / (double) oldScale;
 			dimX = mult * dimX;
 			dimZ = mult * dimZ;
-		}
-		if (playerBookmark.isSelected() && (mapOffsetX != -dimX * getPixelsPerBlock() || mapOffsetY != -dimZ * getPixelsPerBlock())) {
-			setTargetPosition(new ColumnPos((int) dimX, (int) dimZ));
+			if (playerBookmark.isSelected() && (mapOffsetX != -dimX * getPixelsPerBlock() || mapOffsetY != -dimZ * getPixelsPerBlock())) {
+				setTargetPosition(new ColumnPos((int) dimX, (int) dimZ));
+			}
 		}
 
 		if (targetOffsetX != null) {
@@ -534,6 +581,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	}
 
 	public boolean zoomIn(boolean playSound, int maxTilePixels) {
+		prevDimScale = 0;
 		if (tileChunks == 1) {
 			if (tilePixels >= maxTilePixels) return false;
 			tilePixels <<= 1;
@@ -549,6 +597,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	}
 
 	public boolean zoomOut(boolean playSound, int maxTileChunks) {
+		prevDimScale = 0;
 		if (tilePixels == 16) {
 			if (tileChunks >= maxTileChunks) return false;
 			tileChunks <<= 1;
@@ -676,11 +725,10 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 						Map<RegistryKey<World>, Integer> scales = AntiqueAtlas.CONFIG.dimensions.getScales(MinecraftClient.getInstance().getNetworkHandler());
 						int newScale = scales.getOrDefault(dim(), 0);
 						int oldScale = scales.getOrDefault(friend.dimension(), 0);
-						if (newScale * oldScale > 0) {
-							double mult = newScale / (double) oldScale;
-							dimX = mult * dimX;
-							dimZ = mult * dimZ;
-						}
+						if (newScale * oldScale == 0) continue; // no ratio!
+						double mult = newScale / (double) oldScale;
+						dimX = mult * dimX;
+						dimZ = mult * dimZ;
 					}
 
 					double markerX = worldXToScreenX(dimX);

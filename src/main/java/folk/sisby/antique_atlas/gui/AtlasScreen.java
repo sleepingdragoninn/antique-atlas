@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -265,18 +266,17 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			Identifier iconId = dimension.getValue().withPath("textures/atlas/dimension/%s.png"::formatted);
 			Resource icon = MinecraftClient.getInstance().getResourceManager().getResource(iconId).orElse(null);
 			Integer backgroundTint = null;
-			Text name = Text.of(WordUtils.capitalizeFully(dimension.getValue().getPath().replaceAll("[/_-]", " ")));
+			Text name;
 			if (icon == null) {
 				iconId = ICON_UNKNOWN;
 			}
 			try {
-				DimensionTextureMeta meta = icon.getMetadata().decode(METADATA).orElse(null);
-				if (meta != null) {
-					backgroundTint = meta.color();
-					name = Text.translatable(meta.name());
-				}
-			} catch (IOException e) {
-				// pass
+				DimensionTextureMeta meta = icon.getMetadata().decode(METADATA).orElseThrow();
+				backgroundTint = meta.color();
+				name = Text.translatable(meta.name());
+			} catch (NullPointerException | IOException | NoSuchElementException e) {
+				name = Text.of(WordUtils.capitalizeFully(dimension.getValue().getPath().replaceAll("[/_-]", " ")));
+				backgroundTint = DyeColor.byId(dimension.getValue().toString().hashCode() & 15).getFireworkColor();
 			}
 			BookmarkButton bookmark = new BookmarkButton(name, iconId, backgroundTint, null, 16, 16, false, true);
 			bookmark.setSelected(dimension.equals(dim));

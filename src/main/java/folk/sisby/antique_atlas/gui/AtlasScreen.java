@@ -265,7 +265,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		for (RegistryKey<World> dimension : dim == null ? new ArrayList<RegistryKey<World>>() : AntiqueAtlas.CONFIG.dimensions.getOrder(MinecraftClient.getInstance().getNetworkHandler())) {
 			Identifier iconId = dimension.getValue().withPath("textures/atlas/dimension/%s.png"::formatted);
 			Resource icon = MinecraftClient.getInstance().getResourceManager().getResource(iconId).orElse(null);
-			Integer backgroundTint = null;
+			Integer backgroundTint;
 			Text name;
 			if (icon == null) {
 				iconId = ICON_UNKNOWN;
@@ -822,7 +822,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				context.drawTooltip(textRenderer, Stream.concat(Stream.of(name), hoveredLandmark.getOrDefault(LandmarkComponentTypes.LORE, new ArrayList<Text>()).stream().map(t -> t.copy().formatted(Formatting.GRAY))).toList(), 0, 0);
 			}
 		} else if (hoveredFriend != null) {
-			boolean self = SurveyorClient.getFriends().get(SurveyorClient.getClientUuid()) == hoveredFriend;
+			boolean self = hoveredFriend.username().equals(MinecraftClient.getInstance().player.getGameProfile().getName());
 			context.drawTooltip(textRenderer, (self ? Text.translatable("gui.antique_atlas.followPlayer") : Text.literal(hoveredFriend.username())).formatted(hoveredFriend.online() ? (self ? Formatting.WHITE : Formatting.LIGHT_PURPLE) : Formatting.GRAY), 0, 0);
 		}
 		context.getMatrices().pop();

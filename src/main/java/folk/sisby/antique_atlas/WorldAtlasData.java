@@ -204,4 +204,8 @@ public class WorldAtlasData {
 	public MarkerTexture getMarkerTexture(Landmark landmark) {
 		return landmarkMarkers.containsKey(landmark.owner()) && landmarkMarkers.get(landmark.owner()).containsKey(landmark.id()) ? landmarkMarkers.get(landmark.owner()).get(landmark.id()).right() : structureMarkers.get(landmark);
 	}
+
+	public boolean isLoading() {
+		return terrainDequeHash.size() > 20;
+	}
 }

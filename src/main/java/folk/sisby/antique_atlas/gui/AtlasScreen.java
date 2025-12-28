@@ -753,6 +753,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 
 		RenderSystem.disableScissor();
 
+		RenderSystem.enableBlend();
+		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		if (fullscreen) {
 			int left_width = bookWidth / 2 - 15;
 			context.drawNineSlicedTexture(BOOK_FRAME_NARROW_FULLSCREEN, getGuiX(), getGuiY(), left_width, bookHeight, 50, 140, 218, 0, 0);
@@ -761,6 +763,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		} else {
 			context.drawTexture(BOOK_FRAME_NARROW, getGuiX(), getGuiY(), 0, 0, bookWidth, bookHeight, bookWidth, bookHeight);
 		}
+		RenderSystem.disableBlend();
 
 		markerScrollBox.getViewport().setClipped(state.is(HIDING_MARKERS));
 
@@ -783,6 +786,10 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		}
 
 		addMarkerBookmark.setTitle(hasShiftDown() ? TEXT_ADD_MARKER_HERE : TEXT_ADD_MARKER);
+
+		if (worldAtlasData.isLoading()) {
+			context.drawText(textRenderer, Text.literal("...").formatted(Formatting.GRAY), getGuiX() + MAP_BORDER_WIDTH + mapWidth - 10, getGuiY() + MAP_BORDER_HEIGHT + mapHeight - 10, 0xFFFFFFFF, true);
+		}
 
 		if (hasAltDown() && !isDragging && isMouseOverMap && markerModal.getParent() == null) {
 			int x = screenXToWorldX((int) getMouseX());
@@ -823,6 +830,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 		} else if (hoveredFriend != null) {
 			boolean self = hoveredFriend.username().equals(MinecraftClient.getInstance().player.getGameProfile().getName());
+			boolean inDim = hoveredFriend.dimension().equals(dim);
+			if (self && inDim) return;
 			context.drawTooltip(textRenderer, (self ? Text.translatable("gui.antique_atlas.followPlayer") : Text.literal(hoveredFriend.username())).formatted(hoveredFriend.online() ? (self ? Formatting.WHITE : Formatting.LIGHT_PURPLE) : Formatting.GRAY), 0, 0);
 		}
 		context.getMatrices().pop();

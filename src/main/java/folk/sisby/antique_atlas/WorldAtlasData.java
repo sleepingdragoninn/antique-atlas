@@ -10,7 +10,6 @@ import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
-import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentMap;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.util.RegionPos;
@@ -178,10 +177,10 @@ public class WorldAtlasData {
 		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen as) as.updateBookmarkerList();
 	}
 
-	public boolean deleteLandmark(World world, Landmark landmark) {
-		WorldLandmarks summary = WorldSummary.of(world).landmarks();
-		if (summary == null || !SurveyorClient.canModify(landmark.owner())) return false;
-		summary.remove(landmark.owner(), landmark.id());
+	public boolean deleteLandmark(RegistryKey<World> dimension, Landmark landmark) {
+		WorldSummary summary = SurveyorClient.tryGetSummary(dimension);
+		if (summary == null || summary.landmarks() == null || !SurveyorClient.canModify(landmark.owner())) return false;
+		summary.landmarks().remove(landmark.owner(), landmark.id());
 		return true;
 	}
 

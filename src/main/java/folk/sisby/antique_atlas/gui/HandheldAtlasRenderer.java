@@ -10,11 +10,13 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Rect2i;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.world.World;
 import org.joml.Vector2d;
 
-public record HandheldAtlasRenderer(int bookX, int bookY, int bookWidth, int bookHeight, int mapWidth, int mapHeight, int tilePixels, int tileChunks, double guiScale, double mapOffsetX, double mapOffsetY, int mapScale, PlayerEntity player, WorldAtlasData worldAtlasData) implements AtlasRenderer {
+public record HandheldAtlasRenderer(int bookX, int bookY, int bookWidth, int bookHeight, int mapWidth, int mapHeight, int tilePixels, int tileChunks, double guiScale, double mapOffsetX, double mapOffsetY, int mapScale, PlayerEntity player, WorldAtlasData worldAtlasData, RegistryKey<World> dim) implements AtlasRenderer {
 	public static HandheldAtlasRenderer fromContext(PlayerEntity player) {
 		return new HandheldAtlasRenderer(
 			0,
@@ -30,7 +32,8 @@ public record HandheldAtlasRenderer(int bookX, int bookY, int bookWidth, int boo
 			-player.getBlockZ(),
 			1,
 			player,
-			WorldAtlasData.getOrCreate(player.getWorld().getRegistryKey())
+			WorldAtlasData.getOrCreate(player.getWorld().getRegistryKey()),
+			player.getWorld().getRegistryKey()
 		);
 	}
 

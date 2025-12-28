@@ -11,7 +11,7 @@ public class TextBookmarkButton extends BookmarkButton {
 	protected Text label;
 
 	public TextBookmarkButton(Text title, Text label) {
-		super(RULER_TEXTURE_RIGHT, title, null, null, null, 32, 32, false);
+		super(RULER_TEXTURE_RIGHT, title, null, null, null, 32, 32, false, false);
 		this.clickSound = null;
 		this.label = label;
 	}

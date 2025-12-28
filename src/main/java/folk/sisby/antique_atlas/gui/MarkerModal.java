@@ -17,12 +17,12 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.item.Item;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -37,7 +37,8 @@ import java.util.Objects;
  * @author Hunternif
  */
 public class MarkerModal extends Component {
-	protected World world;
+	protected WorldSummary summary;
+	protected DynamicRegistryManager manager;
 	protected Landmark baseLandmark = null;
 
 	protected MarkerTexture selectedTexture = MarkerTexture.DEFAULT;
@@ -63,8 +64,9 @@ public class MarkerModal extends Component {
 	public MarkerModal() {
 	}
 
-	void setMarkerData(World world, Landmark baseLandmark) {
-		this.world = world;
+	void setMarkerData(WorldSummary summary, DynamicRegistryManager manager, Landmark baseLandmark) {
+		this.summary = summary;
+		this.manager = manager;
 		this.baseLandmark = baseLandmark;
 		this.selectedColor = Objects.requireNonNullElse(DyeColor.byFireworkColor(baseLandmark.getOrDefault(LandmarkComponentTypes.COLOR, DyeColor.WHITE.getFireworkColor())), DyeColor.WHITE);
 		this.selectedTexture = MarkerTextures.getInstance().fromLandmark(baseLandmark);
@@ -88,14 +90,14 @@ public class MarkerModal extends Component {
 
 		addDrawableChild(btnDone = ButtonWidget.builder(Text.translatable("gui.done"), (button) -> {
 			MutableText label = Text.literal(textField.getText());
-			WorldLandmarks summary = WorldSummary.of(world).landmarks();
-			if (summary != null) {
-				summary.remove(baseLandmark.owner(), baseLandmark.id());
-				summary.put(WorldAtlasData.copyLandmarkWith(
+			WorldLandmarks landmarks = summary.landmarks();
+			if (landmarks != null) {
+				landmarks.remove(baseLandmark.owner(), baseLandmark.id());
+				landmarks.put(WorldAtlasData.copyLandmarkWith(
 					baseLandmark,
 					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getName() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
 					copy -> {
-					Item item = world.getRegistryManager().get(RegistryKeys.ITEM).get(selectedTexture.item());
+					Item item = manager.get(RegistryKeys.ITEM).get(selectedTexture.item());
 					if (item != null) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
 					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getFireworkColor());
 					copy.set(LandmarkComponentTypes.NAME, label);

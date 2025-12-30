@@ -6,7 +6,6 @@ import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
 import folk.sisby.antique_atlas.reloader.TileTextures;
-import folk.sisby.antique_atlas.util.ColorUtil;
 import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
@@ -159,7 +158,7 @@ public class WorldAtlasData {
 				case EUPHEMISMS -> Text.translatable(key, Text.translatable("gui.antique_atlas.marker.death.%s.verb.%s".formatted(style.toString().toLowerCase(), new Random(landmark.getOrDefault(LandmarkComponentTypes.SEED, 0)).nextInt(11))).formatted(Formatting.RED), timeText).formatted(Formatting.GRAY);
 			};
 			addLandmarkMarker(copyLandmarkWith(landmark, landmark.id(), m -> {
-				m.set(LandmarkComponentTypes.COLOR, ColorUtil.rgbFromComponents(DyeColor.GRAY.getColorComponents()));
+				m.set(LandmarkComponentTypes.COLOR, DyeColor.GRAY.getEntityColor());
 				m.set(LandmarkComponentTypes.NAME, text);
 			}), MarkerTextures.getInstance().fromLandmark(landmark, style == AntiqueAtlasConfig.GraveStyle.ITEMS ? "items" : null));
 		} else {

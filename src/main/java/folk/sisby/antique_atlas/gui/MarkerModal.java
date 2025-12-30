@@ -69,7 +69,7 @@ public class MarkerModal extends Component {
 		this.summary = summary;
 		this.manager = manager;
 		this.baseLandmark = baseLandmark;
-		this.selectedColor = Arrays.stream(DyeColor.values()).filter(d -> baseLandmark.contains(LandmarkComponentTypes.COLOR) && ColorUtil.rgbFromComponents(d.getColorComponents()) == baseLandmark.get(LandmarkComponentTypes.COLOR)).findAny().orElse(DyeColor.WHITE);
+		this.selectedColor = Arrays.stream(DyeColor.values()).filter(d -> baseLandmark.contains(LandmarkComponentTypes.COLOR) && d.getEntityColor() == baseLandmark.get(LandmarkComponentTypes.COLOR)).findAny().orElse(DyeColor.WHITE);
 		this.selectedTexture = MarkerTextures.getInstance().fromLandmark(baseLandmark);
 		if (!selectedTexture.keyId().getPath().startsWith("custom/")) selectedTexture = textureButtons.keySet().stream().findFirst().orElse(MarkerTexture.DEFAULT);
 		if (colorRadioGroup != null) updateSelected();
@@ -100,7 +100,7 @@ public class MarkerModal extends Component {
 					copy -> {
 					Item item = manager.get(RegistryKeys.ITEM).get(selectedTexture.item());
 					if (item != null) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
-					copy.set(LandmarkComponentTypes.COLOR, ColorUtil.rgbFromComponents(selectedColor.getColorComponents()));
+					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getEntityColor());
 					copy.set(LandmarkComponentTypes.NAME, label);
 				}));
 			}

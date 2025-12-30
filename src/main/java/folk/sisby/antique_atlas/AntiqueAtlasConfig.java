@@ -89,25 +89,21 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	public Dimensions dimensions = new Dimensions();
 
 	public static class Dimensions implements Section {
-		@Comment("Cycle order of dimension maps.")
-		@Comment("Automatically populates after loading into the world.")
-		public List<String> order = ValueList.create("", "minecraft:overworld", "minecraft:the_nether", "minecraft:the_end");
-
-		public List<RegistryKey<World>> getOrder(ClientPlayNetworkHandler handler) {
-			List<RegistryKey<World>> dims = new ArrayList<>(SurveyorClient.getSummaries(handler).keySet().stream().sorted(Comparator.comparing(RegistryKey::toString)).toList());
-			dims.removeIf(WorldAtlasData::isEmpty);
-			order.removeIf(v -> handler.getWorldKeys().stream().noneMatch(d -> d.getValue().toString().equals(v)));
-			dims.stream().filter(dim -> !order.contains(dim.getValue().toString())).forEach(dim -> order.add(dim.getValue().toString()));
-			return dims.stream().sorted(Comparator.comparing(dim -> order.indexOf(dim.getValue().toString()))).toList();
-		}
-
-		@Comment("Coordinate scales of each dimension.")
+		@Comment("Cycle order and coordinate scales of each dimension.")
 		@Comment("If not 0, the relative position of the player will be shown.")
 		public Map<String, Integer> scales = ValueMap.builder(0)
 			.put("minecraft:overworld", 8)
 			.put("minecraft:the_nether", 1)
 			.put("minecraft:the_end", 0)
 			.build();
+
+		public List<RegistryKey<World>> getOrder(ClientPlayNetworkHandler handler) {
+			List<RegistryKey<World>> dims = new ArrayList<>(SurveyorClient.getSummaries(handler).keySet().stream().sorted(Comparator.comparing(RegistryKey::toString)).toList());
+			dims.removeIf(WorldAtlasData::isEmpty);
+			scales.keySet().removeIf(v -> handler.getWorldKeys().stream().noneMatch(d -> d.getValue().toString().equals(v)));
+			dims.stream().filter(dim -> !scales.containsKey(dim.getValue().toString())).forEach(dim -> scales.put(dim.getValue().toString(), 0));
+			return dims.stream().sorted(Comparator.comparing(dim -> scales.keySet().stream().toList().indexOf(dim.getValue().toString()))).toList();
+		}
 
 		public Map<RegistryKey<World>, Integer> getScales(ClientPlayNetworkHandler handler) {
 			List<RegistryKey<World>> dims = new ArrayList<>(SurveyorClient.getSummaries(handler).keySet().stream().sorted(Comparator.comparing(RegistryKey::toString)).toList());

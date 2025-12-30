@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -80,8 +81,8 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 	public final MarkerModal markerModal = new MarkerModal();
 	public final BlinkingMarkerComponent markerCursor = new BlinkingMarkerComponent();
 	public final CursorComponent eraser = new CursorComponent();
-	public final List<BookmarkButton> markerBookmarks = new ArrayList<>();
-	public final List<BookmarkButton> dimBookmarks = new ArrayList<>();
+	public final List<BookmarkButton> markerBookmarks = new CopyOnWriteArrayList<>();
+	public final List<BookmarkButton> dimBookmarks = new CopyOnWriteArrayList<>();
 
 	// Screen State
 	public final ScreenState<AtlasScreen> state = new ScreenState<>((oldState, newState) -> AntiqueAtlas.lastState.switchTo(newState, this));

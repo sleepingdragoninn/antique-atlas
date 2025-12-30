@@ -6,6 +6,7 @@ import folk.sisby.antique_atlas.gui.core.Component;
 import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
 import folk.sisby.antique_atlas.gui.core.ToggleButtonRadioGroup;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
+import folk.sisby.antique_atlas.util.ColorUtil;
 import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.WorldLandmarks;
@@ -25,10 +26,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * This GUI is used select marker icon and enter a label.
@@ -68,7 +69,7 @@ public class MarkerModal extends Component {
 		this.summary = summary;
 		this.manager = manager;
 		this.baseLandmark = baseLandmark;
-		this.selectedColor = Objects.requireNonNullElse(DyeColor.byFireworkColor(baseLandmark.getOrDefault(LandmarkComponentTypes.COLOR, DyeColor.WHITE.getFireworkColor())), DyeColor.WHITE);
+		this.selectedColor = Arrays.stream(DyeColor.values()).filter(d -> baseLandmark.contains(LandmarkComponentTypes.COLOR) && ColorUtil.rgbFromComponents(d.getColorComponents()) == baseLandmark.get(LandmarkComponentTypes.COLOR)).findAny().orElse(DyeColor.WHITE);
 		this.selectedTexture = MarkerTextures.getInstance().fromLandmark(baseLandmark);
 		if (!selectedTexture.keyId().getPath().startsWith("custom/")) selectedTexture = textureButtons.keySet().stream().findFirst().orElse(MarkerTexture.DEFAULT);
 		if (colorRadioGroup != null) updateSelected();
@@ -99,7 +100,7 @@ public class MarkerModal extends Component {
 					copy -> {
 					Item item = manager.get(RegistryKeys.ITEM).get(selectedTexture.item());
 					if (item != null) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
-					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getFireworkColor());
+					copy.set(LandmarkComponentTypes.COLOR, ColorUtil.rgbFromComponents(selectedColor.getColorComponents()));
 					copy.set(LandmarkComponentTypes.NAME, label);
 				}));
 			}

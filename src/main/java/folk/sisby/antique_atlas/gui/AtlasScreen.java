@@ -14,6 +14,7 @@ import folk.sisby.antique_atlas.gui.core.CursorComponent;
 import folk.sisby.antique_atlas.gui.core.ScreenState;
 import folk.sisby.antique_atlas.gui.core.ScrollBoxComponent;
 import folk.sisby.antique_atlas.util.CodecUtil;
+import folk.sisby.antique_atlas.util.ColorUtil;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
@@ -110,7 +111,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		mapHeight = bookHeight - MAP_BORDER_HEIGHT * 2;
 		mapScale = calculateMapScale();
 
-		playerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.followPlayer"), AntiqueAtlas.id("textures/gui/player.png"), DyeColor.GRAY.getFireworkColor(), null, 7, 8, false, false);
+		playerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.followPlayer"), AntiqueAtlas.id("textures/gui/player.png"), ColorUtil.rgbFromComponents(DyeColor.GRAY.getColorComponents()), null, 7, 8, false, false);
 		addChild(playerBookmark).offsetGuiCoords(bookWidth - 10, bookHeight - MAP_BORDER_HEIGHT - BookmarkButton.HEIGHT - 10);
 		playerBookmark.addListener(b -> {
 			selectedButton = playerBookmark;
@@ -118,7 +119,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			playerBookmark.setSelected(true);
 		});
 
-		addMarkerBookmark = new BookmarkButton(TEXT_ADD_MARKER, ICON_ADD_MARKER, DyeColor.RED.getFireworkColor(), null, 16, 16, false, false);
+		addMarkerBookmark = new BookmarkButton(TEXT_ADD_MARKER, ICON_ADD_MARKER, ColorUtil.rgbFromComponents(DyeColor.RED.getColorComponents()), null, 16, 16, false, false);
 		addChild(addMarkerBookmark);
 		offsetSideButton(addMarkerBookmark);
 		addMarkerBookmark.addListener(button -> {
@@ -157,7 +158,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				}
 			}
 		});
-		deleteMarkerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.delMarker"), ICON_DELETE_MARKER, DyeColor.YELLOW.getFireworkColor(), null, 16, 16, false, false);
+		deleteMarkerBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.delMarker"), ICON_DELETE_MARKER, ColorUtil.rgbFromComponents(DyeColor.YELLOW.getColorComponents()), null, 16, 16, false, false);
 		addChild(deleteMarkerBookmark);
 		offsetSideButton(deleteMarkerBookmark);
 		deleteMarkerBookmark.addListener(button -> {
@@ -169,7 +170,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				state.switchTo(DELETING_MARKER, this);
 			}
 		});
-		markerVisibilityBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.hideMarkers"), ICON_HIDE_MARKERS, DyeColor.GREEN.getFireworkColor(), null, 16, 16, false, false);
+		markerVisibilityBookmark = new BookmarkButton(Text.translatable("gui.antique_atlas.hideMarkers"), ICON_HIDE_MARKERS, ColorUtil.rgbFromComponents(DyeColor.GREEN.getColorComponents()), null, 16, 16, false, false);
 		addChild(markerVisibilityBookmark);
 		offsetSideButton(markerVisibilityBookmark);
 		markerVisibilityBookmark.addListener(button -> {
@@ -277,7 +278,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 				name = Text.translatable(meta.name());
 			} catch (NullPointerException | IOException | NoSuchElementException e) {
 				name = Text.of(WordUtils.capitalizeFully(dimension.getValue().getPath().replaceAll("[/_-]", " ")));
-				backgroundTint = DyeColor.byId(dimension.getValue().toString().hashCode() & 15).getFireworkColor();
+				backgroundTint = ColorUtil.rgbFromComponents(DyeColor.byId(dimension.getValue().toString().hashCode() & 15).getColorComponents());
 			}
 			BookmarkButton bookmark = new BookmarkButton(name, iconId, backgroundTint, null, 16, 16, false, true);
 			bookmark.setSelected(dimension.equals(dim));

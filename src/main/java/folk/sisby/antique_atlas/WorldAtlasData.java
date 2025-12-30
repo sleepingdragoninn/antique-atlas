@@ -6,6 +6,7 @@ import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.antique_atlas.reloader.MarkerTextures;
 import folk.sisby.antique_atlas.reloader.StructureTileProviders;
 import folk.sisby.antique_atlas.reloader.TileTextures;
+import folk.sisby.antique_atlas.util.ColorUtil;
 import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
@@ -19,6 +20,7 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
@@ -156,7 +158,10 @@ public class WorldAtlasData {
 				case GRAVE, ITEMS, DIED -> Text.translatable(key, Text.translatable("gui.antique_atlas.marker.death.%s.verb".formatted(style.toString().toLowerCase())).formatted(Formatting.RED), timeText).formatted(Formatting.GRAY);
 				case EUPHEMISMS -> Text.translatable(key, Text.translatable("gui.antique_atlas.marker.death.%s.verb.%s".formatted(style.toString().toLowerCase(), new Random(landmark.getOrDefault(LandmarkComponentTypes.SEED, 0)).nextInt(11))).formatted(Formatting.RED), timeText).formatted(Formatting.GRAY);
 			};
-			addLandmarkMarker(copyLandmarkWith(landmark, landmark.id(), m -> m.set(LandmarkComponentTypes.NAME, text)), MarkerTextures.getInstance().fromLandmark(landmark, style == AntiqueAtlasConfig.GraveStyle.ITEMS ? "items" : null));
+			addLandmarkMarker(copyLandmarkWith(landmark, landmark.id(), m -> {
+				m.set(LandmarkComponentTypes.COLOR, ColorUtil.rgbFromComponents(DyeColor.GRAY.getColorComponents()));
+				m.set(LandmarkComponentTypes.NAME, text);
+			}), MarkerTextures.getInstance().fromLandmark(landmark, style == AntiqueAtlasConfig.GraveStyle.ITEMS ? "items" : null));
 		} else {
 			addLandmarkMarker(landmark, MarkerTextures.getInstance().fromLandmark(landmark));
 		}

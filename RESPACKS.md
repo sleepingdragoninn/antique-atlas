@@ -205,10 +205,17 @@ Just a direct reference to the marker texture (without the `texture/atlas/marker
 
 The translation key is used for the tooltip, and matches the path used for the json file.
 
-## Publishing
+## Dimensions
 
-Please keep in mind that all textures in this project are [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) - if you derive from them, you _must_ adhere to this license.
+Dimensions are given custom bookmark icons from `namespace/textures/atlas/dimension/path.png`, with the optional metafile:
+```json5
+// minecraft/textures/atlas/dimension/the_end.png.mcmeta
+{
+	"antique_atlas:dimension": {
+		"name": "advancements.end.root.title",
+		"color": "#DECF2A"
+	}
+}
+```
 
-Feel free to contribute any resource packs to the [Antique Atlas 4 Resource Packs Repo](https://github.com/sisby-folk/antique-atlas-respacks) - where we're also happy to help with any technical questions.
-
-Thank you!
+Dimensions will otherwise use a question mark texture and a random color hashed from their ID.

@@ -8,16 +8,14 @@ import folk.sisby.antique_atlas.reloader.StructureTileProviders;
 import folk.sisby.antique_atlas.reloader.TileTextures;
 import folk.sisby.antique_atlas.util.Rect;
 import folk.sisby.surveyor.WorldSummary;
+import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
-import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentMap;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
-import folk.sisby.surveyor.structure.WorldStructureSummary;
-import folk.sisby.surveyor.terrain.WorldTerrainSummary;
 import folk.sisby.surveyor.util.RegionPos;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -28,7 +26,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.Structure;
 
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,16 +40,12 @@ import java.util.function.Consumer;
 public class WorldAtlasData {
 	public static final Map<RegistryKey<World>, WorldAtlasData> WORLDS = new HashMap<>();
 
-	public static WorldAtlasData getOrCreate(World world) {
-		return WorldAtlasData.WORLDS.computeIfAbsent(world.getRegistryKey(), k -> new WorldAtlasData());
+	public static WorldAtlasData getOrCreate(RegistryKey<World> dimension) {
+		return WORLDS.computeIfAbsent(dimension, k -> new WorldAtlasData());
 	}
 
-	public static void onLoad(World world, WorldSummary summary, ClientPlayerEntity player, Map<RegionPos, BitSet> terrain, Multimap<RegistryKey<Structure>, ChunkPos> structures, Multimap<UUID, Identifier> landmarks) {
-		WorldAtlasData data = getOrCreate(world);
-		data.onTerrainUpdated(world, summary.terrain(), WorldTerrainSummary.toKeys(terrain, player.getChunkPos()));
-		data.onStructuresAdded(world, summary.structures(), structures);
-		data.onLandmarksAdded(world, summary.landmarks(), landmarks);
-		AntiqueAtlas.LOGGER.info("[Antique Atlas] Beginning to load terrain for {} - {} chunks available.", world.getRegistryKey().getValue(), data.terrainDeque.size());
+	public static boolean isEmpty(RegistryKey<World> dimension) {
+		return !WORLDS.containsKey(dimension) || WORLDS.get(dimension).isEmpty();
 	}
 
 	protected final Map<ChunkPos, TileTexture> biomeTiles = new HashMap<>();
@@ -71,8 +64,13 @@ public class WorldAtlasData {
 	protected final Map<ChunkPos, TerrainTileProvider> debugBiomes = new HashMap<>();
 	protected final Map<ChunkPos, StructureTileProvider> debugStructures = new HashMap<>();
 
-	public void onTerrainUpdated(World world, WorldTerrainSummary ignored2, Collection<ChunkPos> chunks) {
-		for (ChunkPos pos : chunks) {
+
+	private boolean isEmpty() {
+		return tileScope.maxY == tileScope.minY && terrainDequeHash.isEmpty();
+	}
+
+	public void onTerrainUpdated(WorldSummary summary, Map<RegionPos, BitSet> chunks) {
+		for (ChunkPos pos : RegionPos.regionsToChunks(chunks)) {
 			if (!biomeTiles.containsKey(pos) && !terrainDequeHash.contains(pos)) {
 				terrainDequeHash.add(pos);
 				terrainDeque.add(pos);
@@ -80,17 +78,18 @@ public class WorldAtlasData {
 		}
 	}
 
-	public void onStructuresAdded(World world, WorldStructureSummary ws, Multimap<RegistryKey<Structure>, ChunkPos> summaries) {
-		summaries.forEach((key, pos) -> StructureTileProviders.getInstance().resolve(structureTiles, debugStructures, debugStructurePredicates, structureMarkers, world, key, pos, ws.get(key, pos), ws.getType(key), ws.getTags(key)));
+	public void onStructuresAdded(WorldSummary summary, Multimap<RegistryKey<Structure>, ChunkPos> starts) {
+		starts.forEach((key, pos) -> StructureTileProviders.getInstance().resolve(structureTiles, debugStructures, debugStructurePredicates, structureMarkers, summary, key, pos, summary.structures().get(key, pos), summary.structures().getType(key), summary.structures().getTags(key)));
 	}
 
-	public void tick(World world) {
+	public void tick(WorldSummary summary) {
 		if (!BiomeTileProviders.getInstance().hasFallbacks()) return;
+		DynamicRegistryManager manager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
 		for (int i = 0; i < AntiqueAtlas.CONFIG.chunkTickLimit; i++) {
 			ChunkPos pos = terrainDeque.pollFirst();
 			terrainDequeHash.remove(pos);
 			if (pos == null) break;
-			Pair<TerrainTileProvider, TileElevation> tile = world.getRegistryKey() == World.NETHER ? TerrainTiling.terrainToTileNether(world, pos) : TerrainTiling.terrainToTile(world, pos);
+			Pair<TerrainTileProvider, TileElevation> tile = summary.dimension() == World.NETHER ? TerrainTiling.terrainToTileNether(summary, pos) : TerrainTiling.terrainToTile(summary, pos);
 			if (tile != null) {
 				tileScope.extendTo(pos.x, pos.z);
 				biomeTiles.put(pos, tile.left().getTexture(pos, tile.right()));
@@ -100,7 +99,7 @@ public class WorldAtlasData {
 		}
 		if (!isFinished && terrainDeque.isEmpty()) {
 			isFinished = true;
-			AntiqueAtlas.LOGGER.info("[Antique Atlas] Finished loading terrain for {} - {} tiles.", world.getRegistryKey().getValue(), biomeTiles.size());
+			AntiqueAtlas.LOGGER.info("[Antique Atlas] Finished loading terrain for {} - {} tiles.", summary.dimension(), biomeTiles.size());
 		}
 	}
 
@@ -163,12 +162,12 @@ public class WorldAtlasData {
 		}
 	}
 
-	public void onLandmarksAdded(World ignored, WorldLandmarks worldLandmarks, Multimap<UUID, Identifier> landmarks) {
-		landmarks.forEach((type, pos) -> this.addLandmark(worldLandmarks.get(type, pos)));
+	public void onLandmarksAdded(WorldSummary summary, Multimap<UUID, Identifier> landmarks) {
+		landmarks.forEach((type, pos) -> this.addLandmark(summary.landmarks().get(type, pos)));
 		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen as) as.updateBookmarkerList();
 	}
 
-	public void onLandmarksRemoved(World ignored, WorldLandmarks ignored2, Multimap<UUID, Identifier> landmarks) {
+	public void onLandmarksRemoved(WorldSummary summary, Multimap<UUID, Identifier> landmarks) {
 		landmarks.forEach((type, pos) -> {
 			if (landmarkMarkers.containsKey(type)) {
 				landmarkMarkers.get(type).remove(pos);
@@ -178,17 +177,17 @@ public class WorldAtlasData {
 		if (MinecraftClient.getInstance().currentScreen instanceof AtlasScreen as) as.updateBookmarkerList();
 	}
 
-	public boolean deleteLandmark(World world, Landmark landmark) {
-		WorldLandmarks summary = WorldSummary.of(world).landmarks();
-		if (summary == null || !WorldLandmarks.canModify(landmark.owner(), world, null)) return false;
-		summary.remove(world, landmark.owner(), landmark.id());
+	public boolean deleteLandmark(RegistryKey<World> dimension, Landmark landmark) {
+		WorldSummary summary = SurveyorClient.tryGetSummary(dimension);
+		if (summary == null || summary.landmarks() == null || !SurveyorClient.canModify(landmark.owner())) return false;
+		summary.landmarks().remove(landmark.owner(), landmark.id());
 		return true;
 	}
 
-	public Map<Landmark, MarkerTexture> getEditableLandmarks(World world) {
+	public Map<Landmark, MarkerTexture> getEditableLandmarks() {
 		Map<Landmark, MarkerTexture> map = new HashMap<>();
 		landmarkMarkers.forEach((type, landmarks) -> landmarks.forEach((pos, pair) -> {
-			if (WorldLandmarks.canModify(pair.left().owner(), world, null)) map.put(pair.left(), pair.right());
+			if (SurveyorClient.canModify(pair.left().owner())) map.put(pair.left(), pair.right());
 		}));
 		return map;
 	}
@@ -204,5 +203,9 @@ public class WorldAtlasData {
 
 	public MarkerTexture getMarkerTexture(Landmark landmark) {
 		return landmarkMarkers.containsKey(landmark.owner()) && landmarkMarkers.get(landmark.owner()).containsKey(landmark.id()) ? landmarkMarkers.get(landmark.owner()).get(landmark.id()).right() : structureMarkers.get(landmark);
+	}
+
+	public boolean isLoading() {
+		return terrainDequeHash.size() > 20;
 	}
 }

@@ -10,20 +10,20 @@ import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Vector2d;
 
-public record MarkerTexture(Identifier id, Identifier accentId, int offsetX, int offsetY, int textureWidth, int textureHeight, int mipLevels, int nearClip, int farClip) {
+public record MarkerTexture(Identifier id, Identifier accentId, Identifier item, int offsetX, int offsetY, int textureWidth, int textureHeight, int mipLevels, int nearClip, int farClip) {
 	public static Identifier idToTexture(Identifier id) {
 		return id.withPrefixedPath("textures/atlas/marker/").withSuffixedPath(".png");
 	}
 
-	public static MarkerTexture ofId(Identifier id, int offsetX, int offsetY, int width, int height, int mipLevels, int nearClip, int farClip, boolean accent) {
-		return new MarkerTexture(idToTexture(id), accent ? idToTexture(id.withSuffixedPath("_accent")) : null, offsetX, offsetY, width, height, mipLevels, nearClip, farClip);
+	public static MarkerTexture ofId(Identifier id, Identifier item, int offsetX, int offsetY, int width, int height, int mipLevels, int nearClip, int farClip, boolean accent) {
+		return new MarkerTexture(idToTexture(id), accent ? idToTexture(id.withSuffixedPath("_accent")) : null, item, offsetX, offsetY, width, height, mipLevels, nearClip, farClip);
 	}
 
-	public static MarkerTexture centered(Identifier id, int width, int height, int mipLevels, int nearClip, int farClip, boolean accent) {
-		return ofId(id, -width / 2, -height / 2, width, height, mipLevels, nearClip, farClip, accent);
+	public static MarkerTexture centered(Identifier id, Identifier item, int width, int height, int mipLevels, int nearClip, int farClip, boolean accent) {
+		return ofId(id, item, -width / 2, -height / 2, width, height, mipLevels, nearClip, farClip, accent);
 	}
 
-	public static final MarkerTexture DEFAULT = centered(AntiqueAtlas.id("custom/point"), 32, 32, 0, 1, Integer.MAX_VALUE, true);
+	public static final MarkerTexture DEFAULT = centered(AntiqueAtlas.id("custom/point"), Identifier.of("minecraft", "emerald"), 32, 32, 0, 1, Integer.MAX_VALUE, true);
 
 	public Identifier keyId() {
 		return Identifier.of(id.getNamespace(), id.getPath().substring("textures/atlas/marker/".length(), id.getPath().length() - 4));

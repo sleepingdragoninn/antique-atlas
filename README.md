@@ -49,7 +49,8 @@ Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and 
 Antique Atlas 4 is a **clientside map frontend** for [Surveyor Map Framework](https://modrinth.com/mod/surveyor).<br/>
 It renders surveyor save data as tiles on screen using respacks, and provides a GUI editor for waypoints.<br/>
 Issues and suggestions regarding the screen, tiles, markers, and resource packs are [Antique Atlas 4 Issues](https://github.com/sisby-folk/antique-atlas/issues).<br/>
-Issues and suggestions regarding map sharing, explored map area, and automatic markers are [Surveyor Issues](https://github.com/sisby-folk/surveyor).
+Issues and suggestions regarding map sharing, explored map area, and automatic markers are [Surveyor Issues](https://github.com/sisby-folk/surveyor).<br/>
+**Crash reports must have AA4 and Surveyor on the latest version, and include `logs/latest.log` via [mclo.gs](https://mclo.gs/).** 
 
 ## Configuration
 
@@ -61,7 +62,7 @@ Antique Atlas can be configured from `config/antique-atlas.toml` or in-game usin
 
 Additional options can be found in the Surveyor config in `config/surveyor.toml`.
 
-## Addons & Compatibility
+## Addon & Resource Pack Developers
 
 ### Resource Packs
 
@@ -92,8 +93,8 @@ To automatically mark non-structure points of interest - instead use [Surveyor](
 Please match your addon/respack licenses to LGPLv3 for code & CC BY-NC-SA for assets to help the ecosystem!<br/>
 (LGPLv3 and CC BY-NC-SA are a copyleft licenses, so this is required for anything directly adapted from AA4)
 
-If you've made something, hit us up and we might link it here! We'll also answer questions for in-progress projects.<br/>
-You can reach out to us through the [modfest discord](https://discord.gg/gn543Ee) (#projects->Surveyor), on [mastodon](https://tech.lgbt/@sleepingdragoninn), or hell, via [email](mailto:sleepingdragoninn@gmail.com).
+If you've made an addon/respack, hit us up and we might link it here! If it's still WIP feel free to ask us questions.<br/>
+Devs can reach out to us on [mastodon](https://tech.lgbt/@sleepingdragoninn), via [email](mailto:sleepingdragoninn@gmail.com), or in [#projects->Surveyor on ModFest](https://discord.gg/HKuwYuZ7Qu).
 
 ## Afterword
 

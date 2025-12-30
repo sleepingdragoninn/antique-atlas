@@ -2,13 +2,13 @@ package folk.sisby.antique_atlas;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import folk.sisby.surveyor.WorldSummary;
 import net.minecraft.structure.JigsawJunction;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatcher, List<TileTexture>> matchers) {
 	public static final BiMap<Identifier, ChunkMatcher> CHUNK_MATCHERS = HashBiMap.create();
+	private static final int SEA_LEVEL = 63;
 
 	public static ChunkMatcher getChunkMatcher(Identifier id) {
 		return CHUNK_MATCHERS.get(id);
@@ -47,12 +48,12 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 		return outMap;
 	}
 
-	public Map<ChunkPos, TileTexture> getTextures(World world, BlockBox box, Map<ChunkPos, String> tilePredicates) {
-		return getTextures(matcher -> matcher.matches(world, box), tilePredicates);
+	public Map<ChunkPos, TileTexture> getTextures(WorldSummary summary, BlockBox box, Map<ChunkPos, String> tilePredicates) {
+		return getTextures(matcher -> matcher.matches(summary, box), tilePredicates);
 	}
 
-	public Map<ChunkPos, TileTexture> getTextures(World world, BlockBox box, List<JigsawJunction> junctions, Map<ChunkPos, String> tilePredicates) {
-		return getTextures(matcher -> matcher.matches(world, box, junctions), tilePredicates);
+	public Map<ChunkPos, TileTexture> getTextures(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions, Map<ChunkPos, String> tilePredicates) {
+		return getTextures(matcher -> matcher.matches(summary, box, junctions), tilePredicates);
 	}
 
 	public Set<TileTexture> allTextures() {
@@ -62,34 +63,34 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 	}
 
 	public interface ChunkMatcher {
-		Collection<ChunkPos> matches(World world, BlockBox box);
+		Collection<ChunkPos> matches(WorldSummary summary, BlockBox box);
 
-		default Collection<ChunkPos> matches(World world, BlockBox box, List<JigsawJunction> junctions) {
-			return matches(world, box);
+		default Collection<ChunkPos> matches(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions) {
+			return matches(summary, box);
 		}
 
-		static Collection<ChunkPos> center(World world, BlockBox box) {
+		static Collection<ChunkPos> center(WorldSummary summary, BlockBox box) {
 			return Collections.singleton(new ChunkPos(box.getCenter()));
 		}
 
-		static Collection<ChunkPos> topAboveGround(World world, BlockBox box) {
-			if (world.getSeaLevel() <= box.getMaxY()) {
+		static Collection<ChunkPos> topAboveGround(WorldSummary summary, BlockBox box) {
+			if (SEA_LEVEL <= box.getMaxY()) {
 				return Collections.singleton(new ChunkPos(box.getCenter()));
 			}
 
 			return Collections.emptyList();
 		}
 
-		static Collection<ChunkPos> aboveGround(World world, BlockBox box) {
+		static Collection<ChunkPos> aboveGround(WorldSummary summary, BlockBox box) {
 			BlockPos center = new BlockPos(box.getCenter());
-			if (world.getSeaLevel() - 4 <= center.getY()) {
+			if (SEA_LEVEL - 4 <= center.getY()) {
 				return Collections.singleton(new ChunkPos(center));
 			}
 
 			return Collections.emptyList();
 		}
 
-		static Collection<ChunkPos> bridgeHorizontal(World world, BlockBox box) {
+		static Collection<ChunkPos> bridgeHorizontal(WorldSummary summary, BlockBox box) {
 			HashSet<ChunkPos> matches = new HashSet<>();
 
 			if (box.getBlockCountX() > 16) {
@@ -102,7 +103,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 			return matches;
 		}
 
-		static Collection<ChunkPos> bridgeVertical(World world, BlockBox box) {
+		static Collection<ChunkPos> bridgeVertical(WorldSummary summary, BlockBox box) {
 			HashSet<ChunkPos> matches = new HashSet<>();
 
 			if (box.getBlockCountZ() > 16) {
@@ -115,7 +116,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 			return matches;
 		}
 
-		static Collection<ChunkPos> centerIfHorizontal(World world, BlockBox box) {
+		static Collection<ChunkPos> centerIfHorizontal(WorldSummary summary, BlockBox box) {
 			if (box.getBlockCountX() > box.getBlockCountZ()) {
 				return Collections.singleton(new ChunkPos(box.getCenter()));
 			} else {
@@ -123,7 +124,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 			}
 		}
 
-		static Collection<ChunkPos> centerIfVertical(World world, BlockBox box) {
+		static Collection<ChunkPos> centerIfVertical(WorldSummary summary, BlockBox box) {
 			if (box.getBlockCountZ() > box.getBlockCountX()) {
 				return Collections.singleton(new ChunkPos(box.getCenter()));
 			} else {
@@ -133,20 +134,20 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 	}
 
 	public interface ChunkJunctionMatcher extends ChunkMatcher {
-		default Collection<ChunkPos> matches(World world, BlockBox box) {
-			return matches(world, box, List.of());
+		default Collection<ChunkPos> matches(WorldSummary summary, BlockBox box) {
+			return matches(summary, box, List.of());
 		}
 
-		Collection<ChunkPos> matches(World world, BlockBox box, List<JigsawJunction> junctions);
+		Collection<ChunkPos> matches(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions);
 
-		static Collection<ChunkPos> straightHorizontal(World world, BlockBox box, List<JigsawJunction> junctions) {
+		static Collection<ChunkPos> straightHorizontal(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions) {
 			if (junctions.size() == 2 && (junctions.get(0).getSourceZ() == junctions.get(1).getSourceZ() || junctions.get(0).getSourceX() != junctions.get(1).getSourceX())) {
 				return List.of(new ChunkPos(box.getCenter()));
 			}
 			return List.of();
 		}
 
-		static Collection<ChunkPos> straightVertical(World world, BlockBox box, List<JigsawJunction> junctions) {
+		static Collection<ChunkPos> straightVertical(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions) {
 			if (junctions.size() == 2 && (junctions.get(0).getSourceX() == junctions.get(1).getSourceX() || junctions.get(0).getSourceZ() != junctions.get(1).getSourceZ())) {
 				return List.of(new ChunkPos(new BlockPos((junctions.get(0).getSourceX() + junctions.get(1).getSourceX()) / 2, 0, (junctions.get(0).getSourceZ() + junctions.get(1).getSourceZ()) / 2)));
 			}

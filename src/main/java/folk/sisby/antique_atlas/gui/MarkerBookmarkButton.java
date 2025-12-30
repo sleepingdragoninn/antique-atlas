@@ -7,8 +7,8 @@ import net.minecraft.text.Text;
 public class MarkerBookmarkButton extends BookmarkButton {
 	protected final MarkerTexture markerTexture;
 
-	public MarkerBookmarkButton(Text title, MarkerTexture markerTexture, int accent, boolean left) {
-		super(title, markerTexture.id(), accent, accent, markerTexture.textureWidth(), markerTexture.textureHeight(), left);
+	public MarkerBookmarkButton(Text title, MarkerTexture markerTexture, int accent, boolean backwards, boolean vertical) {
+		super(title, markerTexture.id(), accent, accent, markerTexture.textureWidth(), markerTexture.textureHeight(), backwards, vertical);
 		this.markerTexture = markerTexture;
 	}
 

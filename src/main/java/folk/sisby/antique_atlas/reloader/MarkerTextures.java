@@ -105,10 +105,11 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 		return ID;
 	}
 
-	public record MarkerTextureMeta(Optional<Integer> textureWidth, Optional<Integer> textureHeight, Optional<Integer> mipLevels, Optional<Integer> offsetX, Optional<Integer> offsetY, Optional<Integer> nearClip, Optional<Integer> farClip) {
-		public static final MarkerTextureMeta DEFAULT = new MarkerTextureMeta(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+	public record MarkerTextureMeta(Optional<Identifier> item, Optional<Integer> textureWidth, Optional<Integer> textureHeight, Optional<Integer> mipLevels, Optional<Integer> offsetX, Optional<Integer> offsetY, Optional<Integer> nearClip, Optional<Integer> farClip) {
+		public static final MarkerTextureMeta DEFAULT = new MarkerTextureMeta(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
 		public static final Codec<MarkerTextureMeta> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Identifier.CODEC.optionalFieldOf("item").forGetter(MarkerTextureMeta::item),
 			Codec.INT.optionalFieldOf("textureWidth").forGetter(MarkerTextureMeta::textureWidth),
 			Codec.INT.optionalFieldOf("textureHeight").forGetter(MarkerTextureMeta::textureHeight),
 			Codec.INT.optionalFieldOf("mipLevels").forGetter(MarkerTextureMeta::mipLevels),
@@ -128,7 +129,8 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 			int offsetY = this.offsetY.orElse(-textureHeight / 2);
 			int nearClip = this.nearClip.orElse(1);
 			int farClip = this.farClip.orElse(Integer.MAX_VALUE);
-			return MarkerTexture.ofId(id, offsetX, offsetY, textureWidth, textureHeight, mipLevels, nearClip, farClip, accent);
+			Identifier item = this.item.orElse(null);
+			return MarkerTexture.ofId(id, item, offsetX, offsetY, textureWidth, textureHeight, mipLevels, nearClip, farClip, accent);
 		}
 	}
 }

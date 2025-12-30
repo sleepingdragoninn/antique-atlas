@@ -18,16 +18,19 @@ import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.util.RegionPos;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +64,7 @@ public interface AtlasRenderer {
 	Identifier ICON_DELETE_MARKER = AntiqueAtlas.id("textures/gui/icons/del_marker.png");
 	Identifier ICON_SHOW_MARKERS = AntiqueAtlas.id("textures/gui/icons/show_markers.png");
 	Identifier ICON_HIDE_MARKERS = AntiqueAtlas.id("textures/gui/icons/hide_markers.png");
+	Identifier ICON_UNKNOWN = AntiqueAtlas.id("textures/gui/icons/unknown.png");
 	Text TEXT_ADD_MARKER = Text.translatable("gui.antique_atlas.addMarker");
 	Text TEXT_ADD_MARKER_HERE = Text.translatable("gui.antique_atlas.addMarkerHere");
 
@@ -117,6 +121,8 @@ public interface AtlasRenderer {
 	double getPixelsPerBlock();
 
 	double guiScale();
+
+	RegistryKey<World> dim();
 
 	default int screenXToWorldX(double screenX) {
 		return screenXToWorldX(screenX, bookX(), mapOffsetX(), mapWidth(), getPixelsPerBlock());
@@ -200,8 +206,22 @@ public interface AtlasRenderer {
 	}
 
 	default void renderPlayer(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float z, int light, PlayerSummary player, float iconScale, float alpha, boolean hovering, boolean self) {
-		double playerOffsetX = worldXToScreenX(player.pos().getX()) - bookX();
-		double playerOffsetY = worldZToScreenY(player.pos().getZ()) - bookY();
+		double dimX = player.pos().getX();
+		double dimZ = player.pos().getZ();
+
+		boolean inDim = dim().equals(player.dimension());
+		if (!inDim) {
+			Map<RegistryKey<World>, Integer> scales = AntiqueAtlas.CONFIG.dimensions.getScales(MinecraftClient.getInstance().getNetworkHandler());
+			int newScale = scales.getOrDefault(dim(), 0);
+			int oldScale = scales.getOrDefault(player.dimension(), 0);
+			if (newScale * oldScale == 0) return; // no ratio!
+			double mult = newScale / (double) oldScale;
+			dimX = mult * dimX;
+			dimZ = mult * dimZ;
+		}
+
+		double playerOffsetX = worldXToScreenX(dimX) - bookX();
+		double playerOffsetY = worldZToScreenY(dimZ) - bookY();
 
 		playerOffsetX = MathHelper.clamp(playerOffsetX, MAP_BORDER_WIDTH, mapWidth() + MAP_BORDER_WIDTH);
 		playerOffsetY = MathHelper.clamp(playerOffsetY, MAP_BORDER_HEIGHT, mapHeight() + MAP_BORDER_HEIGHT);
@@ -209,7 +229,8 @@ public interface AtlasRenderer {
 		// Draw the icon:
 		float tint = (player.online() ? 1 : 0.5f) * (hovering ? 0.9f : 1);
 		float greenTint = self ? 1 : 0.7f;
-		int argb = ColorHelper.Argb.getArgb((int) (alpha * 255.0), (int) (tint * 255), (int) (tint * greenTint * 255), (int) (tint * 255));
+		float redTint = inDim ? 1 : 0.7f;
+		int argb = ColorHelper.Argb.getArgb((int) (alpha * 255.0), (int) (tint * redTint * 255), (int) (tint * greenTint * 255), (int) (tint * 255));
 		float playerRotation = ((float) Math.round(player.yaw() / 360f * PLAYER_ROTATION_STEPS) / PLAYER_ROTATION_STEPS) * 360f;
 
 		DrawUtil.drawCenteredWithRotation(matrices, vertexConsumers, PLAYER, playerOffsetX, playerOffsetY, z, iconScale, PLAYER_ICON_WIDTH, PLAYER_ICON_HEIGHT, playerRotation, light, argb);
@@ -229,7 +250,7 @@ public interface AtlasRenderer {
 		int mapY = bookY() + MAP_BORDER_HEIGHT;
 		float effectiveScale = (float) (mapScale() / guiScale());
 		matrices.push();
-		matrices.translate(mapStartScreenX, mapStartScreenY, 0);
+		matrices.translate(Math.round(mapStartScreenX), Math.round(mapStartScreenY), 0);
 		matrices.scale(effectiveScale, effectiveScale, 1.0F);
 
 		Map<TileTexture, Collection<SubTile>> tileTextures = new Reference2ObjectArrayMap<>();

@@ -4,7 +4,7 @@ import folk.sisby.antique_atlas.reloader.BiomeTileProviders;
 import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.terrain.ChunkSummary;
 import folk.sisby.surveyor.terrain.LayerSummary;
-import folk.sisby.surveyor.terrain.WorldTerrainSummary;
+import folk.sisby.surveyor.terrain.WorldTerrain;
 import folk.sisby.surveyor.util.RegistryPalette;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanArrayMap;
@@ -51,6 +51,7 @@ public class TerrainTiling {
 	public static final int NETHER_SCAN_HEIGHT = 50;
 	public static final Map<Biome, Integer> priorityCache = new Reference2IntArrayMap<>();
 	public static final Map<Biome, Boolean> swampCache = new Reference2BooleanArrayMap<>();
+	private static final int SEA_LEVEL = 63;
 
 	public static int priorityForBiome(Registry<Biome> biomeRegistry, Biome biome) {
 		return priorityCache.computeIfAbsent(biome, b -> {
@@ -91,21 +92,21 @@ public class TerrainTiling {
 		return Pair.of(BiomeTileProviders.getInstance().getTileProvider(providerId), elevationOrdinal == TileElevation.values().length ? null : TileElevation.values()[elevationOrdinal]);
 	}
 
-	public static Pair<TerrainTileProvider, TileElevation> terrainToTile(World world, ChunkPos pos) {
-		int defaultTile = CUSTOM_TILES.indexOf(world.getDimension().hasCeiling() ? FeatureTiles.BEDROCK_ROOF : (world.getRegistryKey() == World.END ? FeatureTiles.END_VOID : FeatureTiles.EMPTY));
-		boolean checkRavines = world.getRegistryKey() == World.OVERWORLD;
+	public static Pair<TerrainTileProvider, TileElevation> terrainToTile(WorldSummary summary, ChunkPos pos) {
+		int defaultTile = CUSTOM_TILES.indexOf(summary.dimension() == World.END ? FeatureTiles.END_VOID : FeatureTiles.EMPTY);
+		boolean checkRavines = summary.dimension() == World.OVERWORLD;
 
-		int worldHeight = world.getTopY();
+		int topY = 999;
 
-		WorldTerrainSummary terrain = WorldSummary.of(world).terrain();
+		WorldTerrain terrain = summary.terrain();
 		if (terrain == null) return null;
 		ChunkSummary chunk = terrain.get(pos);
 		if (chunk == null) return null; // Skip events fired for chunks we don't have yet (e.g. new shares)
-		@Nullable LayerSummary.Raw summary = chunk.toSingleLayer(null, null, world.getTopY());
+		@Nullable LayerSummary.Raw lithograph = chunk.toSingleLayer(null, null, topY);
 		RegistryPalette<Biome>.ValueView biomePalette = terrain.getBiomePalette(pos);
 		RegistryPalette<Block>.ValueView blockPalette = terrain.getBlockPalette(pos);
 		Registry<Biome> biomeRegistry = biomePalette.registry(); // 1.21: ensures server registry is used in singleplayer
-		if (summary == null) return Pair.of(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null);
+		if (lithograph == null) return Pair.of(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null);
 
 		int elevationSize = TileElevation.values().length;
 		int elevationCount = elevationSize + 1;
@@ -113,39 +114,42 @@ public class TerrainTiling {
 		int baseTileCount = biomeCount + CUSTOM_TILES.size();
 		int[][] possibleTiles = new int[elevationCount][baseTileCount];
 
-		for (int i = 0; i < summary.depths().length; i++) {
-			if (!summary.exists().get(i)) {
+		for (int i = 0; i < lithograph.depths().length; i++) {
+			if (!lithograph.exists().get(i)) {
 				possibleTiles[elevationSize][defaultTile] += EMPTY_PRIORITY;
 				continue;
 			}
-			int height = worldHeight - summary.depths()[i] + summary.waterDepths()[i];
-			Block block = blockPalette.get(summary.blocks()[i]);
-			Biome biome = biomePalette.get(summary.biomes()[i]);
+			int height = topY - lithograph.depths()[i] + lithograph.waterDepths()[i];
+			Block block = blockPalette.get(lithograph.blocks()[i]);
+			Biome biome = biomePalette.get(lithograph.biomes()[i]);
 
-			if (checkRavines && height - world.getSeaLevel() < -7) {
+			if (checkRavines && height - SEA_LEVEL < -7) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.TILE_RAVINE)] += RAVINE_PRIORITY;
-			} else if (summary.waterDepths()[i] > 0) {
+			} else if (lithograph.waterDepths()[i] > 0) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(isSwamp(biomeRegistry, biome) ? FeatureTiles.SWAMP_WATER : FeatureTiles.WATER)] += WATER_PRIORITY;
 			} else if (block == Blocks.ICE) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.ICE)] += ICE_PRIORITY;
 			} else if (block == Blocks.LAVA) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.TILE_LAVA)] += LAVA_PRIORITY;
 			}
-			possibleTiles[TileElevation.fromBlocksAboveSea(height - world.getSeaLevel()).ordinal()][summary.biomes()[i]] += priorityForBiome(biomeRegistry, biome);
+			possibleTiles[TileElevation.fromBlocksAboveSea(height - SEA_LEVEL).ordinal()][lithograph.biomes()[i]] += priorityForBiome(biomeRegistry, biome);
 		}
 
 		return frequencyToTexture(possibleTiles, biomeRegistry, biomePalette);
 	}
 
-	public static Pair<TerrainTileProvider, TileElevation> terrainToTileNether(World world, ChunkPos pos) {
-		int defaultTile = CUSTOM_TILES.indexOf(world.getDimension().hasCeiling() ? FeatureTiles.BEDROCK_ROOF : (world.getRegistryKey() == World.END ? FeatureTiles.END_VOID : FeatureTiles.EMPTY));
+	public static Pair<TerrainTileProvider, TileElevation> terrainToTileNether(WorldSummary summary, ChunkPos pos) {
+		int defaultTile = CUSTOM_TILES.indexOf(FeatureTiles.BEDROCK_ROOF);
 
-		WorldTerrainSummary terrain = WorldSummary.of(world).terrain();
+		int topY = 999;
+		int logicalTopY = 126;
+
+		WorldTerrain terrain = summary.terrain();
 		if (terrain == null) return null;
 		ChunkSummary chunk = terrain.get(pos);
 		if (chunk == null) return null; // Skip events fired for chunks we don't have yet (e.g. new shares)
-		@Nullable LayerSummary.Raw lowSummary = chunk.toSingleLayer(null, NETHER_SCAN_HEIGHT, world.getTopY());
-		@Nullable LayerSummary.Raw fullSummary = chunk.toSingleLayer(null, world.getBottomY() + world.getDimension().logicalHeight() - 1, world.getTopY());
+		@Nullable LayerSummary.Raw lowLithograph = chunk.toSingleLayer(null, NETHER_SCAN_HEIGHT, topY);
+		@Nullable LayerSummary.Raw fullLithograph = chunk.toSingleLayer(null, logicalTopY, topY);
 		RegistryPalette<Biome>.ValueView biomePalette = terrain.getBiomePalette(pos);
 		RegistryPalette<Block>.ValueView blockPalette = terrain.getBlockPalette(pos);
 		Registry<Biome> biomeRegistry = biomePalette.registry(); // 1.21: ensures server registry is used in singleplayer
@@ -156,28 +160,28 @@ public class TerrainTiling {
 		int baseTileCount = biomeCount + CUSTOM_TILES.size();
 		int[][] possibleTiles = new int[elevationCount][baseTileCount];
 
-		if (fullSummary == null) {
+		if (fullLithograph == null) {
 			return Pair.of(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null);
 		}
 
-		int SEA_DEPTH = world.getTopY() - 31;
+		int SEA_DEPTH = topY - 31;
 
-		if (lowSummary == null) {
-			for (int i = 0; i < fullSummary.depths().length; i++) {
-				if (!fullSummary.exists().get(i)) {
+		if (lowLithograph == null) {
+			for (int i = 0; i < fullLithograph.depths().length; i++) {
+				if (!fullLithograph.exists().get(i)) {
 					possibleTiles[elevationSize][defaultTile] += EMPTY_PRIORITY;
 				} else {
-					Biome biome = biomePalette.get(fullSummary.biomes()[i]);
-					possibleTiles[elevationSize][fullSummary.biomes()[i]] += priorityForBiome(biomeRegistry, biome);
+					Biome biome = biomePalette.get(fullLithograph.biomes()[i]);
+					possibleTiles[elevationSize][fullLithograph.biomes()[i]] += priorityForBiome(biomeRegistry, biome);
 				}
 			}
 		} else {
-			for (int i = 0; i < lowSummary.depths().length; i++) {
-				if (!lowSummary.exists().get(i) || lowSummary.depths()[i] > SEA_DEPTH) {
-					Biome biome = biomePalette.get(fullSummary.biomes()[i]);
-					possibleTiles[elevationSize][fullSummary.biomes()[i]] += priorityForBiome(biomeRegistry, biome);
+			for (int i = 0; i < lowLithograph.depths().length; i++) {
+				if (!lowLithograph.exists().get(i) || lowLithograph.depths()[i] > SEA_DEPTH) {
+					Biome biome = biomePalette.get(fullLithograph.biomes()[i]);
+					possibleTiles[elevationSize][fullLithograph.biomes()[i]] += priorityForBiome(biomeRegistry, biome);
 				} else {
-					Block block = blockPalette.get(lowSummary.blocks()[i]);
+					Block block = blockPalette.get(lowLithograph.blocks()[i]);
 					if (block == Blocks.LAVA) { // Lava Sea
 						possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.TILE_LAVA)] += LAVA_PRIORITY;
 					} else { // Low Floor

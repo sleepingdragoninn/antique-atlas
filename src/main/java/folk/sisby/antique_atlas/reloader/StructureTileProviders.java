@@ -7,6 +7,7 @@ import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.MarkerTexture;
 import folk.sisby.antique_atlas.StructureTileProvider;
 import folk.sisby.antique_atlas.TileTexture;
+import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
@@ -26,7 +27,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.Structure;
 import net.minecraft.world.gen.structure.StructureType;
 
@@ -97,11 +97,11 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		super(new Gson(), "atlas/structure");
 	}
 
-	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, World world) {
+	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, WorldSummary summary) {
 		if (piece instanceof JigsawPieceSummary jigsawPiece) {
 			if (pieceJigsawSingleTiles.containsKey(jigsawPiece.getId())) {
 				StructureTileProvider provider = (jigsawPiece.getElementType() == StructurePoolElementType.FEATURE_POOL_ELEMENT ? pieceJigsawFeatureTiles : pieceJigsawSingleTiles).get(jigsawPiece.getId());
-				provider.getTextures(world, jigsawPiece.getBoundingBox(), jigsawPiece.getJunctions(), tilePredicates).forEach((pos, texture) -> {
+				provider.getTextures(summary, jigsawPiece.getBoundingBox(), jigsawPiece.getJunctions(), tilePredicates).forEach((pos, texture) -> {
 					if (structureProviders.containsKey(pos) && structureProviders.get(pos).priority() < provider.priority()) return;
 					outTiles.put(pos, texture);
 					structureProviders.put(pos, provider);
@@ -111,7 +111,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 			Identifier pieceTypeId = Registries.STRUCTURE_PIECE.getId(piece.getType());
 			if (pieceTypeTiles.containsKey(pieceTypeId)) {
 				StructureTileProvider provider = pieceTypeTiles.get(pieceTypeId);
-				provider.getTextures(world, piece.getBoundingBox(), tilePredicates).forEach((pos, texture) -> {
+				provider.getTextures(summary, piece.getBoundingBox(), tilePredicates).forEach((pos, texture) -> {
 					if (structureProviders.containsKey(pos) && structureProviders.get(pos).priority() < provider.priority()) return;
 					outTiles.put(pos, texture);
 					structureProviders.put(pos, provider);
@@ -120,7 +120,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		}
 	}
 
-	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark, MarkerTexture> outMarkers, World world, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary summary, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
+	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark, MarkerTexture> outMarkers, WorldSummary summary, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary start, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
 		if (startMarkers.containsKey(key.getValue())) {
 			MarkerTexture texture = startMarkers.get(key.getValue());
 			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
@@ -143,14 +143,14 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 
 		if (startTiles.containsKey(key.getValue())) {
 			StructureTileProvider provider = startTiles.get(key.getValue());
-			provider.getTextures(world, summary.getBoundingBox(), debugPredicates).forEach((pos2, texture) -> {
+			provider.getTextures(summary, start.getBoundingBox(), debugPredicates).forEach((pos2, texture) -> {
 				if (structureProviders.containsKey(pos) && structureProviders.get(pos).priority() < provider.priority()) return;
 				outTiles.put(pos2, texture);
 				structureProviders.put(pos2, provider);
 			});
 		} else if (type != null && typeTiles.containsKey(type.getValue())) {
 			StructureTileProvider provider = typeTiles.get(key.getValue());
-			provider.getTextures(world, summary.getBoundingBox(), debugPredicates).forEach((pos2, texture) -> {
+			provider.getTextures(summary, start.getBoundingBox(), debugPredicates).forEach((pos2, texture) -> {
 				if (structureProviders.containsKey(pos) && structureProviders.get(pos).priority() < provider.priority()) return;
 				outTiles.put(pos2, texture);
 				structureProviders.put(pos2, provider);
@@ -158,7 +158,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		} else {
 			tags.stream().filter(t -> tagTiles.containsKey(t.id())).findFirst().ifPresent(tag -> {
 				StructureTileProvider provider = tagTiles.get(tag.id());
-				provider.getTextures(world, summary.getBoundingBox(), debugPredicates).forEach((pos2, texture) -> {
+				provider.getTextures(summary, start.getBoundingBox(), debugPredicates).forEach((pos2, texture) -> {
 					if (structureProviders.containsKey(pos) && structureProviders.get(pos).priority() < provider.priority()) return;
 					outTiles.put(pos2, texture);
 					structureProviders.put(pos2, provider);
@@ -166,7 +166,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 			});
 		}
 
-		summary.getChildren().forEach(p -> resolve(outTiles, structureProviders, debugPredicates, p, world));
+		start.getChildren().forEach(p -> resolve(outTiles, structureProviders, debugPredicates, p, summary));
 	}
 
 	@Override

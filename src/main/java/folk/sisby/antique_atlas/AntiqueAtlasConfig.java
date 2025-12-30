@@ -3,9 +3,18 @@ package folk.sisby.antique_atlas;
 import folk.sisby.kaleido.api.WrappedConfig;
 import folk.sisby.kaleido.lib.quiltconfig.api.annotations.Comment;
 import folk.sisby.kaleido.lib.quiltconfig.api.annotations.IntegerRange;
+import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueList;
 import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueMap;
+import folk.sisby.surveyor.client.SurveyorClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("CanBeFinal")
 public class AntiqueAtlasConfig extends WrappedConfig {
@@ -75,4 +84,33 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	public Map<String, Boolean> structureMarkers = ValueMap.builder(true)
 		.put("minecraft:type/end_city", false)
 		.build();
+
+	@Comment("Options to adjust map behaviour for custom or modified dimensions.")
+	public Dimensions dimensions = new Dimensions();
+
+	public static class Dimensions implements Section {
+		@Comment("Cycle order and coordinate scales of each dimension.")
+		@Comment("If not 0, the relative position of the player will be shown.")
+		public Map<String, Integer> scales = ValueMap.builder(0)
+			.put("minecraft:overworld", 8)
+			.put("minecraft:the_nether", 1)
+			.put("minecraft:the_end", 0)
+			.build();
+
+		public List<RegistryKey<World>> getOrder(ClientPlayNetworkHandler handler) {
+			List<RegistryKey<World>> dims = new ArrayList<>(SurveyorClient.getSummaries(handler).keySet().stream().sorted(Comparator.comparing(RegistryKey::toString)).toList());
+			dims.removeIf(WorldAtlasData::isEmpty);
+			scales.keySet().removeIf(v -> handler.getWorldKeys().stream().noneMatch(d -> d.getValue().toString().equals(v)));
+			dims.stream().filter(dim -> !scales.containsKey(dim.getValue().toString())).forEach(dim -> scales.put(dim.getValue().toString(), 0));
+			return dims.stream().sorted(Comparator.comparing(dim -> scales.keySet().stream().toList().indexOf(dim.getValue().toString()))).toList();
+		}
+
+		public Map<RegistryKey<World>, Integer> getScales(ClientPlayNetworkHandler handler) {
+			List<RegistryKey<World>> dims = new ArrayList<>(SurveyorClient.getSummaries(handler).keySet().stream().sorted(Comparator.comparing(RegistryKey::toString)).toList());
+			dims.removeIf(WorldAtlasData::isEmpty);
+			scales.keySet().removeIf(v -> handler.getWorldKeys().stream().noneMatch(d -> d.getValue().toString().equals(v)));
+			dims.stream().filter(dim -> !scales.containsKey(dim.getValue().toString())).forEach(dim -> scales.put(dim.getValue().toString(), 0));
+			return dims.stream().collect(Collectors.toMap(k -> k, k -> scales.get(k.getValue().toString())));
+		}
+	}
 }

@@ -15,7 +15,7 @@ Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and 
 
 - A physical-feeling map screen, with hand-drawn tiles representing chunks in the world:
 
-> ![map preview](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/14513bf9172fa0d058e9486958de4884408ed4e4.png)
+> ![map preview](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/7cf5acd45f4babac74e4776a792779d76206716f.png)
 
 - Waypoint markers in a variety of styles and accent colors:
 

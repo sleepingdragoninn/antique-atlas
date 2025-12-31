@@ -18,6 +18,7 @@ import folk.sisby.antique_atlas.util.ColorUtil;
 import folk.sisby.surveyor.PlayerSummary;
 import folk.sisby.surveyor.client.SurveyorClient;
 import folk.sisby.surveyor.landmark.Landmark;
+import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import folk.sisby.surveyor.util.RegionPos;
 import net.minecraft.client.MinecraftClient;
@@ -356,7 +357,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 		if (super.mouseClicked(mouseX, mouseY, mouseState)) return true;
 
 		// If clicked on the map, start dragging
-		if (state.is(NORMAL) && hoveredLandmark != null && hoveredLandmark.contains(LandmarkComponentTypes.POS) && SurveyorClient.canModify(hoveredLandmark.owner()) && mouseState == GLFW.GLFW_MOUSE_BUTTON_2) {
+		if (state.is(NORMAL) && hoveredLandmark != null && hoveredLandmark.contains(LandmarkComponentTypes.POS) && hoveredLandmark.owner() != WorldLandmarks.GLOBAL && SurveyorClient.canModify(hoveredLandmark.owner()) && mouseState == GLFW.GLFW_MOUSE_BUTTON_2) {
 			markerModal.setMarkerData(SurveyorClient.tryGetSummary(dim), player.getEntityWorld().getRegistryManager(), hoveredLandmark);
 			addChild(markerModal);
 
@@ -745,7 +746,7 @@ public class AtlasScreen extends Component implements AtlasRenderer {
 			}
 			worldAtlasData.getAllMarkers(tileChunks).forEach((landmark, texture) -> {
 				boolean hovering = hoveredLandmark == landmark && markerModal.getParent() == null;
-				boolean editable = SurveyorClient.canModify(landmark.owner());
+				boolean editable = landmark.owner() != WorldLandmarks.GLOBAL && SurveyorClient.canModify(landmark.owner());
 				BiFunction<Double, Double, Float> alpha = (x, y) -> state.is(PLACING_MARKER) || (state.is(DELETING_MARKER) && !editable) || (hovering && x <= MAP_BORDER_WIDTH || x >= mapWidth + MAP_BORDER_WIDTH || y <= MAP_BORDER_HEIGHT || y >= mapHeight + MAP_BORDER_HEIGHT) ? 0.5f : 1.0f;
 				renderMarker(context.getMatrices(), null, landmark, texture, 0, MAX_LIGHT, alpha, editable, hovering, markerScale);
 			});

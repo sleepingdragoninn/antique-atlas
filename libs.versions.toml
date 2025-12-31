@@ -4,14 +4,14 @@ githubRelease = "2.4.1"
 minotaur = "2.+"
 curse = "1.1.+"
 
-kaleidoConfig = "0.3.1+1.3.2"
+kaleidoConfig = "0.3.3+1.3.2"
 
 mc = "1.21.1"
 fl = "0.16.14"
 yarn = "1.21.1+build.3"
 fapi = "0.115.6+1.21.1"
 
-surveyor = "1.1.0+1.21"
+surveyor = "1.1.1+1.21"
 
 [plugins]
 loom = { id = "fabric-loom", version.ref = "loom" }

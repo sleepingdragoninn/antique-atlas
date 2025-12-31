@@ -185,7 +185,7 @@ public class WorldAtlasData {
 
 	public boolean deleteLandmark(RegistryKey<World> dimension, Landmark landmark) {
 		WorldSummary summary = SurveyorClient.tryGetSummary(dimension);
-		if (summary == null || summary.landmarks() == null || landmark.owner() == WorldLandmarks.GLOBAL || !SurveyorClient.canModify(landmark.owner())) return false;
+		if (summary == null || summary.landmarks() == null || landmark.owner().equals(WorldLandmarks.GLOBAL) || !SurveyorClient.canModify(landmark.owner())) return false;
 		summary.landmarks().remove(landmark.owner(), landmark.id());
 		return true;
 	}
@@ -193,7 +193,7 @@ public class WorldAtlasData {
 	public Map<Landmark, MarkerTexture> getEditableLandmarks() {
 		Map<Landmark, MarkerTexture> map = new HashMap<>();
 		landmarkMarkers.forEach((type, landmarks) -> landmarks.forEach((pos, pair) -> { // Don't allow editing global landmarks via GUI.
-			if (pair.left().owner() != WorldLandmarks.GLOBAL && SurveyorClient.canModify(pair.left().owner())) map.put(pair.left(), pair.right());
+			if (!pair.left().owner().equals(WorldLandmarks.GLOBAL) && SurveyorClient.canModify(pair.left().owner())) map.put(pair.left(), pair.right());
 		}));
 		return map;
 	}

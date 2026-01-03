@@ -1,3 +1,6 @@
 {
-	"textures": "antique_atlas:biome/wetland/swamp/mangrove/swamp_water_mangrove"
+	"textures": "antique_atlas:biome/wetland/swamp/mangrove/swamp_water_mangrove",
+	"overrides": {
+		"antique_atlas:feature/water": ["antique_atlas:biome/wetland/swamp/swamp_water"]
+	}
 }

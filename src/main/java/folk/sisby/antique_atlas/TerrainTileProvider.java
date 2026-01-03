@@ -21,13 +21,9 @@ public record TerrainTileProvider(Identifier id, Map<TileElevation, List<TileTex
 		this(id, Arrays.stream(TileElevation.values()).collect(Collectors.toMap(e -> e, e -> textures)), overrides);
 	}
 
-	public TileTexture getTexture(ChunkPos pos, @Nullable TileElevation elevation) {
-		return getTexture(pos, elevation, null);
-	}
-
-	public TileTexture getTexture(ChunkPos pos, @Nullable TileElevation elevation, @Nullable Identifier override) {
+	public TileTexture getTexture(ChunkPos pos, @Nullable TileElevation elevation, Identifier override) {
 		int variation = (int) (MathHelper.hashCode(pos.x, pos.z, pos.x * pos.z) & 0x7FFFFFFF);
-		if (override != null) {
+		if (overrides != null && overrides.containsKey(override)) {
 			return overrides.get(override).get(variation % overrides.get(id).size());
 		} else {
 			TileElevation usedElevation = elevation == null ? TileElevation.VALLEY : elevation;

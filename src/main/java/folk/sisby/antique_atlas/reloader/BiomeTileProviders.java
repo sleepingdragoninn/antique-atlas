@@ -198,18 +198,20 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 					continue;
 				}
 				JsonElement overrideJson = fileJson.get("overrides");
-				Map<Identifier, List<TileTexture>> overrides = null;
+				Map<Identifier, List<TileTexture>> overrides = new HashMap<>();
 				if (overrideJson != null) {
 					JsonObject overrideObject = overrideJson.getAsJsonObject();
 					List<TileTexture> overrideTextures = null;
 					for (String rawId : overrideObject.keySet()) {
-						Identifier id = Identifier.tryParse(rawId);
-						if (overrideTextures == null) throw new IllegalStateException("Invalid id %s in overrides object!".formatted(rawId));
+						Identifier id = AntiqueAtlas.id(rawId);
+						if (id == null) throw new IllegalStateException("Invalid id %s in overrides object!".formatted(rawId));
 						overrideTextures = resolveTextureJson(textures, overrideObject.get(rawId));
 						if (overrideTextures == null) throw new IllegalStateException("Malformed object %s in overrides object!".formatted(rawId));
 						overrideTextures.forEach(unusedTextures::remove);
 						overrides.put(id, overrideTextures);
 					}
+				} else {
+					overrides = null;
 				}
 				JsonElement textureJson = fileJson.get("textures");
 				List<TileTexture> defaultTextures = resolveTextureJson(textures, textureJson);

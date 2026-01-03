@@ -44,7 +44,6 @@ public class TerrainTiling {
 		FeatureTiles.WATER,
 		FeatureTiles.ICE,
 		FeatureTiles.TILE_RAVINE,
-		FeatureTiles.SWAMP_WATER,
 		FeatureTiles.TILE_LAVA,
 		FeatureTiles.TILE_LAVA_SHORE
 	);
@@ -65,10 +64,6 @@ public class TerrainTiling {
 				return 1;
 			}
 		});
-	}
-
-	public static boolean isSwamp(Registry<Biome> biomeRegistry, Biome biome) {
-		return swampCache.computeIfAbsent(biome, b -> biomeRegistry.getEntry(b).isIn(ConventionalBiomeTags.SWAMP));
 	}
 
 	public static Pair<TerrainTileProvider, TileElevation> frequencyToTexture(int[][] possibleTiles, Registry<Biome> biomeRegistry, IndexedIterable<Biome> biomePalette) {
@@ -124,7 +119,7 @@ public class TerrainTiling {
 			if (checkRavines && height - SEA_LEVEL < -7) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.TILE_RAVINE)] += RAVINE_PRIORITY;
 			} else if (lithograph.waterDepths()[i] > 0) {
-				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(isSwamp(biomeRegistry, biome) ? FeatureTiles.SWAMP_WATER : FeatureTiles.WATER)] += WATER_PRIORITY;
+				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.WATER)] += WATER_PRIORITY;
 			} else if (block == Blocks.ICE) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.ICE)] += ICE_PRIORITY;
 			} else if (block == Blocks.LAVA) {

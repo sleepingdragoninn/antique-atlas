@@ -14,5 +14,8 @@
 			"antique_atlas:biome/wetland/swamp/swamp_water_grass_oak_swamp_hills_3",
 			"antique_atlas:biome/wetland/swamp/swamp_water_grass_oak_swamp_hills_4"
 		]
+	},
+	"overrides": {
+		"antique_atlas:feature/water": ["antique_atlas:biome/wetland/swamp/swamp_water"]
 	}
 }

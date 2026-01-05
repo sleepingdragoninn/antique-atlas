@@ -1,12 +1,21 @@
 {
 	"gui.antique_atlas.scalebar": "Échelle en blocs",
-	"gui.antique_atlas.addMarker": "Ajouter une marque",
-	"gui.antique_atlas.delMarker": "Supprimer une marque",
+	"gui.antique_atlas.addMarker": "Ajouter un marqueur",
+	"gui.antique_atlas.delMarker": "Supprimer un marqueur",
 	"gui.antique_atlas.followPlayer": "Suivre le joueur",
-	"gui.antique_atlas.hideMarkers": "Masquer les marques",
-	"gui.antique_atlas.showMarkers": "Afficher les marques",
-	"gui.antique_atlas.marker.label": "Marques",
-	"structure.tag.minecraft.village": "Village",
+	"gui.antique_atlas.hideMarkers": "Masquer les marqueurs",
+	"gui.antique_atlas.showMarkers": "Afficher les marqueurs",
+	"gui.antique_atlas.marker.label": "Marqueurs",
 	"key.antique_atlas.open": "Ouvrir l'Atlas",
-	"key.antique_atlas.category": "Antique Atlas"
+	"key.antique_atlas.category": "Antique Atlas",
+    "structure.start.minecraft.bastion_remnant": "Vestige de Bastion",
+    "structure.start.minecraft.village_plains": "Village des plaines",
+    "structure.start.minecraft.village_desert": "Village du desert",
+    "structure.start.minecraft.village_savanna": "Village de la savane",
+    "structure.start.minecraft.village_snowy": "Village enneigé",
+    "structure.start.minecraft.village_taiga": "Village des taïga",
+    "structure.tag.minecraft.village": "Village",
+    "structure.type.minecraft.end_city": "Cité de l'end",
+    "structure.type.minecraft.ocean_monument": "Monument sous-marin",
+    "structure.type.minecraft.woodland_mansion": "Manoir des bois"
 }

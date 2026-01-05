@@ -5,10 +5,8 @@ import folk.sisby.surveyor.WorldSummary;
 import folk.sisby.surveyor.terrain.ChunkSummary;
 import folk.sisby.surveyor.terrain.LayerSummary;
 import folk.sisby.surveyor.terrain.WorldTerrain;
-import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -23,6 +21,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +43,6 @@ public class TerrainTiling {
 		FeatureTiles.WATER,
 		FeatureTiles.ICE,
 		FeatureTiles.TILE_RAVINE,
-		FeatureTiles.SWAMP_WATER,
 		FeatureTiles.TILE_LAVA,
 		FeatureTiles.TILE_LAVA_SHORE
 	);
@@ -67,11 +65,7 @@ public class TerrainTiling {
 		});
 	}
 
-	public static boolean isSwamp(Registry<Biome> biomeRegistry, Biome biome) {
-		return swampCache.computeIfAbsent(biome, b -> biomeRegistry.getEntry(b).isIn(ConventionalBiomeTags.SWAMP));
-	}
-
-	public static Pair<TerrainTileProvider, TileElevation> frequencyToTexture(int[][] possibleTiles, Registry<Biome> biomeRegistry, IndexedIterable<Biome> biomePalette) {
+	public static TerrainProviderMapped frequencyToTexture(int[][] possibleTiles, Registry<Biome> biomeRegistry, IndexedIterable<Biome> biomePalette) {
 		int elevationOrdinal = -1;
 		int biomeIndex = -1;
 		int bestFrequency = 0;
@@ -86,11 +80,17 @@ public class TerrainTiling {
 		}
 		if (bestFrequency == 0) return null;
 		int customTileIndex = biomeIndex - possibleTiles[0].length + CUSTOM_TILES.size();
-		Identifier providerId = customTileIndex >= 0 ? CUSTOM_TILES.get(customTileIndex) : biomeRegistry.getId(biomePalette.get(biomeIndex));
-		return Pair.of(BiomeTileProviders.getInstance().getTileProvider(providerId), elevationOrdinal == TileElevation.values().length ? null : TileElevation.values()[elevationOrdinal]);
+		TerrainTileProvider biomeProvider = BiomeTileProviders.getInstance().getTileProvider(biomeRegistry.getId(biomePalette.get(biomeIndex)));
+		Identifier providerId;
+		if (customTileIndex >= 0 && biomeProvider.overrides() != null && biomeProvider.overrides().containsKey(CUSTOM_TILES.get(customTileIndex))) {
+			// override for this tile is found
+			providerId = biomeRegistry.getId(biomePalette.get(biomeIndex + Math.max(0, customTileIndex + 1))); // <- HELP! what goes here?
+		} else {
+			providerId = customTileIndex >= 0 ? CUSTOM_TILES.get(customTileIndex) : biomeRegistry.getId(biomePalette.get(biomeIndex));
+		}return new TerrainProviderMapped(BiomeTileProviders.getInstance().getTileProvider(providerId), elevationOrdinal == TileElevation.values().length ? null : TileElevation.values()[elevationOrdinal], customTileIndex >= 0 ? CUSTOM_TILES.get(customTileIndex) : null);
 	}
 
-	public static Pair<TerrainTileProvider, TileElevation> terrainToTile(WorldSummary summary, DynamicRegistryManager manager, ChunkPos pos) {
+	public static TerrainProviderMapped terrainToTile(WorldSummary summary, DynamicRegistryManager manager, ChunkPos pos) {
 		Registry<Biome> biomeRegistry = manager.get(RegistryKeys.BIOME);
 		int defaultTile = CUSTOM_TILES.indexOf(summary.dimension() == World.END ? FeatureTiles.END_VOID : FeatureTiles.EMPTY);
 		boolean checkRavines = summary.dimension() == World.OVERWORLD;
@@ -104,7 +104,7 @@ public class TerrainTiling {
 		@Nullable LayerSummary.Raw lithograph = chunk.toSingleLayer(null, null, topY);
 		IndexedIterable<Biome> biomePalette = terrain.getBiomePalette(pos);
 		IndexedIterable<Block> blockPalette = terrain.getBlockPalette(pos);
-		if (lithograph == null) return Pair.of(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null);
+		if (lithograph == null) return new TerrainProviderMapped(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null, null);
 
 		int elevationSize = TileElevation.values().length;
 		int elevationCount = elevationSize + 1;
@@ -124,7 +124,7 @@ public class TerrainTiling {
 			if (checkRavines && height - SEA_LEVEL < -7) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.TILE_RAVINE)] += RAVINE_PRIORITY;
 			} else if (lithograph.waterDepths()[i] > 0) {
-				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(isSwamp(biomeRegistry, biome) ? FeatureTiles.SWAMP_WATER : FeatureTiles.WATER)] += WATER_PRIORITY;
+				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.WATER)] += WATER_PRIORITY;
 			} else if (block == Blocks.ICE) {
 				possibleTiles[elevationSize][biomeCount + CUSTOM_TILES.indexOf(FeatureTiles.ICE)] += ICE_PRIORITY;
 			} else if (block == Blocks.LAVA) {
@@ -136,7 +136,7 @@ public class TerrainTiling {
 		return frequencyToTexture(possibleTiles, biomeRegistry, biomePalette);
 	}
 
-	public static Pair<TerrainTileProvider, TileElevation> terrainToTileNether(WorldSummary summary, DynamicRegistryManager manager, ChunkPos pos) {
+	public static TerrainProviderMapped terrainToTileNether(WorldSummary summary, DynamicRegistryManager manager, ChunkPos pos) {
 		Registry<Biome> biomeRegistry = manager.get(RegistryKeys.BIOME);
 		int defaultTile = CUSTOM_TILES.indexOf(FeatureTiles.BEDROCK_ROOF);
 
@@ -159,7 +159,7 @@ public class TerrainTiling {
 		int[][] possibleTiles = new int[elevationCount][baseTileCount];
 
 		if (fullLithograph == null) {
-			return Pair.of(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null);
+			return new TerrainProviderMapped(BiomeTileProviders.getInstance().getTileProvider(CUSTOM_TILES.get(defaultTile)), null, null);
 		}
 
 		int SEA_DEPTH = topY - 31;

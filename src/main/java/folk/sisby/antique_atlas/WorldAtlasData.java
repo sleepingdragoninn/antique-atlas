@@ -92,12 +92,12 @@ public class WorldAtlasData {
 			ChunkPos pos = terrainDeque.pollFirst();
 			terrainDequeHash.remove(pos);
 			if (pos == null) break;
-			Pair<TerrainTileProvider, TileElevation> tile = summary.dimension() == World.NETHER ? TerrainTiling.terrainToTileNether(summary, manager, pos) : TerrainTiling.terrainToTile(summary, manager, pos);
+			TerrainProviderMapped tile = summary.dimension() == World.NETHER ? TerrainTiling.terrainToTileNether(summary, manager, pos) : TerrainTiling.terrainToTile(summary, manager, pos);
 			if (tile != null) {
 				tileScope.extendTo(pos.x, pos.z);
-				biomeTiles.put(pos, tile.left().getTexture(pos, tile.right()));
-				debugBiomes.put(pos, tile.left());
-				debugBiomePredicates.put(pos, tile.right() == null ? null : tile.right().getName());
+				biomeTiles.put(pos, tile.provider().getTexture(pos, tile.elevation(), tile.override()));
+				debugBiomes.put(pos, tile.provider());
+				debugBiomePredicates.put(pos, tile.elevation() == null ? null : tile.elevation().getName());
 			}
 		}
 		if (!isFinished && terrainDeque.isEmpty()) {

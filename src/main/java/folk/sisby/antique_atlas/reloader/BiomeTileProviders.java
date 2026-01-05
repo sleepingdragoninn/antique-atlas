@@ -197,11 +197,27 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 					providerParents.put(fileId, parentId);
 					continue;
 				}
+				JsonElement overrideJson = fileJson.get("overrides");
+				Map<Identifier, List<TileTexture>> overrides = new HashMap<>();
+				if (overrideJson != null) {
+					JsonObject overrideObject = overrideJson.getAsJsonObject();
+					List<TileTexture> overrideTextures = null;
+					for (String rawId : overrideObject.keySet()) {
+						Identifier id = AntiqueAtlas.id(rawId);
+						if (id == null) throw new IllegalStateException("Invalid id %s in overrides object!".formatted(rawId));
+						overrideTextures = resolveTextureJson(textures, overrideObject.get(rawId));
+						if (overrideTextures == null) throw new IllegalStateException("Malformed object %s in overrides object!".formatted(rawId));
+						overrideTextures.forEach(unusedTextures::remove);
+						overrides.put(id, overrideTextures);
+					}
+				} else {
+					overrides = null;
+				}
 				JsonElement textureJson = fileJson.get("textures");
 				List<TileTexture> defaultTextures = resolveTextureJson(textures, textureJson);
 				if (defaultTextures != null) {
 					defaultTextures.forEach(unusedTextures::remove);
-					tileProviders.put(fileId, new TerrainTileProvider(fileId, defaultTextures));
+					tileProviders.put(fileId, new TerrainTileProvider(fileId, defaultTextures, overrides));
 				} else {
 					JsonObject textureObject = textureJson.getAsJsonObject();
 					Map<TileElevation, List<TileTexture>> textureElevations = new HashMap<>();
@@ -227,7 +243,7 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 					for (TileElevation elevation : skippedElevations) {
 						textureElevations.put(elevation, elevationTextures);
 					}
-					tileProviders.put(fileId, new TerrainTileProvider(fileId, textureElevations));
+					tileProviders.put(fileId, new TerrainTileProvider(fileId, textureElevations, overrides));
 				}
 			} catch (Exception e) {
 				AntiqueAtlas.LOGGER.error("[Antique Atlas] Error reading biome tile provider {}!", fileId, e);

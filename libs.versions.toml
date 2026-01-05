@@ -11,7 +11,7 @@ fl = "0.16.14"
 yarn = "1.21.1+build.3"
 fapi = "0.115.6+1.21.1"
 
-surveyor = "1.1.1+1.21"
+surveyor = "1.1.2+1.21"
 
 [plugins]
 loom = { id = "fabric-loom", version.ref = "loom" }

@@ -50,7 +50,7 @@ public class BiomeTileProviders extends JsonDataLoader implements IdentifiableRe
 	}
 
 	public TerrainTileProvider getTileProvider(Identifier providerId) {
-		return tileProviders.getOrDefault(providerId, tileProviders.getOrDefault(biomeFallbacks.get(providerId), TerrainTileProvider.DEFAULT));
+		return tileProviders.getOrDefault(providerId, tileProviders.getOrDefault(biomeFallbacks.get(providerId), AntiqueAtlas.CONFIG.fallbackFailHandling == AntiqueAtlasConfig.FallbackHandling.PLAINS && !providerId.equals(BiomeKeys.PLAINS.getValue()) ? getTileProvider(BiomeKeys.PLAINS.getValue()) : TerrainTileProvider.DEFAULT));
 	}
 
 	/**

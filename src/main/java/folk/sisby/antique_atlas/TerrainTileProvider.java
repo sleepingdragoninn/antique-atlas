@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public record TerrainTileProvider(Identifier id, Map<TileElevation, List<TileTexture>> textures) {
-	public static final TerrainTileProvider DEFAULT = new TerrainTileProvider(AntiqueAtlas.id("test"), List.of(TileTexture.DEFAULT));
+	public static TerrainTileProvider DEFAULT = new TerrainTileProvider(AntiqueAtlas.id("default"), List.of(TileTexture.DEFAULT));
 
 	public TerrainTileProvider(Identifier id, List<TileTexture> textures) {
 		this(id, Arrays.stream(TileElevation.values()).collect(Collectors.toMap(e -> e, e -> textures)));

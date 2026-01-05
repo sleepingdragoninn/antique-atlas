@@ -3,7 +3,6 @@ package folk.sisby.antique_atlas;
 import folk.sisby.kaleido.api.WrappedConfig;
 import folk.sisby.kaleido.lib.quiltconfig.api.annotations.Comment;
 import folk.sisby.kaleido.lib.quiltconfig.api.annotations.IntegerRange;
-import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueList;
 import folk.sisby.kaleido.lib.quiltconfig.api.values.ValueMap;
 import folk.sisby.surveyor.client.SurveyorClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -29,6 +28,7 @@ public class AntiqueAtlasConfig extends WrappedConfig {
 	public enum FallbackHandling {
 		TEST,
 		MISSING,
+		PLAINS,
 		CRASH
 	}
 

@@ -99,7 +99,7 @@ public class MarkerModal extends Component {
 					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getName() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
 					copy -> {
 					Item item = manager.get(RegistryKeys.ITEM).get(selectedTexture.item());
-					if (item != null) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
+					if (item != null && !item.getDefaultStack().isEmpty()) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
 					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getEntityColor());
 					copy.set(LandmarkComponentTypes.NAME, label);
 				}));

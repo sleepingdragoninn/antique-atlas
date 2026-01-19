@@ -26,7 +26,7 @@ Drag the map to pan, scroll to zoom, and use the bookmark buttons to create and 
 > ![handheld atlas](https://cdn.modrinth.com/data/Y5Ve4Ui4/images/b3002225851522c2d4eabc7462a374fbcdd2db6b.png)
 
 - Automatic migration of waypoints from Xaero's Minimap, and a shared save format with [Hoofprint](https://modrinth.com/mod/hoofprint).
-- Extra features via addons like [Antique Trains](https://modrinth.com/mod/antique-trains) and [Antique Atlas Compass HUD](https://modrinth.com/mod/antique-atlas-compass-hud)!
+- Extra features via addons like [Antique Trains](https://modrinth.com/mod/antique-trains) and [Dead Reckoning](https://modrinth.com/mod/dead-reckoning)!
 
 ## Mixed-Side / Singleplayer Features
 

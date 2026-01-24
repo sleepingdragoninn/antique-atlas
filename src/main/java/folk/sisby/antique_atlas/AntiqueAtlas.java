@@ -53,7 +53,10 @@ public class AntiqueAtlas implements ClientModInitializer {
 	public static final ModelIdentifier ATLAS_MODEL = new ModelIdentifier(AntiqueAtlas.id("atlas"), "inventory");
 
 	public static final List<String> ATLAS_NAMES = List.of(
-		"Antique Atlas"
+		"Antique Atlas",
+		"Atlas antiguo",
+		"Antyczny atlas",
+		"Античный Атлас"
 	);
 
 	public static Identifier id(String path) {

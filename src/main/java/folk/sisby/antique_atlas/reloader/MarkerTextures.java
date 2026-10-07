@@ -4,14 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.MarkerTexture;
-import folk.sisby.antique_atlas.util.CodecUtil;
 import folk.sisby.surveyor.landmark.Landmark;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.SinglePreparationResourceReloader;
 import net.minecraft.resource.metadata.ResourceMetadata;
-import net.minecraft.resource.metadata.ResourceMetadataReader;
+import net.minecraft.resource.metadata.ResourceMetadataSerializer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
@@ -20,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identifier, MarkerTextures.MarkerTextureMeta>> implements IdentifiableResourceReloadListener {
+public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identifier, MarkerTextures.MarkerTextureMeta>> {
 	public static final MarkerTextures INSTANCE = new MarkerTextures();
 	public static final Identifier ID = AntiqueAtlas.id("marker_textures");
 
@@ -100,11 +98,6 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 		});
 	}
 
-	@Override
-	public Identifier getFabricId() {
-		return ID;
-	}
-
 	public record MarkerTextureMeta(Optional<Identifier> item, Optional<Integer> textureWidth, Optional<Integer> textureHeight, Optional<Integer> mipLevels, Optional<Integer> offsetX, Optional<Integer> offsetY, Optional<Integer> nearClip, Optional<Integer> farClip) {
 		public static final MarkerTextureMeta DEFAULT = new MarkerTextureMeta(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
@@ -119,7 +112,7 @@ public class MarkerTextures extends SinglePreparationResourceReloader<Map<Identi
 			Codec.INT.optionalFieldOf("farClip").forGetter(MarkerTextureMeta::farClip)
 		).apply(instance, MarkerTextureMeta::new));
 
-		public static final ResourceMetadataReader<MarkerTextureMeta> METADATA = new CodecUtil.CodecResourceMetadataSerializer<>(CODEC, AntiqueAtlas.id("marker"));
+		public static final ResourceMetadataSerializer<MarkerTextureMeta> METADATA = new ResourceMetadataSerializer<>(AntiqueAtlas.id("marker").toString(), CODEC);
 
 		public MarkerTexture build(Identifier id, boolean accent) {
 			int textureWidth = this.textureWidth.orElse(32);

@@ -54,7 +54,7 @@ Issues and suggestions regarding map sharing, explored map area, and automatic m
 
 ## Configuration
 
-Antique Atlas can be configured from `config/antique-atlas.toml` or in-game using [McQoy](https://modrinth.com/mod/mcqoy), including:<br/>
+Antique Atlas can be configured from `config/antique-atlas.toml`, from its config screen in [Mod Menu](https://modrinth.com/mod/modmenu), or in-game using [McQoy](https://modrinth.com/mod/mcqoy), including:<br/>
 - Whether to require having an atlas item in the inventory in order to enable the map hotkey.
 - Adjustments to the size and scale of the map screen.
 - Adjustments to which structures to mark on the map.

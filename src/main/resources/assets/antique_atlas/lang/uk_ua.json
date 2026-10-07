@@ -1,5 +1,5 @@
 {
-	"key.antique_atlas.category": "Антикварний атлас",
+	"key.category.antique_atlas.antique_atlas": "Антикварний атлас",
 	"key.antique_atlas.open": "Відкрити атлас",
 	"gui.antique_atlas.scalebar": "Масштабування в блоках",
 	"gui.antique_atlas.addMarker": "Додати мітку",

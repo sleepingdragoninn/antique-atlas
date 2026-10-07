@@ -1,12 +1,7 @@
 package folk.sisby.antique_atlas.util;
 
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import net.minecraft.resource.metadata.ResourceMetadataReader;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,24 +21,5 @@ public class CodecUtil {
 				return DataResult.error(() -> "Unknown type: " + id);
 			}
 		}, value -> DataResult.success(value.name()));
-	}
-
-	public record CodecResourceMetadataSerializer<T>(Codec<T> codec, Identifier id) implements ResourceMetadataReader<T> {
-		@Override
-		public @NotNull String getKey() {
-			return id.toString();
-		}
-
-		@Override
-		public @NotNull T fromJson(JsonObject json) {
-			DataResult<T> result = codec.parse(JsonOps.INSTANCE, json);
-			if (result.error().isPresent()) {
-				throw new IllegalStateException("Failed to parse " + id + " metadata section: " + result.error().get());
-			}
-			if (result.result().isEmpty()) {
-				throw new IllegalStateException("Failed to parse " + id + " metadata section: Empty result");
-			}
-			return result.result().get();
-		}
 	}
 }

@@ -12,20 +12,45 @@ version = "$baseVersion+$branch"
 base.archivesName = project.slug
 
 repositories {
+	maven { url = "https://repo.sleeping.town/" }
+	maven { url = "https://repo.codemc.io/repository/relativitymc/" }
+	maven { url = "https://maven.terraformersmc.com/releases/" }
 	mavenLocal()
-	maven { url "https://repo.sleeping.town/" }
+}
+
+// Dev only: modern-yarn without parameter names, so the dev jar keeps the Mojang parameter names Fabric API mixins match on.
+def modernYarnWithoutParams() {
+	def jar = configurations.detachedConfiguration(dependencies.create("org.relativitymc:modern-yarn:${libs.versions.yarn.get()}:v2")).singleFile
+	def out = file("build/mappings/modern-yarn-${libs.versions.yarn.get()}-noparams.tiny")
+	if (!out.exists() || out.lastModified() < jar.lastModified()) {
+		out.parentFile.mkdirs()
+		def lines = zipTree(jar).matching { include "mappings/mappings.tiny" }.singleFile.readLines("UTF-8")
+		def kept = []
+		boolean skipping = false
+		for (line in lines) {
+			if (line.startsWith("\t\tp\t")) { skipping = true; continue }
+			if (skipping && line.startsWith("\t\t\tc\t")) continue
+			skipping = false
+			kept.add(line)
+		}
+		out.setText(kept.join("\n") + "\n", "UTF-8")
+	}
+	return out
 }
 
 dependencies {
 	implementation libs.kaleidoConfig
 
 	minecraft libs.mc
-	mappings variantOf(libs.yarn) { classifier "v2" }
+	mappings loom.layered {
+		mappings(modernYarnWithoutParams())
+	}
 	modImplementation libs.fl
 
 	modImplementation libs.fapi
 
 	modImplementation libs.surveyor
+	modCompileOnly libs.modmenu
 }
 
 processResources {
@@ -53,19 +78,69 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	it.options.release = 17
+	it.options.release = 25
 }
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${base.archivesName}" }
+		rename { "${it}_${base.archivesName.get()}" }
 	}
+}
+
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "antique_atlas_gametest"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+		clearRunDirectory = false
+	}
+}
+
+// In-game tests run against the production game: the yarn dev environment cannot host a world on 26.x.
+configurations {
+	productionMods { transitive = false }
+}
+
+dependencies {
+	productionMods libs.fapi
+	productionMods libs.surveyor
+	productionMods libs.modmenu
+	// Not bundled in the production Fabric API jar; version as resolved by libs.fapi.
+	productionMods "net.fabricmc.fabric-api:fabric-client-gametest-api-v1:5.1.0+0a5283664c"
+}
+
+tasks.register("gametestJar", Jar) {
+	from sourceSets.gametest.output
+	archiveClassifier = "gametest-dev"
+}
+
+tasks.register("remapGametestJar", net.fabricmc.loom.task.RemapJarTask) {
+	inputFile = tasks.named("gametestJar", Jar).flatMap { it.archiveFile }
+	classpath.from(sourceSets.gametest.compileClasspath)
+	addNestedDependencies = false
+	archiveClassifier = "gametest"
+}
+
+tasks.register("runProductionClientGameTest", net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+	group = "verification"
+	description = "Runs the client gametests against the production game with the remapped jar."
+	mods.from(tasks.named("remapJar"), tasks.named("remapGametestJar"), configurations.productionMods)
+	runDir = file("build/run/prodClientGameTest")
+	jvmArgs.add("-Dfabric.client.gametest=true")
+	programArgs.addAll("--width", "1280", "--height", "720")
+}
+
+loom {
+	useIntermediateMappings = true
+	intermediaryUrl = 'https://repo.codemc.io/repository/relativitymc/org/relativitymc/intermediary/%1$s/intermediary-%1$s-v2.jar'
 }
 
 publishing {
@@ -110,6 +185,7 @@ modrinth {
 		required.version libs.fapi.get().getName(), libs.versions.fapi.get()
 		required.version libs.surveyor.get().getName(), libs.versions.surveyor.get()
 		required.project "mcqoy"
+		optional.project "modmenu"
 	}
 }
 

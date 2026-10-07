@@ -1,5 +1,5 @@
 {
-	"key.antique_atlas.category": "Antique Atlas 古舊地圖",
+	"key.category.antique_atlas.antique_atlas": "Antique Atlas 古舊地圖",
 	"key.antique_atlas.open": "開啟地圖",
 	"gui.antique_atlas.scalebar": "方塊比例尺",
 	"gui.antique_atlas.addMarker": "增加標記",

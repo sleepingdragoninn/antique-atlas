@@ -10,7 +10,7 @@
 	"structure.type.minecraft.ocean_monument": "Подводная крепость",
 	"structure.type.minecraft.woodland_mansion": "Лесной особняк",
 	"key.antique_atlas.open": "Открыть атлас",
-	"key.antique_atlas.category": "Античный Атлас",
+	"key.category.antique_atlas.antique_atlas": "Античный Атлас",
 	"gui.antique_atlas.addMarkerHere": "Добавить метку здесь",
 	"gui.antique_atlas.resetScale": "Сбросить масштаб",
 	"structure.start.minecraft.bastion_remnant": "Развалины бастиона",

@@ -13,14 +13,12 @@ import folk.sisby.surveyor.client.SurveyorClientEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.ModelPredicateProviderRegistry;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.player.PlayerEntity;
@@ -50,7 +48,7 @@ public class AntiqueAtlas implements ClientModInitializer {
 	public static final AntiqueAtlasConfig CONFIG = AntiqueAtlasConfig.createToml(FabricLoader.getInstance().getConfigDir(), "", "antique-atlas", AntiqueAtlasConfig.class);
 	public static final ScreenState<AtlasScreen> lastState = new ScreenState<>();
 
-	public static final ModelIdentifier ATLAS_MODEL = new ModelIdentifier(AntiqueAtlas.id("atlas"), "inventory");
+	public static final Identifier ATLAS_MODEL = AntiqueAtlas.id("atlas");
 
 	public static final List<String> ATLAS_NAMES = List.of(
 		"Antique Atlas"
@@ -83,12 +81,12 @@ public class AntiqueAtlas implements ClientModInitializer {
 	}
 
 	public static boolean isHandheldAtlas(ItemStack stack) {
-		return stack.isOf(Items.BOOK) && ATLAS_NAMES.stream().anyMatch(n -> stack.getName().getString().toLowerCase().contains(n.toLowerCase()));
+		return stack.getItem() == Items.BOOK && ATLAS_NAMES.stream().anyMatch(n -> stack.getName().getString().toLowerCase().contains(n.toLowerCase()));
 	}
 
 	public static boolean hasHandheldAtlas(PlayerEntity player) {
 		if (isHandheldAtlas(player.getOffHandStack())) return true;
-		for (ItemStack itemStack : player.getInventory().main) {
+		for (ItemStack itemStack : player.getInventory().getMainStacks()) {
 			if (isHandheldAtlas(itemStack)) {
 				return true;
 			}
@@ -107,27 +105,30 @@ public class AntiqueAtlas implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		AntiqueAtlasKeybindings.init();
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(TileTextures.getInstance());
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(StructureTileProviders.getInstance());
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(BiomeTileProviders.getInstance());
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(MarkerTextures.getInstance());
+		ResourceLoader resourceLoader = ResourceLoader.get(ResourceType.CLIENT_RESOURCES);
+		resourceLoader.registerReloadListener(TileTextures.ID, TileTextures.getInstance());
+		resourceLoader.registerReloadListener(MarkerTextures.ID, MarkerTextures.getInstance());
+		resourceLoader.registerReloadListener(StructureTileProviders.ID, StructureTileProviders.getInstance());
+		resourceLoader.registerReloadListener(BiomeTileProviders.ID, BiomeTileProviders.getInstance());
+		resourceLoader.addListenerOrdering(TileTextures.ID, StructureTileProviders.ID);
+		resourceLoader.addListenerOrdering(MarkerTextures.ID, StructureTileProviders.ID);
+		resourceLoader.addListenerOrdering(TileTextures.ID, BiomeTileProviders.ID);
 
 		SurveyorClientEvents.Register.terrainUpdated(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onTerrainUpdated(s, k));
 		SurveyorClientEvents.Register.structuresAdded(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onStructuresAdded(s, k));
 		SurveyorClientEvents.Register.landmarksAdded(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onLandmarksAdded(s, k));
 		SurveyorClientEvents.Register.landmarksRemoved(id("world_data"), (s, k) -> WorldAtlasData.getOrCreate(s.dimension()).onLandmarksRemoved(s, k));
-		ClientTickEvents.END_WORLD_TICK.register((w -> SurveyorClient.getSummaries(MinecraftClient.getInstance().getNetworkHandler()).values().forEach(s -> WorldAtlasData.getOrCreate(s.dimension()).tick(s))));
-		CommonLifecycleEvents.TAGS_LOADED.register(((manager, client) -> BiomeTileProviders.getInstance().registerFallbacks(manager.get(RegistryKeys.BIOME))));
+		ClientTickEvents.END_LEVEL_TICK.register((w -> SurveyorClient.getSummaries(MinecraftClient.getInstance().getNetworkHandler()).values().forEach(s -> WorldAtlasData.getOrCreate(s.dimension()).tick(s))));
+		CommonLifecycleEvents.TAGS_LOADED.register(((manager, client) -> BiomeTileProviders.getInstance().registerFallbacks(manager.getOrThrow(RegistryKeys.BIOME))));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> BiomeTileProviders.getInstance().clearFallbacks()));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> WorldAtlasData.WORLDS.clear()));
 
-		ModelPredicateProviderRegistry.register(Items.BOOK, AntiqueAtlas.id("atlas"), ((stack, world, entity, seed) -> isHandheldAtlas(stack) ? 1.0F : 0.0F));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(e -> e.addAfter(Items.MAP, getHandheldAtlas()));
+		CreativeModeTabEvents.modifyOutputEvent(ItemGroups.TOOLS).register(output -> output.insertAfter(Items.MAP, getHandheldAtlas()));
 
 		WorldSummary.enableTerrain();
 		WorldSummary.enableStructures();
 		WorldSummary.enableLandmarks();
 
-		FabricLoader.getInstance().getModContainer(ID).ifPresent(c -> ResourceManagerHelper.registerBuiltinResourcePack(id("shader_patch"), c, Text.of("Shader Patch"), ResourcePackActivationType.NORMAL));
+		FabricLoader.getInstance().getModContainer(ID).ifPresent(c -> ResourceLoader.registerBuiltinPack(id("shader_patch"), c, Text.of("Shader Patch"), PackActivationType.NORMAL));
 	}
 }

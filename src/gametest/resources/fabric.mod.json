@@ -1,0 +1,16 @@
+{
+	"schemaVersion": 1,
+	"id": "antique_atlas_gametest",
+	"version": "1.0.0",
+	"name": "Antique Atlas Client Game Tests",
+	"environment": "client",
+	"license": "LGPL-3.0-or-later",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"folk.sisby.antique_atlas.gametest.AtlasClientGameTest"
+		]
+	},
+	"depends": {
+		"antique_atlas": "*"
+	}
+}

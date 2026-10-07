@@ -12,9 +12,12 @@ import folk.sisby.surveyor.landmark.Landmark;
 import folk.sisby.surveyor.landmark.WorldLandmarks;
 import folk.sisby.surveyor.landmark.component.LandmarkComponentTypes;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.item.Item;
@@ -96,9 +99,9 @@ public class MarkerModal extends Component {
 				landmarks.remove(baseLandmark.owner(), baseLandmark.id());
 				landmarks.put(WorldAtlasData.copyLandmarkWith(
 					baseLandmark,
-					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getName() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
+					selectedTexture.keyId().withSuffixedPath("/" + selectedColor.getId() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getX() + "/" + baseLandmark.get(LandmarkComponentTypes.POS).getZ()),
 					copy -> {
-					Item item = manager.get(RegistryKeys.ITEM).get(selectedTexture.item());
+					Item item = manager.getOrThrow(RegistryKeys.ITEM).getOptionalValue(selectedTexture.item()).orElse(null);
 					if (item != null && !item.getDefaultStack().isEmpty()) copy.set(LandmarkComponentTypes.STACK, item.getDefaultStack().copy());
 					copy.set(LandmarkComponentTypes.COLOR, selectedColor.getEntityColor());
 					copy.set(LandmarkComponentTypes.NAME, label);
@@ -186,24 +189,24 @@ public class MarkerModal extends Component {
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		return super.mouseClicked(mouseX, mouseY, button) || textField.mouseClicked(mouseX, mouseY, button);
+	public boolean mouseClicked(Click click, boolean doubled) {
+		return super.mouseClicked(click, doubled) || textField.mouseClicked(click, doubled);
 	}
 
 	@Override
-	public boolean keyPressed(int aa, int bb, int cc) {
-		return super.keyPressed(aa, bb, cc) || textField.keyPressed(aa, bb, cc);
+	public boolean keyPressed(KeyInput input) {
+		return super.keyPressed(input) || textField.keyPressed(input);
 	}
 
 	@Override
-	public boolean charTyped(char aa, int bb) {
-		return super.charTyped(aa, bb) || textField.charTyped(aa, bb);
+	public boolean charTyped(CharInput input) {
+		return super.charTyped(input) || textField.charTyped(input);
 	}
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float partialTick) {
-		this.renderBackground(context, mouseX, mouseY, partialTick);
-		drawCentered(context, Text.translatable("gui.antique_atlas.marker.label"), this.height / 2 - 80, 0xDDDDDD, true);
+		this.renderDarkening(context);
+		drawCentered(context, Text.translatable("gui.antique_atlas.marker.label"), this.height / 2 - 80, 0xFFDDDDDD, true);
 		btnCancel.render(context, mouseX, mouseY, partialTick);
 		btnDone.render(context, mouseX, mouseY, partialTick);
 		textField.render(context, mouseX, mouseY, partialTick);

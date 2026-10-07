@@ -10,5 +10,5 @@
 	"structure.type.minecraft.ocean_monument": "Monumento oceánico",
 	"structure.type.minecraft.woodland_mansion": "Mansión del bosque",
 	"key.antique_atlas.open": "Abrir atlas",
-	"key.antique_atlas.category": "Atlas Antiguo"
+	"key.category.antique_atlas.antique_atlas": "Atlas Antiguo"
 }

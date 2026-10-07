@@ -41,7 +41,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 		matchers.forEach((matcher, textures) -> {
 			for (ChunkPos pos : matcherFunction.apply(matcher)) {
 				tilePredicates.put(pos, Objects.toString(CHUNK_MATCHERS.inverse().get(matcher), null));
-				int variation = (int) (MathHelper.hashCode(pos.x, pos.z, pos.x * pos.z) & 0x7FFFFFFF);
+				int variation = (int) (MathHelper.hashCode(pos.x(), pos.z(), pos.x() * pos.z()) & 0x7FFFFFFF);
 				outMap.put(pos, textures.get(variation % textures.size()));
 			}
 		});
@@ -70,21 +70,21 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 		}
 
 		static Collection<ChunkPos> center(WorldSummary summary, BlockBox box) {
-			return Collections.singleton(new ChunkPos(box.getCenter()));
+			return Collections.singleton(ChunkPos.fromBlockPos(box.getCenter()));
 		}
 
 		static Collection<ChunkPos> topAboveGround(WorldSummary summary, BlockBox box) {
 			if (SEA_LEVEL <= box.getMaxY()) {
-				return Collections.singleton(new ChunkPos(box.getCenter()));
+				return Collections.singleton(ChunkPos.fromBlockPos(box.getCenter()));
 			}
 
 			return Collections.emptyList();
 		}
 
 		static Collection<ChunkPos> aboveGround(WorldSummary summary, BlockBox box) {
-			BlockPos center = new BlockPos(box.getCenter());
+			BlockPos center = box.getCenter();
 			if (SEA_LEVEL - 4 <= center.getY()) {
-				return Collections.singleton(new ChunkPos(center));
+				return Collections.singleton(ChunkPos.fromBlockPos(center));
 			}
 
 			return Collections.emptyList();
@@ -118,7 +118,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 
 		static Collection<ChunkPos> centerIfHorizontal(WorldSummary summary, BlockBox box) {
 			if (box.getBlockCountX() > box.getBlockCountZ()) {
-				return Collections.singleton(new ChunkPos(box.getCenter()));
+				return Collections.singleton(ChunkPos.fromBlockPos(box.getCenter()));
 			} else {
 				return Collections.emptySet();
 			}
@@ -126,7 +126,7 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 
 		static Collection<ChunkPos> centerIfVertical(WorldSummary summary, BlockBox box) {
 			if (box.getBlockCountZ() > box.getBlockCountX()) {
-				return Collections.singleton(new ChunkPos(box.getCenter()));
+				return Collections.singleton(ChunkPos.fromBlockPos(box.getCenter()));
 			} else {
 				return Collections.emptySet();
 			}
@@ -142,14 +142,14 @@ public record StructureTileProvider(Identifier id, int priority, Map<ChunkMatche
 
 		static Collection<ChunkPos> straightHorizontal(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions) {
 			if (junctions.size() == 2 && (junctions.get(0).getSourceZ() == junctions.get(1).getSourceZ() || junctions.get(0).getSourceX() != junctions.get(1).getSourceX())) {
-				return List.of(new ChunkPos(box.getCenter()));
+				return List.of(ChunkPos.fromBlockPos(box.getCenter()));
 			}
 			return List.of();
 		}
 
 		static Collection<ChunkPos> straightVertical(WorldSummary summary, BlockBox box, List<JigsawJunction> junctions) {
 			if (junctions.size() == 2 && (junctions.get(0).getSourceX() == junctions.get(1).getSourceX() || junctions.get(0).getSourceZ() != junctions.get(1).getSourceZ())) {
-				return List.of(new ChunkPos(new BlockPos((junctions.get(0).getSourceX() + junctions.get(1).getSourceX()) / 2, 0, (junctions.get(0).getSourceZ() + junctions.get(1).getSourceZ()) / 2)));
+				return List.of(ChunkPos.fromBlockPos(new BlockPos((junctions.get(0).getSourceX() + junctions.get(1).getSourceX()) / 2, 0, (junctions.get(0).getSourceZ() + junctions.get(1).getSourceZ()) / 2)));
 			}
 			return List.of();
 		}

@@ -26,9 +26,15 @@
 		"fabric-api": ">=${fapi}",
 		"surveyor": ">=${surveyor}"
 	},
+	"suggests": {
+		"modmenu": "*"
+	},
 	"entrypoints": {
 		"client": [
 			"folk.sisby.antique_atlas.AntiqueAtlas"
+		],
+		"modmenu": [
+			"folk.sisby.antique_atlas.AntiqueAtlasModMenu"
 		]
 	}
 }

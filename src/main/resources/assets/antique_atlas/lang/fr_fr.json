@@ -7,7 +7,7 @@
 	"gui.antique_atlas.showMarkers": "Afficher les marqueurs",
 	"gui.antique_atlas.marker.label": "Marqueurs",
 	"key.antique_atlas.open": "Ouvrir l'Atlas",
-	"key.antique_atlas.category": "Antique Atlas",
+	"key.category.antique_atlas.antique_atlas": "Antique Atlas",
     "structure.start.minecraft.bastion_remnant": "Vestige de Bastion",
     "structure.start.minecraft.village_plains": "Village des plaines",
     "structure.start.minecraft.village_desert": "Village du desert",

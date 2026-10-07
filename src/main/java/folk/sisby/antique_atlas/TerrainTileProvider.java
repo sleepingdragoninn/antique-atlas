@@ -18,7 +18,7 @@ public record TerrainTileProvider(Identifier id, Map<TileElevation, List<TileTex
 	}
 
 	public TileTexture getTexture(ChunkPos pos, @Nullable TileElevation elevation) {
-		int variation = (int) (MathHelper.hashCode(pos.x, pos.z, pos.x * pos.z) & 0x7FFFFFFF);
+		int variation = (int) (MathHelper.hashCode(pos.x(), pos.z(), pos.x() * pos.z()) & 0x7FFFFFFF);
 		TileElevation usedElevation = elevation == null ? TileElevation.VALLEY : elevation;
 		return textures.get(usedElevation).get(variation % textures.get(usedElevation).size());
 	}

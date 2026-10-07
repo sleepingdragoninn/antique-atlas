@@ -1,6 +1,5 @@
 package folk.sisby.antique_atlas.reloader;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import folk.sisby.antique_atlas.AntiqueAtlas;
@@ -15,16 +14,17 @@ import folk.sisby.surveyor.structure.JigsawPieceSummary;
 import folk.sisby.surveyor.structure.StructurePieceSummary;
 import folk.sisby.surveyor.structure.StructureStartSummary;
 import it.unimi.dsi.fastutil.Pair;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.resource.JsonDataLoader;
+import net.minecraft.resource.ResourceFinder;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.structure.pool.StructurePoolElementType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.gen.structure.Structure;
@@ -39,7 +39,7 @@ import java.util.Set;
 
 import static folk.sisby.antique_atlas.reloader.BiomeTileProviders.resolveTextureJson;
 
-public class StructureTileProviders extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class StructureTileProviders extends JsonDataLoader<JsonElement> {
 	public static final StructureTileProviders INSTANCE = new StructureTileProviders();
 
 	public static final Identifier ID = AntiqueAtlas.id("structures");
@@ -94,7 +94,7 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 	);
 
 	public StructureTileProviders() {
-		super(new Gson(), "atlas/structure");
+		super(Codecs.JSON_ELEMENT, ResourceFinder.json("atlas/structure"));
 	}
 
 	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> tilePredicates, StructurePieceSummary piece, WorldSummary summary) {
@@ -123,19 +123,19 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 	public void resolve(Map<ChunkPos, TileTexture> outTiles, Map<ChunkPos, StructureTileProvider> structureProviders, Map<ChunkPos, String> debugPredicates, Map<Landmark, MarkerTexture> outMarkers, WorldSummary summary, RegistryKey<Structure> key, ChunkPos pos, StructureStartSummary start, RegistryKey<StructureType<?>> type, Collection<TagKey<Structure>> tags) {
 		if (startMarkers.containsKey(key.getValue())) {
 			MarkerTexture texture = startMarkers.get(key.getValue());
-			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x() + "/" + pos.z()), b -> b
 				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
 				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.START.translation(key.getValue())))
 			), texture);
 		} else if (type != null && typeMarkers.containsKey(type.getValue())) {
 			MarkerTexture texture = typeMarkers.get(type.getValue());
-			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+			outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x() + "/" + pos.z()), b -> b
 				.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
 				.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TYPE.translation(type.getValue())))
 			), texture);
 		} else {
 			tagMarkers.entrySet().stream().filter(entry -> tags.contains(TagKey.of(RegistryKeys.STRUCTURE, entry.getKey()))).findFirst().ifPresent(entry ->
-				outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x + "/" + pos.z), b -> b
+				outMarkers.put(Landmark.create(WorldLandmarks.GLOBAL, key.getValue().withPath(p -> "start/" + p + "/" + pos.x() + "/" + pos.z()), b -> b
 					.add(LandmarkComponentTypes.POS, pos.getCenterAtY(0))
 					.add(LandmarkComponentTypes.NAME, Text.translatable(ProviderType.TAG.translation(entry.getKey())))
 				), entry.getValue()));
@@ -234,15 +234,5 @@ public class StructureTileProviders extends JsonDataLoader implements Identifiab
 		for (TileTexture texture : unusedTextures) {
 			AntiqueAtlas.LOGGER.warn("[Antique Atlas] Tile texture {} isn't referenced by any structure tile provider!", texture.displayId());
 		}
-	}
-
-	@Override
-	public Identifier getFabricId() {
-		return ID;
-	}
-
-	@Override
-	public Collection<Identifier> getFabricDependencies() {
-		return List.of(TileTextures.ID, MarkerTextures.ID);
 	}
 }

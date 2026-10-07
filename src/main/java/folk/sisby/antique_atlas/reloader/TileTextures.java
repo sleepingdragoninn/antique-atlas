@@ -5,12 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import folk.sisby.antique_atlas.TileTexture;
 import folk.sisby.antique_atlas.util.CodecUtil;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.SinglePreparationResourceReloader;
 import net.minecraft.resource.metadata.ResourceMetadata;
-import net.minecraft.resource.metadata.ResourceMetadataReader;
+import net.minecraft.resource.metadata.ResourceMetadataSerializer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.profiler.Profiler;
@@ -24,7 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TileTextures extends SinglePreparationResourceReloader<Map<Identifier, TileTextures.TileTextureMeta>> implements IdentifiableResourceReloadListener {
+public class TileTextures extends SinglePreparationResourceReloader<Map<Identifier, TileTextures.TileTextureMeta>> {
 	public static final TileTextures INSTANCE = new TileTextures();
 	public static final Identifier ID = AntiqueAtlas.id("tile_textures");
 
@@ -104,11 +103,6 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 		textureBuilders.forEach((id, builder) -> builder.build(textures));
 	}
 
-	@Override
-	public Identifier getFabricId() {
-		return ID;
-	}
-
 	public static class TileTextureMeta {
 		public static final TileTextureMeta DEFAULT = new TileTextureMeta(null, null, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), Set.of());
 
@@ -128,7 +122,7 @@ public class TileTextures extends SinglePreparationResourceReloader<Map<Identifi
 			OUTER, INNER
 		}
 
-		public static final ResourceMetadataReader<TileTextureMeta> METADATA = new CodecUtil.CodecResourceMetadataSerializer<>(CODEC, AntiqueAtlas.id("tiling"));
+		public static final ResourceMetadataSerializer<TileTextureMeta> METADATA = new ResourceMetadataSerializer<>(AntiqueAtlas.id("tiling").toString(), CODEC);
 		protected final Identifier parent;
 		protected BorderType borderType;
 		protected final Set<Identifier> tags;

@@ -93,7 +93,7 @@ public class WorldAtlasData {
 			if (pos == null) break;
 			Pair<TerrainTileProvider, TileElevation> tile = summary.dimension() == World.NETHER ? TerrainTiling.terrainToTileNether(summary, pos) : TerrainTiling.terrainToTile(summary, pos);
 			if (tile != null) {
-				tileScope.extendTo(pos.x, pos.z);
+				tileScope.extendTo(pos.x(), pos.z());
 				biomeTiles.put(pos, tile.left().getTexture(pos, tile.right()));
 				debugBiomes.put(pos, tile.left());
 				debugBiomePredicates.put(pos, tile.right() == null ? null : tile.right().getName());

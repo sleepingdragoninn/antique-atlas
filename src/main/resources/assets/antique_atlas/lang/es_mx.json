@@ -1,5 +1,5 @@
 {
-	"key.antique_atlas.category": "Antique Atlas",
+	"key.category.antique_atlas.antique_atlas": "Antique Atlas",
 	"key.antique_atlas.open": "Abrir Atlas",
 	"gui.antique_atlas.scalebar": "Escala en bloques",
 	"gui.antique_atlas.addMarker": "Agregar marcador",

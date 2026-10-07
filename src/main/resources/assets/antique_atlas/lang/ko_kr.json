@@ -1,5 +1,5 @@
 {
-	"key.antique_atlas.category": "Antique Atlas",
+	"key.category.antique_atlas.antique_atlas": "Antique Atlas",
 	"key.antique_atlas.open": "Atlas 지도 열기",
 	"gui.antique_atlas.scalebar": "블록 단위 축척",
 	"gui.antique_atlas.addMarker": "마커 추가",

@@ -1,8 +1,11 @@
 package folk.sisby.antique_atlas.gui.core;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 import java.util.List;
@@ -185,7 +188,7 @@ public class Component extends Screen {
 		child.parent = this;
 		child.setGuiCoords(guiX, guiY);
 		if (MinecraftClient.getInstance() != null) {
-			child.init(MinecraftClient.getInstance(), width, height);
+			child.init(width, height);
 		}
 		updateSize();
 	}
@@ -237,27 +240,27 @@ public class Component extends Screen {
 	 * Handle mouse input for this GUI and its children.
 	 */
 	@Override
-	public boolean mouseClicked(double mx, double my, int mb) {
-		if (!iterateInput((c) -> c.mouseClicked(mx, my, mb))) {
-			return super.mouseClicked(mx, my, mb);
+	public boolean mouseClicked(Click click, boolean doubled) {
+		if (!iterateInput((c) -> c.mouseClicked(click, doubled))) {
+			return super.mouseClicked(click, doubled);
 		} else {
 			return true;
 		}
 	}
 
 	@Override
-	public boolean mouseReleased(double mx, double my, int mb) {
-		if (!iterateInput((c) -> c.mouseReleased(mx, my, mb))) {
-			return super.mouseReleased(mx, my, mb);
+	public boolean mouseReleased(Click click) {
+		if (!iterateInput((c) -> c.mouseReleased(click))) {
+			return super.mouseReleased(click);
 		} else {
 			return true;
 		}
 	}
 
 	@Override
-	public boolean mouseDragged(double mx, double my, int mb, double mx2, double my2) {
-		if (!iterateInput((c) -> c.mouseDragged(mx, my, mb, mx2, my2))) {
-			return super.mouseClicked(mx, my, mb);
+	public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+		if (!iterateInput((c) -> c.mouseDragged(click, deltaX, deltaY))) {
+			return super.mouseDragged(click, deltaX, deltaY);
 		} else {
 			return true;
 		}
@@ -286,27 +289,27 @@ public class Component extends Screen {
 	 * Handle keyboard input for this GUI and its children.
 	 */
 	@Override
-	public boolean keyPressed(int a, int b, int c) {
-		if (!iterateInput((cpt) -> cpt.keyPressed(a, b, c))) {
-			return super.keyPressed(a, b, c);
+	public boolean keyPressed(KeyInput input) {
+		if (!iterateInput((cpt) -> cpt.keyPressed(input))) {
+			return super.keyPressed(input);
 		} else {
 			return true;
 		}
 	}
 
 	@Override
-	public boolean charTyped(char aa, int bb) {
-		if (!iterateInput((cpt) -> cpt.charTyped(aa, bb))) {
-			return super.charTyped(aa, bb);
+	public boolean charTyped(CharInput input) {
+		if (!iterateInput((cpt) -> cpt.charTyped(input))) {
+			return super.charTyped(input);
 		} else {
 			return true;
 		}
 	}
 
 	@Override
-	public boolean keyReleased(int a, int b, int c) {
-		if (!iterateInput((cpt) -> cpt.keyReleased(a, b, c))) {
-			return super.keyReleased(a, b, c);
+	public boolean keyReleased(KeyInput input) {
+		if (!iterateInput((cpt) -> cpt.keyReleased(input))) {
+			return super.keyReleased(input);
 		} else {
 			return true;
 		}
@@ -353,7 +356,7 @@ public class Component extends Screen {
 	public void init() {
 		super.init();
 		for (Component child : children) {
-			child.init(MinecraftClient.getInstance(), width, height);
+			child.init(width, height);
 		}
 	}
 

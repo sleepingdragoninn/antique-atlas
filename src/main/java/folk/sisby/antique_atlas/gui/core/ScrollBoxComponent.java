@@ -2,6 +2,8 @@ package folk.sisby.antique_atlas.gui.core;
 
 import folk.sisby.antique_atlas.AntiqueAtlas;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.Rect2i;
@@ -36,7 +38,7 @@ public class ScrollBoxComponent extends Component {
 		boolean hovered = new Rect2i(x, y, ARROW_SIZE, ARROW_SIZE).contains(mouseX, mouseY);
 		int u = (prev ? 0 : ARROW_SIZE);
 		int v = (vertical ? 0 : ARROW_SIZE) + (hovered ? ARROW_SIZE * 2 : 0);
-		context.drawTexture(ARROW, x, y, u, v, ARROW_SIZE, ARROW_SIZE, ARROW_TEXTURE_WIDTH, ARROW_TEXTURE_HEIGHT);
+		context.drawTexture(RenderPipelines.GUI_TEXTURED, ARROW, x, y, u, v, ARROW_SIZE, ARROW_SIZE, ARROW_TEXTURE_WIDTH, ARROW_TEXTURE_HEIGHT);
 	}
 
 	@Override
@@ -60,10 +62,10 @@ public class ScrollBoxComponent extends Component {
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int mb) {
-		if (scrollPos > 0 && clickArrow(mouseX, mouseY, true)) return true;
-		if (scrollPos < getContentSize() - getViewportSize() && clickArrow(mouseX, mouseY, false)) return true;
-		return super.mouseClicked(mouseX, mouseY, mb);
+	public boolean mouseClicked(Click click, boolean doubled) {
+		if (scrollPos > 0 && clickArrow(click.x(), click.y(), true)) return true;
+		if (scrollPos < getContentSize() - getViewportSize() && clickArrow(click.x(), click.y(), false)) return true;
+		return super.mouseClicked(click, doubled);
 	}
 
 	@Override
